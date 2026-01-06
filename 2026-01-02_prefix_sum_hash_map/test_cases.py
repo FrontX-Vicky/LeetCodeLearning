@@ -7,7 +7,7 @@ def run_tests(fn):
     cases = [
         ([1, 1, 1], 2, 2, "basic small"),
         ([1, 2, 3], 3, 2, "multiple subarrays"),
-        ([1, -1, 1], 1, 2, "with negatives"),
+        ([1, -1, 1], 1, 3, "with negatives: [1], [1], [1,-1,1]"),
         ([0, 0, 0], 0, 6, "all zeros"),
         ([3, 4, 7, 2, -3, 1, 4, 2], 7, 4, "mixed positives and negatives"),
         ([], 0, 0, "empty array"),

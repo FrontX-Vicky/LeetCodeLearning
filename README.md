@@ -66,14 +66,45 @@
 **Personal Notes**:
 - Sliding window is not reliable when negatives exist; prefix sums remain stable
 
+### Day 3: January 3, 2026 - Sliding Window Fundamentals
+
+**Main Problem**:
+- [LeetCode #3: Longest Substring Without Repeating Characters](https://leetcode.com/problems/longest-substring-without-repeating-characters/)
+
+**Related Problems** (reinforcement):
+- Day 1: Two Sum with sliding window context (when sliding window doesn't apply)
+- Day 2: Prefix sums vs. sliding window trade-offs
+- Compare brute force O(n³) vs. optimal sliding window O(n)
+
+**Topics Covered**:
+- Two-pointer sliding window technique
+- Set-based uniqueness checking
+- Character index tracking with dictionaries
+- When to use sliding window vs. prefix sums
+
+**Key Concepts Learned**:
+- Sliding window collapses search space from O(n²) to O(n)
+- "Expand right, shrink left" pattern for maintaining constraints
+- Character tracking prevents duplicate processing
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Direct index jumping vs. incremental pointer movement
+
+**Personal Notes**:
+- Sliding window requires constraint satisfaction (no duplicates, valid window, etc.)
+- Works best with "longest/shortest substring/subarray" problems
+
 ---
 
 ## Master Concepts Index
-- **Hash Maps**: Day 1, Day 2
+- **Hash Maps**: Day 1, Day 2, Day 3
 - **Arrays**: Day 1, Day 2
 - **Prefix Sums**: Day 2
-
-## Upcoming Topics
+- **Sliding Window**: Day 3
+- **Strings**: Day 3
 - Sliding Window
 - Linked Lists
 - Trees & Recursion

@@ -71,7 +71,9 @@ if __name__ == "__main__":
     # Smoke tests (expand in test_cases.py)
     assert subarray_sum_prefix_hash([1, 1, 1], 2) == 2
     assert subarray_sum_prefix_hash([1, 2, 3], 3) == 2  # [1,2], [3]
-    assert subarray_sum_prefix_hash([1, -1, 1], 1) == 2  # [1], [1,-1,1]
+    assert subarray_sum_prefix_hash([1, -1, 1], 1) == 3  # [1], [1], [1,-1,1]
     assert subarray_sum_prefix_hash([0, 0, 0], 0) == 6   # all subarrays of zeros
     assert subarray_sum_prefix_hash([], 0) == 0
+    assert subarray_sum_brute_force([1, 1, 1], 2) == 2
+    assert subarray_sum_prefix_array([1, 1, 1], 2) == 2
     print("Quick checks passed. Run test_cases.py for more.")
