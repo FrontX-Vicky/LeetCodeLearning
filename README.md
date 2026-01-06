@@ -97,14 +97,49 @@
 - Sliding window requires constraint satisfaction (no duplicates, valid window, etc.)
 - Works best with "longest/shortest substring/subarray" problems
 
+### Day 4: January 4, 2026 - Advanced Sliding Window
+
+**Main Problem**:
+- [LeetCode #76: Minimum Window Substring](https://leetcode.com/problems/minimum-window-substring/)
+
+**Related Problems** (reinforcement):
+- Day 3: Longest Substring (simpler sliding window, unique chars only)
+- Contrast: find longest unique vs. find shortest with duplicates allowed
+- Frequency matching patterns
+
+**Topics Covered**:
+- Multi-constraint sliding window (not just presence, but counts)
+- Dual hash maps (required vs. current window)
+- Shrinking from left for minimum length
+- Character frequency validation
+
+**Key Concepts Learned**:
+- Track "formed" counter for progress toward solution
+- Frequency-based validation instead of set membership
+- Early termination via while loop for minimum window
+- Time complexity O(n + m) vs. O(n³) brute force
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Using Counter object for cleaner frequency tracking
+- Tuple packing for result (length, start, end) to avoid repeated comparisons
+
+**Personal Notes**:
+- This is interview-level hard; combines everything from Days 1-3
+- Frequency matching is a common pattern across many problems
+- Window validity can be complex; must track multiple conditions
+
 ---
 
 ## Master Concepts Index
-- **Hash Maps**: Day 1, Day 2, Day 3
+- **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2
 - **Prefix Sums**: Day 2
-- **Sliding Window**: Day 3
-- **Strings**: Day 3
+- **Sliding Window**: Day 3, Day 4
+- **Strings**: Day 3, Day 4
+- **Frequency Counting**: Day 4
 - Sliding Window
 - Linked Lists
 - Trees & Recursion

@@ -11,9 +11,18 @@ def longest_substring_brute_force(s):
     """
     APPROACH 1: BRUTE FORCE
     """
-    # YOUR CODE HERE
-    pass
+    max_len = 0
+    n = len(s)
 
+    for i in range(n):
+        seen = set()
+        for j in range(i, n):
+            if s[j] in seen:
+                break
+            seen.add(s[j])
+            max_len = max(max_len, j - i +1)
+
+    return max_len          
 
 # TODO 2: Approach 2 - Sliding Window + Set (optimal)
 # - Maintain a window with a set of unique characters
@@ -25,9 +34,19 @@ def longest_substring_sliding_window(s):
     """
     APPROACH 2: SLIDING WINDOW + SET (OPTIMAL)
     """
-    # YOUR CODE HERE
-    pass
+    char_set = set()
+    left = 0
+    max_len = 0
 
+    for right in range(len(s)):
+        while s[right] in char_set:
+            char_set.remove(s[left])
+            left += 1
+        
+        char_set.add(s[right])
+        max_len = max(max_len, right - left + 1)
+    
+    return max_len
 
 # TODO 3: Approach 3 - Sliding Window + Dict (tracks indices)
 # - Store character -> last seen index
@@ -38,12 +57,29 @@ def longest_substring_with_indices(s):
     """
     APPROACH 3: SLIDING WINDOW + DICT (INDEX TRACKING)
     """
-    # YOUR CODE HERE
-    pass
+    char_index = {}
+    left = 0
+    max_len = 0
 
+    for right in range(len(s)):
+        if s[right] in char_index:
+            left = max(left, char_index[s[right]] + 1)
+
+        char_index[s[right]] = right
+        max_len = max(max_len, right - left + 1)
+
+    return max_len
 
 if __name__ == "__main__":
     # Smoke tests
+
+    # assert longest_substring_brute_force("abcabcbb") == 3
+    # assert longest_substring_with_indices("pwwkew") == 3
+    # assert longest_substring_brute_force("dvdf") == 3   
+    # assert longest_substring_brute_force("bbbbb") == 1
+    # assert longest_substring_brute_force("") == 0
+    # assert longest_substring_brute_force("au") == 2
+
     assert longest_substring_sliding_window("abcabcbb") == 3
     assert longest_substring_sliding_window("bbbbb") == 1
     assert longest_substring_sliding_window("pwwkew") == 3
