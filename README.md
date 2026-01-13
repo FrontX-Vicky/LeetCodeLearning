@@ -131,15 +131,51 @@
 - Frequency matching is a common pattern across many problems
 - Window validity can be complex; must track multiple conditions
 
+### Day 5: January 5, 2026 - Two Pointers Optimization
+
+**Main Problem**:
+- [LeetCode #11: Container With Most Water](https://leetcode.com/problems/container-with-most-water/)
+
+**Related Problems** (reinforcement):
+- Day 3 & 4: Sliding window (expansion/contraction patterns)
+- Two Sum variants with sorted arrays
+- Contrasting: sliding window vs. two pointers (different constraints)
+
+**Topics Covered**:
+- Two-pointer technique (start from ends)
+- Greedy algorithm strategy
+- Area/geometry calculations
+- Monotonic property exploitation
+
+**Key Concepts Learned**:
+- Why moving the shorter side is greedy-optimal
+- Two pointers approach differs from sliding window (no constraint to maintain)
+- Width always decreases, height must compensate
+- Early termination optimization for large inputs
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Pruning with max possible area remaining
+- Greedy choice correctness proof
+
+**Personal Notes**:
+- Two pointers is a distinct technique from sliding window
+- Greedy proofs are important for understanding correctness
+- Geometry + algorithm design (area calculation)
+
 ---
 
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
-- **Arrays**: Day 1, Day 2
+- **Arrays**: Day 1, Day 2, Day 5
 - **Prefix Sums**: Day 2
 - **Sliding Window**: Day 3, Day 4
 - **Strings**: Day 3, Day 4
 - **Frequency Counting**: Day 4
+- **Two Pointers**: Day 5
+- **Greedy Algorithms**: Day 5
 - Sliding Window
 - Linked Lists
 - Trees & Recursion
