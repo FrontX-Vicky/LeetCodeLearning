@@ -1,11 +1,12 @@
 # test_cases.py - Comprehensive tests
 
-from solutions import min_window_sliding, min_window_brute_force, min_window_counter
+# from solutions import min_window_sliding, min_window_brute_force, min_window_counter
+from main import min_window_sliding, min_window_brute_force, min_window_counter
 
 
 def run_tests(fn, name):
     cases = [
-        ("ADOBECODEBANC", "ABC", "ADOBEC", "basic example"),
+        ("ADOBECODEBANC", "ABC", "BANC", "basic example - BANC is shorter than ADOBEC"),
         ("a", "aa", "", "t longer than s"),
         ("a", "a", "a", "single char match"),
         ("ab", "b", "b", "single char in t"),
