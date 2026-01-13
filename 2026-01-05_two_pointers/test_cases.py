@@ -1,6 +1,7 @@
 # test_cases.py - Comprehensive tests
 
-from solutions import max_area_two_pointers, max_area_brute_force, max_area_optimized
+# from solutions import max_area_two_pointers, max_area_brute_force, max_area_optimized
+from main import max_area_two_pointers, max_area_brute_force, max_area_optimized
 
 
 def run_tests(fn, name):
