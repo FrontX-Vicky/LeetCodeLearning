@@ -12,10 +12,20 @@ def max_area_brute_force(height):
     """
     APPROACH 1: BRUTE FORCE
     """
-    #dont give suggetions for now
+ 
     area = 0 
     n = len(height)
     
+    for w, c in enumerate(height):
+        left = c
+        right_index = w
+        for right in height[w:]:
+            area_ = (right_index - w) * min(left, right)
+            if(area_ > area):
+                area = area_
+            right_index += 1
+    return area
+
     
 
 
@@ -31,8 +41,25 @@ def max_area_two_pointers(height):
     """
     APPROACH 2: TWO POINTERS (OPTIMAL)
     """
-    # YOUR CODE HERE
-    pass
+    if not height or len(height) < 2:
+        return 0
+    
+    left = 0
+    right = len(height) - 1
+    max_area = 0
+
+    while left < right:
+        width = right - left 
+        current_height = min(height[left], height[right])
+        area = width *  current_height
+        max_area = max(area, max_area)
+
+        if height[left] < height[right]:
+            left += 1
+        else:
+            right -= 1 
+
+    return max_area
 
 
 # TODO 3: Approach 3 - Two Pointers with early termination (optimization)
@@ -55,4 +82,14 @@ if __name__ == "__main__":
     assert max_area_two_pointers([2, 3, 4, 5, 18, 17, 6]) == 17
     assert max_area_two_pointers([]) == 0
     assert max_area_two_pointers([1]) == 0
+    # assert max_area_brute_force([1, 8, 6, 2, 5, 4, 8, 3, 7]) == 49
+    # assert max_area_brute_force([1, 1]) == 1
+    # assert max_area_brute_force([2, 3, 4, 5, 18, 17, 6]) == 17
+    # assert max_area_brute_force([]) == 0
+    # assert max_area_brute_force([1]) == 0
+    # assert max_area_two_pointers([1, 8, 6, 2, 5, 4, 8, 3, 7]) == 49
+    # assert max_area_two_pointers([1, 1]) == 1
+    # assert max_area_two_pointers([2, 3, 4, 5, 18, 17, 6]) == 17
+    # assert max_area_two_pointers([]) == 0
+    # assert max_area_two_pointers([1]) == 0
     print("Quick checks passed. Run test_cases.py for more.")
