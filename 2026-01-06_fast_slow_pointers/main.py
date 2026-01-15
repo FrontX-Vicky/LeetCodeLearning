@@ -18,7 +18,23 @@ def has_cycle_hash_set(head):
     """
     APPROACH 1: HASH SET
     """
-    pass
+    if not head:
+        return False
+    
+    visited = set()
+    current = head
+
+    while current :
+        # print("current:", current.val)
+        if current in visited:
+            return True
+        
+        visited.add(current)
+        current = current.next
+        # print("next:", current.next.val)
+        # print("visited size:", visited)
+
+    return False
 
 
 # TODO 2: Approach 2 - Fast & Slow Pointers (Optimal)
@@ -33,7 +49,20 @@ def has_cycle_two_pointers(head):
     """
     APPROACH 2: FAST & SLOW POINTERS (FLOYD'S ALGORITHM)
     """
-    pass
+    if not head or not head.next:
+        return False
+    
+    slow = head 
+    fast = head
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+        if slow == fast:
+            return True
+    
+    return False
 
 
 # TODO 3: Approach 3 - Fast & Slow with Cycle Entry Detection
@@ -50,7 +79,31 @@ def has_cycle_with_entry(head):
     APPROACH 3: FAST & SLOW WITH CYCLE ENTRY DETECTION
     Returns (has_cycle, entry_node)
     """
-    pass
+    if not head or not head.next:
+        return(False, None)
+
+    slow = head
+    fast = head
+    has_cycle = False
+
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+
+        if slow == fast:
+            has_cycle = True
+            break
+
+    if not has_cycle:
+        return (False, None)
+
+    slow = head
+
+    while slow != fast:
+        slow = slow.next
+        fast = fast.next
+
+    return (True, slow)   
 
 
 # Helper function to create a linked list with optional cycle
@@ -81,6 +134,7 @@ if __name__ == "__main__":
     head1 = create_linked_list([3, 2, 0, -4], pos=1)
     assert has_cycle_hash_set(head1) == True
     assert has_cycle_two_pointers(head1) == True
+    # exit()
     result1 = has_cycle_with_entry(head1)
     assert result1[0] == True  # has cycle
     assert result1[1].val == 2  # cycle starts at node with value 2
