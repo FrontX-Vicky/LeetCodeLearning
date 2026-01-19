@@ -4,10 +4,12 @@
 			"path": "."
 		}
 	],
-	"settings": {},
-	"editor.quickSuggestions": {
-    "other": false,
-    "comments": false,
-    "strings": false
+	"settings": {
+		"editor.quickSuggestions": {
+		"other": false,
+		"comments": false,
+		"strings": false
+	},
+	
   }
 }
