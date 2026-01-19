@@ -14,7 +14,19 @@ def is_valid_stack_dict(s):
     """
     APPROACH 1: STACK WITH DICTIONARY MAPPING
     """
-    pass
+    if not s:
+        return True
+    
+    closing_to_opnening = {
+        ")": "(",
+        "}": "{",
+        "]": "["
+    }
+
+    stack = []
+
+    for char in s:
+        
 
 
 # TODO 2: Approach 2 - Stack with Direct Comparison
