@@ -165,21 +165,152 @@
 - Greedy proofs are important for understanding correctness
 - Geometry + algorithm design (area calculation)
 
+### Day 6: January 6, 2026 - Fast & Slow Pointers
+
+**Main Problem**:
+- [LeetCode #141: Linked List Cycle](https://leetcode.com/problems/linked-list-cycle/)
+
+**Related Problems** (reinforcement):
+- Day 5: Two pointers on arrays (contrast with linked lists)
+- Floyd's Cycle Detection Algorithm
+- Pointer manipulation in linear data structures
+
+**Topics Covered**:
+- Fast and slow pointer technique (Floyd's algorithm)
+- Cycle detection in linked lists
+- Space optimization (O(1) vs O(n) with hash set)
+- Pointer speed differential
+
+**Key Concepts Learned**:
+- Fast pointer moves 2x speed, slow moves 1x
+- If cycle exists, pointers eventually meet
+- No cycle → fast reaches end (None)
+- O(1) space vs O(n) with visited set
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Constant space cycle detection
+- Mathematical proof of convergence
+
+**Personal Notes**:
+- Classic interview question demonstrating pointer manipulation
+- Foundation for more complex linked list problems
+- Fast/slow pattern appears in other algorithms (finding middle, detecting patterns)
+
+### Day 7: January 7, 2026 - Stack (LIFO)
+
+**Main Problem**:
+- [LeetCode #20: Valid Parentheses](https://leetcode.com/problems/valid-parentheses/)
+
+**Related Problems** (reinforcement):
+- Day 6: Linear data structure traversal
+- Stack vs queue comparison
+- LIFO behavior in nested structures
+
+**Topics Covered**:
+- Stack data structure (LIFO - Last In First Out)
+- Bracket matching algorithms
+- Dictionary mapping for pairs
+- Early return optimizations
+
+**Key Concepts Learned**:
+- Stack perfect for nested/paired structures
+- Push opening brackets, pop on closing
+- Use dictionary for clean pair mapping
+- Check stack empty before pop operation
+- Final state must be empty stack
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Odd-length early termination
+- Dictionary vs direct comparison trade-offs
+- Immediate return on first mismatch
+
+**Personal Notes**:
+- Stack is fundamental for DFS, expression evaluation, backtracking
+- LIFO naturally handles nesting (last opened must close first)
+- Will build on this for more complex stack problems
+
+### Day 8: January 8, 2026 - Queue & BFS Fundamentals
+
+**Main Problem**:
+- [LeetCode #933: Number of Recent Calls](https://leetcode.com/problems/number-of-recent-calls/)
+
+**Related Problems** (reinforcement):
+- Day 7: Stack vs Queue comparison (LIFO vs FIFO)
+- Sliding window with time constraints
+- Queue operations and use cases
+
+**Topics Covered**:
+- Queue data structure (FIFO - First In First Out)
+- Sliding time window with queue
+- collections.deque for O(1) operations
+- Request buffering and rate limiting
+
+**Key Concepts Learned**:
+- Queue for chronological/ordered processing
+- deque.popleft() is O(1), list.pop(0) is O(n)
+- Sliding window: remove old, add new
+- Queue is foundation for BFS traversal
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Using deque instead of list for queue operations
+- Amortized O(1) per operation
+- Window boundary handling (inclusive ranges)
+
+**Personal Notes**:
+- Queue complements stack (FIFO vs LIFO)
+- Essential for BFS which we'll use for graphs/trees
+- Time-based sliding windows common in real systems
+- Queue = "first come, first served" like real-world lines
+
 ---
 
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
 - **Prefix Sums**: Day 2
-- **Sliding Window**: Day 3, Day 4
+- **Sliding Window**: Day 3, Day 4, Day 8
 - **Strings**: Day 3, Day 4
 - **Frequency Counting**: Day 4
 - **Two Pointers**: Day 5
 - **Greedy Algorithms**: Day 5
-- Sliding Window
-- Linked Lists
-- Trees & Recursion
-- Dynamic Programming
-- Graphs
+- **Fast/Slow Pointers**: Day 6
+- **Linked Lists**: Day 6
+- **Stack (LIFO)**: Day 7
+- **Queue (FIFO)**: Day 8
+- **BFS Foundation**: Day 8
+
+---
+
+## Upcoming Topics Roadmap
+
+**Phase 1: Fundamentals** (Days 1-8) ✅ Complete
+- Arrays, Hash Maps, Sliding Window, Two Pointers, Stack, Queue
+
+**Phase 2: Search & Trees** (Days 9-12)
+- Day 9: Monotonic Stack
+- Day 10: Linked List Manipulation
+- Day 11: Binary Search
+- Day 12: Binary Search Variants
+
+**Phase 3: Recursion & Trees** (Days 13-16)
+- Day 13: Recursion Fundamentals
+- Day 14: Backtracking
+- Day 15: Binary Trees (DFS)
+- Day 16: Binary Trees (BFS)
+
+**Phase 4: Advanced** (Days 17-20)
+- Day 17: Heap/Priority Queue
+- Day 18: Graphs (BFS)
+- Day 19: Dynamic Programming Intro
+- Day 20: Advanced DP
 
 ---
