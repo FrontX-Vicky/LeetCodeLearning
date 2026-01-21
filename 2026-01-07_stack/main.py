@@ -17,7 +17,7 @@ def is_valid_stack_dict(s):
     if not s:
         return True
     
-    closing_to_opnening = {
+    closing_to_opening = {
         ")": "(",
         "}": "{",
         "]": "["
@@ -26,10 +26,14 @@ def is_valid_stack_dict(s):
     stack = []
 
     for char in s:
-        
-        
-
-
+        if char in closing_to_opening:
+            if not stack or stack[-1] != closing_to_opening[char]:
+                return False
+            stack.pop()
+        else:
+            stack.append(char)
+    
+    return len(stack) == 0        
 
 # TODO 2: Approach 2 - Stack with Direct Comparison
 # - Similar to Approach 1 but without dictionary
@@ -41,8 +45,28 @@ def is_valid_stack_direct(s):
     """
     APPROACH 2: STACK WITH DIRECT COMPARISON
     """
-    pass
+    if not s:
+        return True
+    
+    stack = []
 
+    for char in s:
+        if char == '(' or char == '{' or char == '[':
+            stack.append(char)
+        else:
+            if not stack:
+                return False
+            
+            top = stack.pop()
+
+            if char == ')' and top != '(':
+                return False
+            if char == '}' and top != '{':
+                return False
+            if char == ']' and top != '[':
+                return False
+    
+    return len(stack) == 0
 
 # TODO 3: Approach 3 - Stack with Early Returns (Optimized)
 # - Check if length is odd → return False immediately
@@ -54,8 +78,23 @@ def is_valid_optimized(s):
     """
     APPROACH 3: STACK WITH EARLY RETURNS
     """
-    pass
+    if len(s) % 2 != 0:
+        return False
+    
+    if not s:
+        return True
+    
+    pairs = {')' : '(', '}' : '{', ']' : '['}
+    stack = []
 
+    for char in s:
+        if char in pairs:
+            if not stack or stack.pop() != pairs[char]:
+                return False
+        else:
+            stack.append(char)
+    
+    return len(stack) == 0
 
 if __name__ == "__main__":
     # Smoke tests
