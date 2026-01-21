@@ -13,10 +13,15 @@ class RecentCounterList:
     APPROACH 1: QUEUE WITH LIST
     """
     def __init__(self):
-        pass
+        self.requests = []
     
     def ping(self, t: int) -> int:
-        pass
+        self.requests.append(t)
+
+        while self.requests and self.requests[0] < t - 3000:
+            self.requests.pop(0)
+
+        return len(self.requests)
 
 
 # TODO 2: Approach 2 - Collections.deque (Optimized)
@@ -32,11 +37,16 @@ class RecentCounterDeque:
     APPROACH 2: COLLECTIONS.DEQUE (OPTIMIZED)
     """
     def __init__(self):
-        pass
+        self.queue = deque()
     
     def ping(self, t: int) -> int:
-        pass
+        self.queue.append(t)
 
+        #remove old requests from front (ouside window)
+        while self.queue and self.queue[0] < t - 3000:
+            self.queue.popleft()
+
+        return len(self.queue)
 
 # TODO 3: Approach 3 - Deque with Explicit Window
 # - Same as Approach 2 but with clear window tracking
@@ -48,10 +58,22 @@ class RecentCounterWindow:
     APPROACH 3: DEQUE WITH EXPLICIT WINDOW TRACKING
     """
     def __init__(self):
-        pass
+        self.queue = deque()
+        self.WINDOW_SIZE = 3000
     
     def ping(self, t: int) -> int:
-        pass
+        window_start = t - self.WINDOW_SIZE
+        window_end = t
+
+        # add new request
+        self.queue.append(t)
+
+        # remove requests before window start
+        while self.queue and self.queue[0] < window_start:
+            self.queue.popleft()
+        
+        # all remaining requests are in window_start and window_end
+        return len(self.queue)
 
 
 if __name__ == "__main__":

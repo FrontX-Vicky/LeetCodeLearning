@@ -271,6 +271,43 @@
 - Time-based sliding windows common in real systems
 - Queue = "first come, first served" like real-world lines
 
+### Day 9: January 9, 2026 - Monotonic Stack
+
+**Main Problem**:
+- [LeetCode #739: Daily Temperatures](https://leetcode.com/problems/daily-temperatures/)
+
+**Related Problems** (reinforcement):
+- Day 7: Regular stack operations (foundation)
+- Day 8: FIFO vs LIFO patterns
+- Next Greater/Smaller Element pattern
+
+**Topics Covered**:
+- Monotonic stack (maintains sorted order)
+- Next Greater Element pattern
+- Stack-based optimization from O(n²) to O(n)
+- Monotonic decreasing vs increasing stacks
+
+**Key Concepts Learned**:
+- Monotonic stack = stack maintaining monotonic order
+- Decreasing stack finds next greater element
+- Increasing stack finds next smaller element
+- Each element pushed/popped once → O(n) amortized
+- Store indices, not values (to calculate distances)
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Breaking monotonic property triggers pops
+- Amortized O(n) despite nested loops
+- Template pattern for next greater/smaller problems
+
+**Personal Notes**:
+- Powerful optimization: O(n²) brute force → O(n) with monotonic stack
+- Common interview pattern ("next warmer/greater/smaller")
+- Builds directly on Day 7's stack foundation
+- Will see this pattern again in histograms, stock spans
+
 ---
 
 ## Master Concepts Index
@@ -287,6 +324,8 @@
 - **Stack (LIFO)**: Day 7
 - **Queue (FIFO)**: Day 8
 - **BFS Foundation**: Day 8
+- **Monotonic Stack**: Day 9
+- **Next Greater Element Pattern**: Day 9
 
 ---
 
@@ -295,8 +334,8 @@
 **Phase 1: Fundamentals** (Days 1-8) ✅ Complete
 - Arrays, Hash Maps, Sliding Window, Two Pointers, Stack, Queue
 
-**Phase 2: Search & Trees** (Days 9-12)
-- Day 9: Monotonic Stack
+**Phase 2: Advanced Patterns** (Days 9-12) 🔄 In Progress
+- Day 9: Monotonic Stack ✅
 - Day 10: Linked List Manipulation
 - Day 11: Binary Search
 - Day 12: Binary Search Variants
