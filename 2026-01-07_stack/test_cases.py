@@ -46,9 +46,9 @@ def run_tests():
     passed = 0
     for i, (input_str, expected, description) in enumerate(test_cases, 1):
         result = is_valid_stack_dict(input_str)
-        status = "✅" if result == expected else "❌"
+        status = "PASS" if result == expected else "FAIL"
         display_str = input_str if len(input_str) <= 20 else input_str[:20] + "..."
-        print(f"  {status} Test {i:2d}: {description:25s} '{display_str:22s}' → {result}")
+        print(f"  [{status}] Test {i:2d}: {description:25s} '{display_str:22s}' -> {result}")
         if result == expected:
             passed += 1
     print(f"  Summary: {passed}/{len(test_cases)} passed\n")
@@ -57,9 +57,9 @@ def run_tests():
     passed = 0
     for i, (input_str, expected, description) in enumerate(test_cases, 1):
         result = is_valid_stack_direct(input_str)
-        status = "✅" if result == expected else "❌"
+        status = "PASS" if result == expected else "FAIL"
         display_str = input_str if len(input_str) <= 20 else input_str[:20] + "..."
-        print(f"  {status} Test {i:2d}: {description:25s} '{display_str:22s}' → {result}")
+        print(f"  [{status}] Test {i:2d}: {description:25s} '{display_str:22s}' -> {result}")
         if result == expected:
             passed += 1
     print(f"  Summary: {passed}/{len(test_cases)} passed\n")
@@ -68,9 +68,9 @@ def run_tests():
     passed = 0
     for i, (input_str, expected, description) in enumerate(test_cases, 1):
         result = is_valid_optimized(input_str)
-        status = "✅" if result == expected else "❌"
+        status = "PASS" if result == expected else "FAIL"
         display_str = input_str if len(input_str) <= 20 else input_str[:20] + "..."
-        print(f"  {status} Test {i:2d}: {description:25s} '{display_str:22s}' → {result}")
+        print(f"  [{status}] Test {i:2d}: {description:25s} '{display_str:22s}' -> {result}")
         if result == expected:
             passed += 1
     print(f"  Summary: {passed}/{len(test_cases)} passed\n")
