@@ -76,7 +76,23 @@ def binary_search_recursive(nums, target, left=None, right=None):
         right = len(nums) - 1
     
     # Your code here
-    pass
+    
+    # base case: search space exhausted
+    if left > right:
+        return -1
+    
+    # calculate middle
+    mid = (left + right) // 2
+
+    # check if found
+    if nums[mid] == target:
+        return mid
+    elif nums[mid] < target:
+        # search right half [mid+1, right]
+        return binary_search_recursive(nums, target, mid + 1, right)
+    else:
+        # search left half [left , mid + 1]
+        return binary_search_recursive(nums, target, left, mid - 1)
 
 
 # TODO 3: Approach 3 - Safe Mid Calculation (Avoids Overflow)
@@ -104,7 +120,20 @@ def binary_search_safe(nums, target):
         Python handles big integers, but this is interview best practice.
     """
     # Your code here
-    pass
+    left, right = 0, len(nums) - 1
+
+    while left <= right:
+        # safe mid calculation 
+        mid = left + (right - left) // 2
+
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    
+    return -1
 
 
 # ============================================================
