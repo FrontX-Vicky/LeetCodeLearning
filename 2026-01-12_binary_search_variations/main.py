@@ -28,11 +28,41 @@ def search_range_two_binary(nums, target):
     """
     def find_leftmost(nums, target):
         # Your code here to find FIRST occurrence
-        pass
+        left = 0
+        right = len(nums) - 1
+        result = -1
+
+        while left <= right:
+            mid = left + (right - left) // 2
+
+            if nums[mid] == target:
+                result = mid
+                right = mid - 1
+            elif nums[mid] < target:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        return result
     
     def find_rightmost(nums, target):
         # Your code here to find LAST occurrence
-        pass
+        left = 0
+        right = len(nums) - 1
+        result = -1
+
+        while left <= right:
+            mid = left + (right - left) // 2
+
+            if nums[mid] == target:
+                result = mid
+                left = mid + 1
+            elif nums[mid] < target:
+                left = mid + 1
+            else:
+                right = mid - 1
+
+        return result
     
     # Use helper functions
     left = find_leftmost(nums, target)
@@ -68,7 +98,36 @@ def search_range_expand(nums, target):
         Return [3, 4]
     """
     # Your code here
-    pass
+    if not nums:
+        return [-1, -1]
+    
+    # standard binary search find any occurance
+    left, right = 0, len(nums) - 1
+    found_idx = -1
+
+    while left <= right:
+        mid = left + (right - left) // 2
+
+        if nums[mid] == target:
+            found_idx = mid
+            break
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    if found_idx == -1:
+        return [-1, -1]
+    
+    first = found_idx
+    while first > 0 and nums[first - 1] == target:
+        first -= 1
+
+    last = found_idx
+    while last < len(nums) - 1 and nums[last + 1] == target:
+        last += 1
+
+    return [first, last] 
 
 
 # TODO 3: Approach 3 - Using Python's bisect
@@ -99,7 +158,21 @@ def search_range_bisect(nums, target):
     """
     # Your code here
     # from bisect import bisect_left, bisect_right
-    pass
+    from bisect import bisect_left, bisect_right
+
+    if not nums:
+        return [-1, -1]
+    
+    # bisect_left : leftmost position to insert
+    left = bisect_left(nums, target)
+
+    # bisect_right: rihgtmost position to insert
+    right = bisect_right(nums, target) - 1
+
+    if left < len(nums) and nums[left] == target:
+        return [left, right]
+    else:
+        return [-1, -1]
 
 
 # ============================================================

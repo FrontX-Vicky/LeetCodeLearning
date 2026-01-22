@@ -426,6 +426,51 @@
 - Bisect elegant but implement manually in interviews
 - Foundation for insert position, count occurrences
 
+### Day 13: January 13, 2026 - Recursion Fundamentals
+
+**Main Problem**:
+- [LeetCode #509: Fibonacci Number](https://leetcode.com/problems/fibonacci-number/)
+
+**Bonus Problem**:
+- Factorial calculation (classic recursion example)
+
+**Related Problems** (reinforcement):
+- Day 10: Recursive linked list reversal (applied recursion)
+- Day 11: Recursive binary search
+- Foundation for trees, backtracking, divide & conquer
+
+**Topics Covered**:
+- Pure recursion (naive approach)
+- Memoization (Top-Down Dynamic Programming)
+- Bottom-Up Dynamic Programming with array
+- Space-optimized iteration (O(1) space)
+- Base cases and recursive cases
+- Performance comparison (O(2^n) → O(n) → O(1) space)
+
+**Key Concepts Learned**:
+- Every recursion needs base case + recursive case
+- Memoization prevents redundant computation
+- Overlapping subproblems = DP candidate
+- Bottom-up builds solution iteratively
+- Space optimization: only track what you need
+- Evolution: Recursion → Memo → DP → Optimized
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Cache results to transform O(2^n) to O(n)
+- Only store last 2 values instead of full array
+- Iteration faster than recursion (no stack overhead)
+- Recognize when problem has optimal substructure
+
+**Personal Notes**:
+- Fibonacci: classic intro to recursion and DP
+- Pure recursion = intuitive but exponentially slow
+- Memoization = game changer for overlapping subproblems
+- Foundation for tree traversal, backtracking, DP problems
+- Always ask: "What's simplest case?" (base case first!)
+
 ---
 
 ## Master Concepts Index
@@ -446,11 +491,15 @@
 - **Next Greater Element Pattern**: Day 9
 - **Linked List Reversal**: Day 10
 - **Pointer Manipulation**: Day 6, Day 10
-- **Recursion vs Iteration**: Day 10
+- **Recursion vs Iteration**: Day 10, Day 13
 - **Binary Search**: Day 11, Day 12
 - **Divide & Conquer**: Day 11
 - **Binary Search Variations**: Day 12
 - **Boundary Finding**: Day 12
+- **Recursion Fundamentals**: Day 13
+- **Memoization**: Day 13
+- **Dynamic Programming**: Day 13
+- **Space Optimization**: Day 13
 
 ---
 
@@ -464,6 +513,9 @@
 - Day 10: Linked List Manipulation ✅
 - Day 11: Binary Search (Basic) ✅
 - Day 12: Binary Search Variations ✅
+
+**Phase 3: Recursion & Trees** (Days 13-16) 🔄 In Progress
+- Day 13: Recursion Fundamentals ✅
 - Day 10: Linked List Manipulation ✅
 - Day 11: Binary Search (ready)
 - Day 12: Binary Search Variants (ready)
