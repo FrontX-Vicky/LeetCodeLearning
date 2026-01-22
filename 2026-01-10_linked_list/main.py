@@ -18,7 +18,23 @@ def reverse_iterative(head):
     """
     APPROACH 1: ITERATIVE WITH 3 POINTERS
     """
-    pass
+    curr = head
+    prev = None
+
+    while curr:
+        # save next node before breaking link
+        next_node = curr.next
+
+        # reverse the link
+        curr.next = prev
+
+        # move pointers forward
+        prev = curr
+        curr = next_node
+
+    # prev is the new head 
+    return prev
+
 
 
 # TODO 2: Approach 2 - Recursive
@@ -31,7 +47,22 @@ def reverse_recursive(head):
     """
     APPROACH 2: RECURSIVE
     """
-    pass
+    # base case : empty node or single node
+    if not head or not head.next:
+        return head
+    
+    new_head = reverse_recursive(head.next)
+
+    # reverse the current link
+    # head.next is now the last node in reversed part
+    # make it point back to head
+    head.next.next = head
+
+    # set current nodes next to None (will be updated in previous recursion)
+    head.next = None
+
+    # return the new head (doen't change, its the original tail)
+    return new_head
 
 
 # TODO 3: Approach 3 - Stack-Based
@@ -43,8 +74,29 @@ def reverse_stack(head):
     """
     APPROACH 3: STACK-BASED
     """
-    pass
+    if not head:
+        return None
+    
+    # push all node onto stack
+    stack = []
+    curr = head
+    while curr:
+        stack.append(curr)
+        curr = curr.next
+    
+    # pop nodes to build reversed list 
+    new_head = stack.pop()
+    curr = new_head
 
+    while stack:
+        node = stack.pop()
+        curr.next = node
+        curr = curr.next
+
+    # set last node's next to None
+    curr.next = None
+
+    return new_head
 
 # Helper function: Create linked list from array
 def create_linked_list(arr):
