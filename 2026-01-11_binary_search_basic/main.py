@@ -27,8 +27,21 @@ def binary_search_iterative(nums, target):
         Step 2: left=3, right=5, mid=4, nums[4]=9 == 9 → return 4
     """
     # Your code here
-    pass
+    left = 0
+    right = len(nums) - 1
 
+    while left <= right:
+        mid = (left + right) // 2
+
+        if nums[mid] == target:
+            return mid
+        
+        if nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
 
 # TODO 2: Approach 2 - Recursive Binary Search
 # - Base case: left > right → not found
