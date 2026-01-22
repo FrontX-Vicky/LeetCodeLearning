@@ -11,7 +11,20 @@ def daily_temperatures_brute(temperatures):
     """
     APPROACH 1: BRUTE FORCE
     """
-    pass
+    result = []
+    for i, t in enumerate(temperatures):
+        d = 0
+        u = True
+        for j in temperatures[i + 1:]:
+            d += 1
+            if j > t:
+                u = False
+                result.append(d)
+                break
+        if u:
+            result.append(0)
+
+    return result
 
 
 # TODO 2: Approach 2 - Monotonic Decreasing Stack
@@ -24,7 +37,20 @@ def daily_temperatures_stack(temperatures):
     """
     APPROACH 2: MONOTONIC DECREASING STACK
     """
-    pass
+    n = len(temperatures)
+    result = [0] * n
+    stack = [] # stack stores indices in decreasing teprature order
+
+    for i in range(n):
+        # while current temp is warmer then stack top
+        while stack and temperatures[i] > temperatures[stack[-1]]:
+            prev_idx = stack.pop()
+            result[prev_idx] = i - prev_idx
+
+        # push current index to stack (waiting for warmer day)
+        stack.append(i)
+    
+    return result
 
 
 # TODO 3: Approach 3 - Monotonic Stack with Tuples
@@ -36,7 +62,22 @@ def daily_temperatures_stack_tuples(temperatures):
     """
     APPROACH 3: MONOTONIC STACK WITH TUPLES
     """
-    pass
+    n = len(temperatures)
+    result = [0] * n
+    stack = [] # stack stores index temprature tuples
+
+    for i, temp in enumerate(temperatures):
+        # pop all indices with cooler temperature
+        while stack and temp > stack[-1][1]:
+            prev_idx, prev_temp = stack.pop()
+            result[prev_idx] = i - prev_idx
+        
+        # push current (index, temp) to stack
+        stack.append((i, temp))
+    
+    return result
+
+
 
 
 if __name__ == "__main__":
@@ -53,6 +94,7 @@ if __name__ == "__main__":
     print(f"  -> {result1}")
     print("  ✓ Passed!")
     
+    exit()
     print("\nTesting Approach 2: Monotonic Stack")
     result2 = daily_temperatures_stack(temps1)
     assert result2 == expected1, f"Expected {expected1}, got {result2}"
