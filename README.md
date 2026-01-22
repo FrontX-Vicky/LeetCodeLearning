@@ -386,6 +386,46 @@
 - Foundation for binary search variations (rotated arrays, search range, etc.)
 - Log time complexity is game-changing for large datasets
 
+### Day 12: January 12, 2026 - Binary Search Variations
+
+**Main Problem**:
+- [LeetCode #34: Find First and Last Position of Element in Sorted Array](https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+**Related Problems** (reinforcement):
+- Day 11: Basic binary search (foundation)
+- Modified binary search for boundary finding
+- Range queries in sorted arrays
+
+**Topics Covered**:
+- Modified binary search (find leftmost/rightmost)
+- Boundary finding in duplicates
+- Python's bisect module
+- Two binary searches vs linear expansion
+- Template variations for first/last occurrence
+
+**Key Concepts Learned**:
+- Don't stop when found - continue searching for boundaries
+- Leftmost: when found, search left (`right = mid - 1`)
+- Rightmost: when found, search right (`left = mid + 1`)
+- Need `result` variable to track last valid index
+- `bisect_left` = first occurrence, `bisect_right - 1` = last
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Continuing search after finding maintains O(log n)
+- Linear expansion is O(n) worst case (all elements match)
+- Two independent binary searches better than one + expansion
+- Save position while searching for better boundary
+
+**Personal Notes**:
+- Critical variation: "find first" vs "find any"
+- Appears in range queries, duplicate handling
+- Template: save result, continue searching in direction
+- Bisect elegant but implement manually in interviews
+- Foundation for insert position, count occurrences
+
 ---
 
 ## Master Concepts Index
@@ -407,8 +447,10 @@
 - **Linked List Reversal**: Day 10
 - **Pointer Manipulation**: Day 6, Day 10
 - **Recursion vs Iteration**: Day 10
-- **Binary Search**: Day 11
+- **Binary Search**: Day 11, Day 12
 - **Divide & Conquer**: Day 11
+- **Binary Search Variations**: Day 12
+- **Boundary Finding**: Day 12
 
 ---
 
@@ -417,10 +459,11 @@
 **Phase 1: Fundamentals** (Days 1-8) ✅ Complete
 - Arrays, Hash Maps, Sliding Window, Two Pointers, Stack, Queue
 
-**Phase 2: Advanced Patterns** (Days 9-12) 🔄 In Progress
+**Phase 2: Advanced Patterns** (Days 9-12) ✅ Complete
 - Day 9: Monotonic Stack ✅
 - Day 10: Linked List Manipulation ✅
-- Day 11: Binary Search (Basic) 🚀
+- Day 11: Binary Search (Basic) ✅
+- Day 12: Binary Search Variations ✅
 - Day 10: Linked List Manipulation ✅
 - Day 11: Binary Search (ready)
 - Day 12: Binary Search Variants (ready)
