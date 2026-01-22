@@ -308,6 +308,45 @@
 - Builds directly on Day 7's stack foundation
 - Will see this pattern again in histograms, stock spans
 
+### Day 10: January 10, 2026 - Linked List Manipulation
+
+**Main Problem**:
+- [LeetCode #206: Reverse Linked List](https://leetcode.com/problems/reverse-linked-list/)
+
+**Related Problems** (reinforcement):
+- Day 6: Fast/Slow pointers (pointer manipulation foundation)
+- Linked list traversal and modification
+- Iterative vs recursive pointer manipulation
+
+**Topics Covered**:
+- Singly linked list reversal
+- Three-pointer iterative technique
+- Recursive reversal with unwinding
+- Stack-based reversal approach
+- Pointer manipulation and state management
+
+**Key Concepts Learned**:
+- Three-pointer pattern: prev, curr, next
+- Must save next before breaking link
+- Iterative: O(1) space, O(n) time
+- Recursive: O(n) space (call stack), O(n) time
+- Return new head (was the tail)
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Saving next pointer before link reversal
+- Iterative approach better than recursive in practice
+- Edge case handling (empty, single node)
+
+**Personal Notes**:
+- Fundamental linked list operation for interviews
+- Three-pointer technique appears in many problems
+- Recursive approach more elegant but less efficient
+- Stack-based approach educational but impractical
+- Foundation for advanced linked list problems (LeetCode #92, #25, etc.)
+
 ---
 
 ## Master Concepts Index
@@ -320,12 +359,15 @@
 - **Two Pointers**: Day 5
 - **Greedy Algorithms**: Day 5
 - **Fast/Slow Pointers**: Day 6
-- **Linked Lists**: Day 6
+- **Linked Lists**: Day 6, Day 10
 - **Stack (LIFO)**: Day 7
 - **Queue (FIFO)**: Day 8
 - **BFS Foundation**: Day 8
 - **Monotonic Stack**: Day 9
 - **Next Greater Element Pattern**: Day 9
+- **Linked List Reversal**: Day 10
+- **Pointer Manipulation**: Day 6, Day 10
+- **Recursion vs Iteration**: Day 10
 
 ---
 
@@ -336,9 +378,9 @@
 
 **Phase 2: Advanced Patterns** (Days 9-12) 🔄 In Progress
 - Day 9: Monotonic Stack ✅
-- Day 10: Linked List Manipulation
-- Day 11: Binary Search
-- Day 12: Binary Search Variants
+- Day 10: Linked List Manipulation ✅
+- Day 11: Binary Search (ready)
+- Day 12: Binary Search Variants (ready)
 
 **Phase 3: Recursion & Trees** (Days 13-16)
 - Day 13: Recursion Fundamentals
