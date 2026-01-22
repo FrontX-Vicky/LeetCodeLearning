@@ -94,7 +94,6 @@ if __name__ == "__main__":
     print(f"  -> {result1}")
     print("  ✓ Passed!")
     
-    exit()
     print("\nTesting Approach 2: Monotonic Stack")
     result2 = daily_temperatures_stack(temps1)
     assert result2 == expected1, f"Expected {expected1}, got {result2}"
