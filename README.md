@@ -347,6 +347,45 @@
 - Stack-based approach educational but impractical
 - Foundation for advanced linked list problems (LeetCode #92, #25, etc.)
 
+### Day 11: January 11, 2026 - Binary Search (Basic)
+
+**Main Problem**:
+- [LeetCode #704: Binary Search](https://leetcode.com/problems/binary-search/)
+
+**Related Problems** (reinforcement):
+- Foundation for binary search variations
+- Day 5: Two pointers (similar narrowing concept)
+- Search in sorted arrays/lists
+
+**Topics Covered**:
+- Classic binary search template
+- Iterative vs recursive implementation
+- Safe mid calculation (overflow prevention)
+- Divide and conquer paradigm
+- O(log n) time complexity
+
+**Key Concepts Learned**:
+- Binary search on sorted arrays only
+- Condition: `left <= right` (not just `<`)
+- Update: `left = mid + 1`, `right = mid - 1`
+- Safe mid: `left + (right - left) // 2`
+- Each iteration halves search space → log n steps
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Halving search space each iteration
+- O(log n) incredibly efficient (1M → 20 steps)
+- Safe mid calculation prevents overflow in other languages
+- Template applies to many search problems
+
+**Personal Notes**:
+- Master this template - appears in 100+ LeetCode problems
+- "Sorted" keyword = think binary search
+- Foundation for binary search variations (rotated arrays, search range, etc.)
+- Log time complexity is game-changing for large datasets
+
 ---
 
 ## Master Concepts Index
@@ -368,6 +407,8 @@
 - **Linked List Reversal**: Day 10
 - **Pointer Manipulation**: Day 6, Day 10
 - **Recursion vs Iteration**: Day 10
+- **Binary Search**: Day 11
+- **Divide & Conquer**: Day 11
 
 ---
 
@@ -378,6 +419,8 @@
 
 **Phase 2: Advanced Patterns** (Days 9-12) 🔄 In Progress
 - Day 9: Monotonic Stack ✅
+- Day 10: Linked List Manipulation ✅
+- Day 11: Binary Search (Basic) 🚀
 - Day 10: Linked List Manipulation ✅
 - Day 11: Binary Search (ready)
 - Day 12: Binary Search Variants (ready)
