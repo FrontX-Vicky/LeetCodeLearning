@@ -32,7 +32,7 @@ test_cases = [
     ([30, 30, 100], [2, 1, 0], "duplicate then spike"),
     
     # Multiple plateaus
-    ([40, 40, 40, 50, 50, 50], [3, 3, 1, 0, 0, 0], "two plateaus"),
+    ([40, 40, 40, 50, 50, 50], [3, 2, 1, 0, 0, 0], "two plateaus"),
     ([50, 40, 50, 40, 50], [0, 1, 0, 1, 0], "peaks and valleys"),
 ]
 
