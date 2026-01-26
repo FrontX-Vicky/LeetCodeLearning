@@ -31,7 +31,11 @@ def preorder_recursive(root):
     Result: [1, 2, 4, 5, 3]
     """
     # Your code here
-    pass
+    if not root:
+        return []
+    
+    #root first then left subtree then right sub tree
+    return [root.val] + preorder_recursive(root.left) + preorder_recursive(root.right)
 
 
 def preorder_iterative(root):
@@ -46,7 +50,23 @@ def preorder_iterative(root):
     Why right before left? Stack is LIFO - left will be popped first!
     """
     # Your code here
-    pass
+    if not root:
+        return []
+    
+    result = []
+    stack = [root]
+
+    while stack:
+        node = stack.pop()
+        result.append(node.val)
+
+        # push right first (LIFO - left will be processed first)
+        if node.right:
+            stack.append(node.right)
+        if node.left:
+            stack.append(node.left)
+    
+    return result
 
 
 # ============================================================
@@ -71,7 +91,11 @@ def inorder_recursive(root):
     Result: [4, 2, 5, 1, 3]
     """
     # Your code here
-    pass
+    if not root:
+        return []
+    
+    # left subtree first, then root, then right subtree
+    return inorder_recursive(root.left) + [root.val] + inorder_recursive(root.right)
 
 
 def inorder_iterative(root):
@@ -87,8 +111,23 @@ def inorder_iterative(root):
     Trickier than preorder because we don't process while pushing.
     """
     # Your code here
-    pass
+    result = []
+    stack = []
+    current = root
 
+    while current or stack:
+        # go left as far as possible
+        while current:
+            stack.append(current)
+            current = current.left
+        
+        # process node
+        current = stack.pop()
+        result.append(current.val)
+
+        current = current.right
+
+    return result
 
 # ============================================================
 # POSTORDER TRAVERSAL (Left → Right → Root)
@@ -112,7 +151,11 @@ def postorder_recursive(root):
     Result: [4, 5, 2, 3, 1]
     """
     # Your code here
-    pass
+    if not root:
+        return []
+    
+    # left subtree, right subtree, then root
+    return postorder_recursive(root.left) + postorder_recursive(root.right) + [root.val]
 
 
 def postorder_iterative(root):
@@ -128,7 +171,28 @@ def postorder_iterative(root):
     Alternative: Single stack with visited tracking (more complex)
     """
     # Your code here
-    pass
+    if not root:
+        return []
+    
+    stack1 = [root]
+    stack2 = []
+
+    while stack1:
+        node = stack1.pop()
+        stack2.append(node)
+
+        # push left before right (will be reversed)
+        if node.left:
+            stack1.append(node.left)
+        if node.right:
+            stack1.append(node.right)
+    
+    #pop from stack2 to get postorder
+    result = []
+    while stack2:
+        result.append(stack2.pop().val)
+
+    return result
 
 
 # ============================================================
