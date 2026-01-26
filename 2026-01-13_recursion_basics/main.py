@@ -28,7 +28,14 @@ def fib_recursive(n):
           = 5
     """
     # Your code here
-    pass
+    # base case 
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    
+    # recursive case
+    return fib_recursive(n - 1) + fib_recursive(n - 2)
 
 
 # TODO 2: Approach 2 - Recursion with Memoization
@@ -60,7 +67,19 @@ def fib_memoization(n, cache=None):
         cache = {}
     
     # Your code here
-    pass
+    if n in cache:
+        return cache[n]
+    
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    
+    # compute recursivly and cache
+    result = fib_memoization(n - 1, cache) + fib_memoization(n - 2, cache)
+    cache[n] = result
+
+    return result
 
 
 # TODO 3: Approach 3 - Iterative Bottom-Up DP
@@ -87,7 +106,21 @@ def fib_dp_array(n):
         dp[i] = dp[i-1] + dp[i-2] for i from 2 to n
     """
     # Your code here
-    pass
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    
+    # create DP array
+    dp = [0] * (n + 1)
+    dp[0] = 0
+    dp[1] = 1
+
+    # Fill array bottom-up
+    for i in range(2, n + 1):
+        dp[i] = dp[i - 1] + dp[i - 2]
+
+    return dp[n]
 
 
 # TODO 4: Approach 4 - Space-Optimized Iterative
@@ -114,7 +147,22 @@ def fib_optimized(n):
         Shift: prev2 = prev1, prev1 = curr
     """
     # Your code here
-    pass
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    
+    # Track only last two values
+    prev2 = 0
+    prev1 = 1
+
+    # compute from f2 to fn
+    for i in range(2, n + 1):
+        curr = prev1 + prev2
+        prev2 = prev1
+        prev1 = curr
+    
+    return prev1
 
 
 # ============================================================
@@ -132,7 +180,10 @@ def factorial_recursive(n):
         factorial(5) = 5 × 4 × 3 × 2 × 1 = 120
     """
     # Your code here
-    pass
+    if n == 0 or n == 1:
+        return 1
+    
+    return n * factorial_recursive(n - 1)
 
 
 def factorial_iterative(n):
@@ -142,7 +193,11 @@ def factorial_iterative(n):
     More efficient than recursion for this problem.
     """
     # Your code here
-    pass
+    result = 1
+    for i in range(2, n + 1):
+        result *= i 
+    
+    return result
 
 
 # ============================================================

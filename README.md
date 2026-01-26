@@ -473,6 +473,45 @@
 
 ---
 
+### **Day 14: Binary Tree Basics** 📅 *2026-01-14*
+
+**Main Problem**:
+- Binary Tree Traversals: Preorder, Inorder, Postorder
+- Both recursive and iterative implementations
+
+**Topics Covered**:
+- Binary tree structure (nodes, left/right children)
+- Preorder traversal (Root → Left → Right)
+- Inorder traversal (Left → Root → Right)
+- Postorder traversal (Left → Right → Root)
+- Recursive vs iterative tree traversal
+- Stack-based iteration simulation
+
+**Key Concepts Learned**:
+- Preorder = process root before children (useful for copying trees)
+- Inorder = processes nodes in sorted order for BST
+- Postorder = process root after children (useful for deleting trees)
+- Recursive traversal = natural and elegant
+- Iterative traversal = uses explicit stack to simulate recursion
+- Each traversal type has unique applications
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Recursive: O(h) space for call stack, simple to implement
+- Iterative: O(h) space for explicit stack, more control
+- Both have O(n) time complexity
+- Choose recursion for clarity, iteration for control
+
+**Personal Notes**:
+- Foundation for all tree problems
+- Inorder traversal = sorted output for BST (critical!)
+- Stack mimics call stack in iterative version
+- Understanding traversals = understanding tree recursion
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -500,6 +539,9 @@
 - **Memoization**: Day 13
 - **Dynamic Programming**: Day 13
 - **Space Optimization**: Day 13
+- **Binary Trees**: Day 14
+- **Tree Traversals**: Day 14
+- **Preorder/Inorder/Postorder**: Day 14
 
 ---
 
@@ -516,15 +558,9 @@
 
 **Phase 3: Recursion & Trees** (Days 13-16) 🔄 In Progress
 - Day 13: Recursion Fundamentals ✅
-- Day 10: Linked List Manipulation ✅
-- Day 11: Binary Search (ready)
-- Day 12: Binary Search Variants (ready)
-
-**Phase 3: Recursion & Trees** (Days 13-16)
-- Day 13: Recursion Fundamentals
-- Day 14: Backtracking
-- Day 15: Binary Trees (DFS)
-- Day 16: Binary Trees (BFS)
+- Day 14: Binary Tree Basics (ready)
+- Day 15: Binary Search Trees (ready)
+- Day 16: Tree DFS/BFS (ready)
 
 **Phase 4: Advanced** (Days 17-20)
 - Day 17: Heap/Priority Queue
