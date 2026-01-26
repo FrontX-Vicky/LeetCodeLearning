@@ -512,6 +512,48 @@
 
 ---
 
+### **Day 15: Binary Search Trees** 📅 *2026-01-15*
+
+**Main Problems**:
+- Search in BST (recursive & iterative)
+- Insert into BST (recursive & iterative)
+- Validate BST
+- Find Min/Max in BST
+- Kth Smallest Element in BST
+
+**Topics Covered**:
+- BST property: Left < Root < Right
+- BST search (O(log n) average)
+- BST insertion while maintaining properties
+- Range validation for BST
+- Inorder traversal = sorted order
+- Min = leftmost node, Max = rightmost node
+
+**Key Concepts Learned**:
+- BST enables binary search on trees
+- Can't validate BST with local checks only - need range tracking
+- Inorder traversal critical for BST problems
+- Iterative versions use O(1) space vs O(h) recursive
+- Min/max are trivial in BST (just go left/right!)
+- Kth smallest = inorder traversal + counter
+
+**Mistakes Made**:
+- *To be filled in after attempting*
+
+**Optimization Techniques Discovered**:
+- Iterative search/insert saves stack space
+- Early stopping in kth smallest (stop at k, not n)
+- Range validation prevents redundant checks
+- BST property makes many operations O(log n) instead of O(n)
+
+**Personal Notes**:
+- BST = binary search + tree structure
+- Inorder traversal is the key to most BST problems
+- Always think about range constraints for validation
+- Height determines efficiency: balanced = O(log n), skewed = O(n)
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -542,6 +584,10 @@
 - **Binary Trees**: Day 14
 - **Tree Traversals**: Day 14
 - **Preorder/Inorder/Postorder**: Day 14
+- **Binary Search Trees**: Day 15
+- **BST Operations**: Day 15
+- **Range Validation**: Day 15
+- **Inorder = Sorted**: Day 14, Day 15
 
 ---
 
@@ -558,7 +604,7 @@
 
 **Phase 3: Recursion & Trees** (Days 13-16) 🔄 In Progress
 - Day 13: Recursion Fundamentals ✅
-- Day 14: Binary Tree Basics (ready)
+- Day 14: Binary Tree Basics ✅
 - Day 15: Binary Search Trees (ready)
 - Day 16: Tree DFS/BFS (ready)
 
