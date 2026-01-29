@@ -34,7 +34,16 @@ def search_bst_recursive(root, val):
     Space: O(h) for recursion stack
     """
     # TODO: Implement recursive BST search
-    pass
+    if not root:
+        return None
+    
+    if val == root.val:
+        return root
+    
+    if val < root.val:
+        return search_bst_recursive(root.left, val)
+    
+    return search_bst_recursive(root.right, val)
 
 
 def search_bst_iterative(root, val):
@@ -50,7 +59,17 @@ def search_bst_iterative(root, val):
     - Return when found or reach None
     """
     # TODO: Implement iterative BST search
-    pass
+    current = root
+
+    while current:
+        if val == current.val:
+            return current
+        elif val < current.val:
+            current = current.left
+        else:
+            current = current.right
+    
+    return None
 
 
 # ============================================================
@@ -74,7 +93,15 @@ def insert_bst_recursive(root, val):
     Space: O(h) for recursion
     """
     # TODO: Implement recursive BST insertion
-    pass
+    if not root:
+        return TreeNode(val)
+    
+    if val < root.val:
+        root.left = insert_bst_recursive(root.left, val)
+    else:
+        root.right = insert_bst_recursive(root.right, val)
+
+    return root
 
 
 def insert_bst_iterative(root, val):
