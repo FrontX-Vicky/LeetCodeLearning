@@ -602,11 +602,11 @@
 - Day 11: Binary Search (Basic) ✅
 - Day 12: Binary Search Variations ✅
 
-**Phase 3: Recursion & Trees** (Days 13-16) 🔄 In Progress
+**Phase 3: Recursion & Trees** (Days 13-16) ✅ Complete
 - Day 13: Recursion Fundamentals ✅
 - Day 14: Binary Tree Basics ✅
-- Day 15: Binary Search Trees (ready)
-- Day 16: Tree DFS/BFS (ready)
+- Day 15: Binary Search Trees ✅
+- Day 16: Tree DFS/BFS ✅
 
 **Phase 4: Advanced** (Days 17-20)
 - Day 17: Heap/Priority Queue
