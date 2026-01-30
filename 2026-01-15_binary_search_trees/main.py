@@ -116,7 +116,25 @@ def insert_bst_iterative(root, val):
     Space: O(1)
     """
     # TODO: Implement iterative BST insertion
-    pass
+    if not root:
+        return TreeNode(val)
+    
+    current = root
+
+    while True:
+        if val < current.val:
+            if not current.left:
+                current.left = TreeNode(val)
+                break
+            current = current.left
+        else:
+            if not current.right:
+                current.right = TreeNode(val)
+                break
+            current = current.right
+
+    return root
+
 
 
 # ============================================================
@@ -149,7 +167,21 @@ def is_valid_bst(root):
     """
     # TODO: Implement BST validation with range checking
     # Hint: Use helper function with min_val and max_val parameters
-    pass
+    def validate(node, min_val, max_val):
+        if not node:
+            return True
+        
+        # check if current node violates range
+        if not (min_val < node.val < max_val):
+            return False
+        
+        # validate left subtree: must be in range (min_val, node.val)
+        # validate right subtree: must be in range (node.val, max_val)
+        return (validate(node.left, min_val, node.val) and 
+                validate(node.right, node.val, max_val))
+    
+    # start with infinite range
+    return validate(root, float('-inf'), float('inf'))
 
 
 # ============================================================
@@ -175,7 +207,14 @@ def find_min_bst(root):
     Space: O(1)
     """
     # TODO: Implement find minimum
-    pass
+    if not root:
+        return None
+    
+    #keep going left until no more left child
+    while root.left:
+        root = root.left
+
+    return root.val
 
 
 def find_max_bst(root):
@@ -197,7 +236,13 @@ def find_max_bst(root):
     Space: O(1)
     """
     # TODO: Implement find maximum
-    pass
+    if not root:
+        return None
+    
+    while root.right:
+        root = root.right
+
+    return root.val
 
 
 # ============================================================
@@ -229,7 +274,22 @@ def kth_smallest(root, k):
     Space: O(h) for recursion
     """
     # TODO: Implement kth smallest
-    pass
+    result = []
+
+    def inorder(node):
+        if not node:
+            return
+        
+        # left -> root -> right
+        inorder(node.left)
+        result.append(node.val)
+        inorder(node.right)
+
+    # perform inorder traversal
+    inorder(root)
+
+    # return kth element (1 - indexed)
+    return result[k - 1]
 
 
 # ============================================================
