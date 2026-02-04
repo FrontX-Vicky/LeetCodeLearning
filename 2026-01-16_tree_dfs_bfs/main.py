@@ -3,6 +3,9 @@
 # Goal: Master depth-first and breadth-first traversals
 
 # Definition for a binary tree node
+from collections import deque
+
+
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val
@@ -35,7 +38,13 @@ def max_depth_recursive(root):
     Space: O(h) for recursion stack
     """
     # TODO: Implement recursive max depth
-    pass
+    if not root:
+        return 0
+    
+    left_depth = max_depth_recursive(root.left)
+    right_depth = max_depth_recursive(root.right)
+
+    return 1 + max(left_depth, right_depth)
 
 
 def max_depth_bfs(root):
@@ -48,7 +57,25 @@ def max_depth_bfs(root):
     Space: O(w) where w = max width
     """
     # TODO: Implement BFS max depth
-    pass
+    if not root:
+        return 0
+    
+    queue = deque([root])
+    depth = 0
+
+    while queue:
+        level_size = len(queue)
+
+        for _ in range(level_size):
+            node = queue.popleft()
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+
+        depth += 1
+    
+    return depth
 
 
 # ============================================================
@@ -81,7 +108,23 @@ def min_depth_recursive(root):
     Space: O(h)
     """
     # TODO: Implement recursive min depth
-    pass
+    if not root:
+        return 0
+    
+    if not root.left and not root.right:
+        return 1
+    
+    if not root.left:
+        return 1 + min_depth_recursive(root.right)
+    if not root.right:
+        return 1 + min_depth_recursive(root.left)
+    
+    # both children exists: take minimum 
+    left_depth = min_depth_recursive(root.left)
+    right_depth = min_depth_recursive(root.right)
+
+    return 1 + min(left_depth, right_depth)
+
 
 
 def min_depth_bfs(root):
@@ -95,7 +138,24 @@ def min_depth_bfs(root):
     Space: O(w)
     """
     # TODO: Implement BFS min depth
-    pass
+    if not root:
+        return 0
+    
+    queue = deque([(root, 1)])
+
+    while queue:
+        node, depth = queue.popleft()
+
+        # check if leaf node
+        if not node.left and not node.right:
+            return depth # first leaf we find is minimum!
+        
+        if node.left:
+            queue.append((node.left, depth + 1))
+        if node.right:
+            queue.append((node.right, depth + 1))
+
+    return 0
 
 
 # ============================================================
@@ -126,7 +186,18 @@ def has_path_sum(root, target_sum):
     Space: O(h)
     """
     # TODO: Implement path sum check
-    pass
+    if not root:
+        return False
+    
+    # check if leaf node with target sum
+    if not root.left and not root.right:
+        return root.val == target_sum
+    
+    # subtract current value and check children
+    remaining = target_sum - root.val
+
+    return (has_path_sum(root.left, remaining) or 
+            has_path_sum(root.right, remaining))
 
 
 # ============================================================
@@ -152,7 +223,29 @@ def level_order(root):
     Space: O(w) for queue
     """
     # TODO: Implement level order traversal
-    pass
+    if not root:
+        return []
+    
+    result = []
+    queue = deque([root])
+
+    while queue:
+        level_size = len(queue) # Nodes at current level
+        current_level = []
+
+        # process all nodes at curent level
+        for _ in range(level_size):
+            node = queue.popleft()
+            current_level.append(node.val)
+
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        
+        result.append(current_level)
+
+    return result
 
 
 # ============================================================
@@ -179,7 +272,28 @@ def right_side_view(root):
     Space: O(w)
     """
     # TODO: Implement right side view
-    pass
+    if not root:
+        return []
+    
+    result = []
+    queue = deque([root])
+
+    while queue:
+        level_size = len(queue)
+
+        for i in range(level_size):
+            node = queue.popleft()
+
+            # last node at this level = rightmost
+            if i == level_size - 1:
+                result.append(node.val)
+
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        
+    return result
 
 
 # ============================================================
@@ -212,7 +326,29 @@ def is_symmetric(root):
     Space: O(h)
     """
     # TODO: Implement symmetric tree check
-    pass
+    def is_mirror(left, right):
+        # both None -> symetric
+        if not left and not right:
+            return True
+        
+        # one None, other not -> not symmetric
+        if not left or not right:
+            return False
+        
+        # Values must match
+        if left.val != right.val:
+            return False
+        
+        # check mirror properties:
+        # Left's left = Right's right
+        # Left's right = Right's left
+        return (is_mirror(left.left, right.right) and 
+                is_mirror(left.right, right.left))
+    
+    if not root:
+        return True
+        
+    return is_mirror(root.left, root.right)
 
 
 # ============================================================
