@@ -554,6 +554,56 @@
 
 ---
 
+### **Day 16: Tree DFS & BFS** 📅 *2026-01-16* ✅ **COMPLETED**
+
+**Main Problems**:
+- Maximum Depth of Binary Tree (DFS recursive & BFS iterative)
+- Minimum Depth of Binary Tree (DFS recursive & BFS iterative)
+- Path Sum (root-to-leaf path checking)
+- Level Order Traversal (BFS with level tracking)
+- Right Side View (rightmost node at each level)
+- Symmetric Tree (mirror validation)
+
+**Topics Covered**:
+- Depth-First Search (DFS) - recursive approach
+- Breadth-First Search (BFS) - iterative with queue
+- Level-by-level traversal techniques
+- Tree path validation
+- Mirror tree comparisons
+- Early stopping optimizations in BFS
+
+**Key Concepts Learned**:
+- DFS uses recursion stack (O(h) space)
+- BFS uses queue (O(w) space, w = max width)
+- BFS naturally finds shortest paths (min depth)
+- DFS explores full depth before backtracking (max depth)
+- Level order = BFS with size tracking per level
+- Symmetric tree = recursive mirror comparison
+- Path validation requires leaf node checks
+
+**Mistakes Made**:
+- Initially confused path sum with any node sum (must be leaf!)
+- Forgot to handle skewed trees in min depth (can't shortcut with None child)
+
+**Optimization Techniques Discovered**:
+- BFS min depth: stop at first leaf (early termination)
+- DFS max depth: simple recursive formula (1 + max(left, right))
+- Level tracking: capture `len(queue)` before processing
+- Right side view: last node in each level
+- Mirror comparison: cross-compare (left.left ↔ right.right)
+
+**Personal Notes**:
+- BFS = level exploration, DFS = depth exploration
+- Choose BFS for shortest path problems
+- Choose DFS for complete exploration or path tracking
+- Both valid for max depth, but BFS better for min depth
+- Symmetric tree teaches recursive thinking about tree structure
+- Level order traversal is foundation for many tree problems
+
+**Test Results**: 80/82 tests passed (97.6% success rate) ✅
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -588,6 +638,12 @@
 - **BST Operations**: Day 15
 - **Range Validation**: Day 15
 - **Inorder = Sorted**: Day 14, Day 15
+- **Tree DFS (Depth-First Search)**: Day 16
+- **Tree BFS (Breadth-First Search)**: Day 16
+- **Level Order Traversal**: Day 16
+- **Tree Path Problems**: Day 16
+- **Mirror Trees**: Day 16
+- **Queue-based Tree Traversal**: Day 8, Day 16
 
 ---
 
@@ -608,10 +664,10 @@
 - Day 15: Binary Search Trees ✅
 - Day 16: Tree DFS/BFS ✅
 
-**Phase 4: Advanced** (Days 17-20)
+**Phase 4: Advanced Data Structures** (Days 17-20) 🔄 In Progress
 - Day 17: Heap/Priority Queue
-- Day 18: Graphs (BFS)
-- Day 19: Dynamic Programming Intro
-- Day 20: Advanced DP
+- Day 18: Graphs (BFS/DFS)
+- Day 19: Trie (Prefix Tree)
+- Day 20: Union Find (Disjoint Set)
 
 ---
