@@ -647,27 +647,87 @@
 
 ---
 
-## Upcoming Topics Roadmap
+## 🗺️ Complete Learning Journey Roadmap
 
-**Phase 1: Fundamentals** (Days 1-8) ✅ Complete
-- Arrays, Hash Maps, Sliding Window, Two Pointers, Stack, Queue
+### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
+**Focus**: Core data structures and basic patterns
+- Day 1: Arrays & Hash Maps ✅
+- Day 2: Prefix Sums + Hash Maps ✅
+- Day 3: Sliding Window Fundamentals ✅
+- Day 4: Advanced Sliding Window ✅
+- Day 5: Two Pointers ✅
+- Day 6: Fast/Slow Pointers (Floyd's Cycle Detection) ✅
+- Day 7: Stack (LIFO) ✅
+- Day 8: Queue & BFS Foundation ✅
 
-**Phase 2: Advanced Patterns** (Days 9-12) ✅ Complete
+### **Phase 2: Advanced Patterns** (Days 9-12) ✅ **COMPLETE**
+**Focus**: Pattern recognition and optimization techniques
 - Day 9: Monotonic Stack ✅
 - Day 10: Linked List Manipulation ✅
 - Day 11: Binary Search (Basic) ✅
 - Day 12: Binary Search Variations ✅
 
-**Phase 3: Recursion & Trees** (Days 13-16) ✅ Complete
+### **Phase 3: Recursion & Trees** (Days 13-16) ✅ **COMPLETE**
+**Focus**: Recursive thinking and tree algorithms
 - Day 13: Recursion Fundamentals ✅
-- Day 14: Binary Tree Basics ✅
+- Day 14: Binary Tree Basics (Traversals) ✅
 - Day 15: Binary Search Trees ✅
 - Day 16: Tree DFS/BFS ✅
 
-**Phase 4: Advanced Data Structures** (Days 17-20) 🔄 In Progress
-- Day 17: Heap/Priority Queue
-- Day 18: Graphs (BFS/DFS)
-- Day 19: Trie (Prefix Tree)
-- Day 20: Union Find (Disjoint Set)
+### **Phase 4: Advanced Data Structures** (Days 17-20) 🔄 **IN PROGRESS**
+**Focus**: Specialized data structures for complex problems
+- Day 17: Heap/Priority Queue 🎯 **NEXT**
+- Day 18: Graphs (BFS/DFS) 📅
+- Day 19: Trie (Prefix Tree) 📅
+- Day 20: Union Find (Disjoint Set) 📅
+
+### **Phase 5: Graph Algorithms** (Days 21-24) 📋 **PLANNED**
+**Focus**: Advanced graph traversal and optimization
+- Day 21: Topological Sort
+- Day 22: Dijkstra's Shortest Path
+- Day 23: Minimum Spanning Tree (Kruskal/Prim)
+- Day 24: Advanced Graph Problems
+
+### **Phase 6: Dynamic Programming** (Days 25-32) 📋 **PLANNED**
+**Focus**: Optimization and overlapping subproblems
+- Day 25: DP Introduction (1D Problems)
+- Day 26: DP - Climbing Stairs Variations
+- Day 27: DP - House Robber Pattern
+- Day 28: DP - 2D Grid Problems
+- Day 29: DP - Knapsack Problems
+- Day 30: DP - Longest Common Subsequence
+- Day 31: DP - String Problems
+- Day 32: DP - Advanced Patterns
+
+### **Phase 7: Advanced Algorithms** (Days 33-36) 📋 **PLANNED**
+**Focus**: Complex algorithmic techniques
+- Day 33: Backtracking (Combinations/Permutations)
+- Day 34: Greedy Algorithms Advanced
+- Day 35: Bit Manipulation
+- Day 36: Math & Number Theory
+
+### **Phase 8: System Design & Practice** (Days 37-40) 📋 **PLANNED**
+**Focus**: Integration and real-world applications
+- Day 37: Design Problems (LRU Cache, etc.)
+- Day 38: Mixed Problem Practice
+- Day 39: Hard Problems Marathon
+- Day 40: Review & Patterns Summary
+
+---
+
+## 📊 Progress Summary
+
+| Phase | Days | Status | Completion |
+|-------|------|--------|------------|
+| Phase 1: Fundamentals | 1-8 | ✅ Complete | 8/8 (100%) |
+| Phase 2: Advanced Patterns | 9-12 | ✅ Complete | 4/4 (100%) |
+| Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
+| Phase 4: Advanced Data Structures | 17-20 | 🔄 In Progress | 0/4 (0%) |
+| Phase 5: Graph Algorithms | 21-24 | 📋 Planned | 0/4 (0%) |
+| Phase 6: Dynamic Programming | 25-32 | 📋 Planned | 0/8 (0%) |
+| Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
+| Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
+
+**Overall Progress**: 16/40 days complete (40%)
 
 ---
