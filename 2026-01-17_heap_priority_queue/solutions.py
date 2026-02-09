@@ -193,7 +193,8 @@ def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
     WHY HEAP:
     - Always get minimum among all list heads
     - Efficiently select next smallest element
-    - Better than comparing all k lists repeatedly
+    - Better than comparing all k lists 
+    
     
     Time: O(N log k) where N = total nodes, k = number of lists
     Space: O(k) for heap

@@ -34,7 +34,16 @@ def find_kth_largest(nums: List[int], k: int) -> int:
     Space: O(k)
     """
     # TODO: Implement kth largest using heap
-    pass
+    # build main heap of first k elements
+    heap = nums[:k]
+    heapq.heapify(heap)
+
+    # process remmaining elements
+    for num in nums[k:]:
+        if num > heap[0]: # if grater than smallest in heap
+            heapq.heapreplace(heap, num) # replace and heapify
+    
+    return heap[0] # kth larget is at top
 
 
 # ============================================================
@@ -59,7 +68,21 @@ def top_k_frequent(nums: List[int], k: int) -> List[int]:
     Space: O(n)
     """
     # TODO: Implement top k frequent
-    pass
+    # Count frequencies
+    from collections import Counter
+    count = Counter(nums)
+
+    # Use min heap of size k with (frequency, number)
+    heap = []
+
+    for num, freq in count.items():
+        heapq.heappush(heap, (freq, num))
+        if len(heap) > k:
+            heapq.heappop(heap)
+    
+    # Extract numbers from heap
+    return [num for freq, num in heap]
+
 
 
 # ============================================================
@@ -86,7 +109,8 @@ def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
     Space: O(k) for heap
     """
     # TODO: Implement merge k sorted lists
-    pass
+    # count frequencies
+
 
 
 # ============================================================
