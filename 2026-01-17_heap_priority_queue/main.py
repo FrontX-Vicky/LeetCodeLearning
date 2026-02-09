@@ -111,6 +111,28 @@ def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
     """
     # TODO: Implement merge k sorted lists
     # count frequencies
+    heap = []
+
+    for i,head in enumerate(lists):
+        if head:
+            heapq.heappush(heap, (head.val, i, head))
+
+    # Dummy head for result
+    dummy = ListNode(0)
+    current = dummy
+
+    while heap:
+        val, i, node = heapq.heappop(heap)
+
+        # add to result
+        current.next = node
+        current = current.next
+
+        # push next node from same list
+        if node.next:
+            heapq.heappush(heap, (node.next.val, i, node.next))
+        
+    return dummy.next
 
 
 
@@ -146,17 +168,29 @@ class MedianFinder:
     def __init__(self):
         """Initialize data structure."""
         # TODO: Initialize two heaps
-        pass
+        # Max heap (negate values for Python's min heap)
+        self.left = [] # smaller half
+
+        # min heap 
+        self.right = [] # larger half
     
     def addNum(self, num: int) -> None:
         """Add a number to the data structure."""
         # TODO: Add to appropriate heap and balance
-        pass
+        heapq.heappush(self.left, -num)
+
+        heapq.heappush(self.right, -heapq.heappop(self.left))
+
+        if len(self.right) > len(self.left):
+            heapq.heappush(self.left, -heapq.heappop(self.right))
     
     def findMedian(self) -> float:
         """Return median of all elements."""
         # TODO: Calculate median from heap tops
-        pass
+        if len(self.left) > len(self.right):
+            return -self.left[0] # Negate to get actual value
+        else:
+            return (-self.left[0] + self.right[0]) / 2.0
 
 
 # ============================================================
@@ -190,7 +224,21 @@ def last_stone_weight(stones: List[int]) -> int:
     Space: O(n)
     """
     # TODO: Implement stone smashing
-    pass
+    # create max heap (nagate values)
+    heap = [-stone for stone in stones]
+    heapq.heapify(heap)
+
+    while len(heap) > 1:
+        # get two heaviest stones
+        first = -heapq.heappop(heap) # Heaviest
+        second = -heapq.heappop(heap) # second heaviest
+
+        # if different push difference back
+        if first != second:
+            heapq.heappush(heap, -(first - second))
+    
+    # Return last stone weight, or 0 if none left
+    return -heap[0] if heap else 0
 
 
 # ============================================================
@@ -223,7 +271,20 @@ def k_closest(points: List[List[int]], k: int) -> List[List[int]]:
     Space: O(k)
     """
     # TODO: Implement k closest points
-    pass
+    # build heap with distance and points
+    heap = []
+    for point in points:
+        x, y = point
+        dist = x * x + y * y # no need for sqrt
+        heapq.heappush(heap, (dist, point))
+    
+    # Extract k closest
+    result = []
+    for _ in range(k):
+        dist, point = heapq.heappop(heap)
+        result.append(points)
+    
+    return result
 
 
 # ============================================================
