@@ -282,7 +282,7 @@ def k_closest(points: List[List[int]], k: int) -> List[List[int]]:
     result = []
     for _ in range(k):
         dist, point = heapq.heappop(heap)
-        result.append(points)
+        result.append(point)
     
     return result
 
