@@ -34,16 +34,16 @@ def find_kth_largest(nums: List[int], k: int) -> int:
     Space: O(k)
     """
     # TODO: Implement kth largest using heap
-    # build main heap of first k elements
+    # buildmin heap of first k elements
     heap = nums[:k]
     heapq.heapify(heap)
 
-    # process remmaining elements
+    # Process remaining elements
     for num in nums[k:]:
-        if num > heap[0]: # if grater than smallest in heap
-            heapq.heapreplace(heap, num) # replace and heapify
+        if num > heap[0]: # if larger than smalest in heap
+            heapq.heapreplace(heap, num) # Replace and heapify
     
-    return heap[0] # kth larget is at top
+    return heap[0] # Kth largest is at top
 
 
 # ============================================================
@@ -79,10 +79,11 @@ def top_k_frequent(nums: List[int], k: int) -> List[int]:
         heapq.heappush(heap, (freq, num))
         if len(heap) > k:
             heapq.heappop(heap)
-    
-    # Extract numbers from heap
+        
+    # extract nymbers from heap
     return [num for freq, num in heap]
-
+    
+  
 
 
 # ============================================================
