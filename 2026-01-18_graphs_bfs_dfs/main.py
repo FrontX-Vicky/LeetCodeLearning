@@ -17,7 +17,7 @@ class Node:
 # PROBLEM 1: NUMBER OF ISLANDS
 # ============================================================
 
-def num_islands(grid: List[List[str]]) -> int:
+def num_islands_dfs(grid: List[List[str]]) -> int:
     """
     Count number of islands in a 2D grid.
     
@@ -42,14 +42,68 @@ def num_islands(grid: List[List[str]]) -> int:
     Space: O(m * n) for visited set or recursion
     """
     # TODO: Implement island counting
-    pass
+    if not grid or not grid[0]:
+        return 0
 
+    rows, cols = len(grid), len(grid[0])
+    islands = 0
+
+    def dfs(r, c):
+        # Base case: out of bounds or water
+        if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] == '0':
+            return
+
+        # mark as visited by sinking it 
+        grid[r][c] = '0'
+
+        # Explore 4 directions 
+        dfs(r + 1, c) # down
+        dfs(r - 1, c) # up
+        dfs(r, c + 1) # right
+        dfs(r, c - 1) # left
+
+    # scan entire grid
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == '1':
+                islands += 1
+                dfs(r, c) # Sink entire island
+
+def num_island_bfs(grid: List[List[str]]) -> int:
+    if not grid or not grid[0]:
+        return 0
+    
+    rows, cols = len(grid), len(grid[0])
+    islands = 0
+
+    def bfs(r, c):
+        queue = deque([(r, c)])
+        grid[r][c] = '0' # Mark visited
+
+        while queue:
+            row, col = queue.popleft()
+
+            # Check 4 directions
+            for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+                nr, nc = row + dr, col + dc
+                if 0 <= nr < rows and 0 <= cols and grid[nr][nc] == '1':
+                    grid[nr][nc] = '0'
+                    queue.append((nr, nc))
+    
+    # Scan grid
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == '1':
+                islands += 1
+                bfs(r, c)
+    
+    return islands
 
 # ============================================================
 # PROBLEM 2: CLONE GRAPH
 # ============================================================
 
-def clone_graph(node: Optional[Node]) -> Optional[Node]:
+def clone_graph_dfs(node: Optional[Node]) -> Optional[Node]:
     """
     Return a deep copy of an undirected graph.
     
@@ -69,7 +123,52 @@ def clone_graph(node: Optional[Node]) -> Optional[Node]:
     Space: O(V) for hash map
     """
     # TODO: Implement graph cloning
-    pass
+    if not node:
+        return None
+    
+    old_to_new = {}
+
+    def dfs(node):
+        # If already cloned, return clone
+        if node in old_to_new:
+            return old_to_new[node]
+        
+        # Create clone
+        clone = Node(node.val)
+        old_to_new[node] = clone
+
+        # clone neighbors
+        for neighbor in node.neighbors:
+            clone.neighbors.append(dfs(neighbor))
+        
+        return clone
+    
+    return dfs(node)
+
+def clone_graph_bfs(node: Optional[Node]) -> Optional[Node]:
+    if not node:
+        return None
+    
+    old_to_new = {}
+
+    def dfs(node):
+        # if already cloned, return clone
+        if node in old_to_new:
+            return old_to_new[node]
+        
+        # create clone
+        clone = Node(node.val)
+        old_to_new[node] = clone
+
+        # Clone neightbors
+        for neighbor in node.neighbor:
+            clone.neighbor.append(dfs(neighbor))
+        
+        return clone
+
+    return dfs(node)
+
+
 
 
 # ============================================================
@@ -242,7 +341,11 @@ if __name__ == "__main__":
         ["0","0","1","0","0"],
         ["0","0","0","1","1"]
     ]
-    result = num_islands(grid1)
+    result = num_islands_dfs(grid1)
+    print(f"Number of islands: {result}")
+    print(f"Expected: 3")
+
+    result = num_islands_dfs(grid1)
     print(f"Number of islands: {result}")
     print(f"Expected: 3")
     
@@ -260,7 +363,8 @@ if __name__ == "__main__":
     node3.neighbors = [node2, node4]
     node4.neighbors = [node1, node3]
     
-    cloned = clone_graph(node1)
+    cloned = clone_graph_dfs(node1)
+    cloned = clone_graph_bfs(node1)
     print(f"Cloned graph: {cloned is not None and cloned is not node1}")
     print(f"Expected: True (different object)")
     
