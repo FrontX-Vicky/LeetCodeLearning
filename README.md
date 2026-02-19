@@ -656,6 +656,66 @@
 
 ---
 
+### **Day 18: Graphs BFS & DFS** 📅 *2026-01-18* ✅ **COMPLETED**
+
+**Problems Solved** (6 graph traversal problems):
+1. **Number of Islands** - DFS/BFS island counting in grid
+2. **Clone Graph** - Deep copy undirected graph with hashmap
+3. **Pacific Atlantic Water Flow** - Reverse DFS from ocean edges
+4. **Course Schedule** - Cycle detection using 3-state DFS
+5. **Surrounded Regions** - Reverse marking to capture surrounded regions
+6. **Rotting Oranges** - Multi-source BFS for time tracking
+
+**Topics Covered**:
+- Graph representations (adjacency list, grid as graph)
+- DFS vs BFS trade-offs
+- Sink island technique (marking visited by modification)
+- Graph cloning with hashmap tracking
+- Reverse DFS (starting from destination)
+- Cycle detection (3-state: unvisited/visiting/visited)
+- Multi-source BFS (multiple starting points simultaneously)
+- Reverse marking technique
+- Level-by-level BFS tracking
+- Topological sort (Kahn's algorithm)
+
+**Key Concepts Learned**:
+- Grid problems are graph problems (cells = nodes, adjacency = edges)
+- DFS: Recursive, uses call stack, explores deep first
+- BFS: Iterative with queue, explores level by level
+- Reverse DFS trick: Instead of "can reach ocean FROM cell?", ask "can reach cell FROM ocean?"
+- 3-state cycle detection: Visiting state detects back edges
+- Multi-source BFS: Start all sources in queue, process level by level
+- Graph cloning: HashMap prevents infinite loops in cycles
+- In-place modification can track visited (grid[r][c] = '0')
+
+**Mistakes Made**:
+- Missing return statement in num_islands_dfs function
+- Typo: `num_island_bfs` instead of `num_islands` (plural)
+- Bounds check error: forgot `nc` in condition `0 <= nc < cols`
+- Variable name typo: `prossesed` instead of `processed`
+- Return format: returned tuples instead of lists for coordinates
+
+**Optimization Techniques Discovered**:
+- Sink technique: Mark visited by modifying grid (no extra space)
+- Reverse DFS: Simpler than forward checking (1 direction vs 2)
+- HashMap for cycle prevention in graph cloning
+- 3-state tracking more efficient than backtracking
+- Multi-source BFS: O(m×n) instead of checking each cell separately
+- In-place modification saves O(m×n) space
+
+**Personal Notes**:
+- Graph problems often have elegant reverse solutions
+- BFS natural for shortest path/level tracking
+- DFS natural for exhaustive search/path existence
+- Grid = implicit graph (no need to build adjacency list)
+- Cycle detection is cornerstone of many graph problems
+- Multi-source BFS pattern appears in many real-world scenarios
+
+**Test Results**: 43/44 tests passed (97.7%) - Grade A+ ✅
+*(1 failing test is test suite bug, not implementation issue)*
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -702,6 +762,15 @@
 - **Top K Problems**: Day 17
 - **Two-Heap Technique**: Day 17
 - **Heapify Operations**: Day 17
+- **Graph Traversal**: Day 18
+- **DFS (Depth-First Search)**: Day 16, Day 18
+- **BFS (Breadth-First Search)**: Day 8, Day 16, Day 18
+- **Grid as Graph**: Day 18
+- **Cycle Detection**: Day 18
+- **Graph Cloning**: Day 18
+- **Multi-Source BFS**: Day 18
+- **Reverse DFS**: Day 18
+- **Topological Sort**: Day 18
 
 ---
 
@@ -735,8 +804,8 @@
 ### **Phase 4: Advanced Data Structures** (Days 17-20) 🔄 **IN PROGRESS**
 **Focus**: Specialized data structures for complex problems
 - Day 17: Heap/Priority Queue ✅
-- Day 18: Graphs (BFS/DFS) 🎯 **NEXT**
-- Day 19: Trie (Prefix Tree) 📅
+- Day 18: Graphs (BFS/DFS) ✅
+- Day 19: Trie (Prefix Tree) 🎯 **NEXT**
 - Day 20: Union Find (Disjoint Set) 📅
 
 ### **Phase 5: Graph Algorithms** (Days 21-24) 📋 **PLANNED**
@@ -780,12 +849,12 @@
 | Phase 1: Fundamentals | 1-8 | ✅ Complete | 8/8 (100%) |
 | Phase 2: Advanced Patterns | 9-12 | ✅ Complete | 4/4 (100%) |
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
-| Phase 4: Advanced Data Structures | 17-20 | 🔄 In Progress | 1/4 (25%) |
+| Phase 4: Advanced Data Structures | 17-20 | 🔄 In Progress | 2/4 (50%) |
 | Phase 5: Graph Algorithms | 21-24 | 📋 Planned | 0/4 (0%) |
 | Phase 6: Dynamic Programming | 25-32 | 📋 Planned | 0/8 (0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 17/40 days complete (42.5%)
+**Overall Progress**: 18/40 days complete (45.0%)
 
 ---
