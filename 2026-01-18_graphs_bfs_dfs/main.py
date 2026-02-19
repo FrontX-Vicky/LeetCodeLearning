@@ -229,7 +229,7 @@ def pacific_atlantic(heights: List[List[int]]) -> List[List[int]]:
         dfs(r, cols - 1, atlantic) # Right column
     
     # return intersections 
-    return list(pacific & atlantic)
+    return [[r, c] for r, c in pacific & atlantic]
 
 
 # ============================================================
