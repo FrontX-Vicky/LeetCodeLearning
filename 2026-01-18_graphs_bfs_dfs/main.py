@@ -149,27 +149,23 @@ def clone_graph_bfs(node: Optional[Node]) -> Optional[Node]:
     if not node:
         return None
     
-    old_to_new = {}
+    old_to_new = {node: Node(node.val)}
+    queue = deque([node])
 
-    def dfs(node):
-        # if already cloned, return clone
-        if node in old_to_new:
-            return old_to_new[node]
+    while queue:
+        curr = queue.popleft()
+
+        for neighbor in curr.neighbors:
+            if neighbor not in old_to_new:
+
+                # Clone neighbor
+                old_to_new[neighbor] = Node(neighbor.val)
+                queue.append(neighbor)
+            
+            # Add neighbor to current clone
+            old_to_new[curr].neighbors.append(old_to_new[neighbor])
         
-        # create clone
-        clone = Node(node.val)
-        old_to_new[node] = clone
-
-        # Clone neightbors
-        for neighbor in node.neighbor:
-            clone.neighbor.append(dfs(neighbor))
-        
-        return clone
-
-    return dfs(node)
-
-
-
+    return old_to_new[node]
 
 # ============================================================
 # PROBLEM 3: PACIFIC ATLANTIC WATER FLOW
@@ -202,7 +198,36 @@ def pacific_atlantic(heights: List[List[int]]) -> List[List[int]]:
     Space: O(m * n)
     """
     # TODO: Implement water flow
-    pass
+    if not heights or not heights[0]:
+        return []
+    
+    rows, cols = len(heights), len(heights[0])
+    pacific = set()
+    atlantic = set()
+
+    def dfs(r, c, visited):
+        visited.add((r, c))
+
+        for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            nr, nc = r + dr, c + dc
+            if (0 <= nr < rows and 0 <= nc < cols and (nr, nc) not in visited and heights[nr][nc] >= heights[r][c]):
+                dfs(nr, nc, visited)
+    
+    # DFS from pacific edges
+    for c in range(cols):
+        dfs(0, c, pacific) # Top row
+    for r in range(rows):
+        dfs(r, 0, pacific) # Left column
+    
+    # DFS from Atlantic edges
+    for c in range(cols):
+        dfs(rows - 1, c, atlantic) # Bottom row
+    
+    for r in range(rows):
+        dfs(r, cols - 1, atlantic) # Right column
+    
+    # return intersections 
+    return list(pacific & atlantic)
 
 
 # ============================================================
@@ -231,8 +256,35 @@ def can_finish(num_courses: int, prerequisites: List[List[int]]) -> bool:
     Space: O(V + E)
     """
     # TODO: Implement course schedule
-    pass
+    # Build adjacency list
+    graph = {i: [] for i in range(num_courses)}
+    for course, prereq in prerequisites:
+        graph[course].append(prereq)
+    
+    # 0 = unvisited, 1 = visiting, 2 = visited
+    state = [0] * num_courses
 
+    def has_cycle(course):
+        if state[course] == 1: # Visiting -> cycle!
+            return True
+        if state[course] == 2: # Already visited
+            return False
+
+        state[course] = 1 # Mark visiting
+
+        for prereq in graph[course]:
+            if has_cycle(prereq):
+                return True
+        
+        state[course] = 2 # Mark visited
+        return False
+
+    # check each course
+    for course in range(num_courses):
+        if has_cycle(course):
+            return False
+    
+    return True
 
 # ============================================================
 # PROBLEM 5: SURROUNDED REGIONS
