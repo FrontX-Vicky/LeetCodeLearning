@@ -68,8 +68,10 @@ def num_islands_dfs(grid: List[List[str]]) -> int:
             if grid[r][c] == '1':
                 islands += 1
                 dfs(r, c) # Sink entire island
+    
+    return islands
 
-def num_island_bfs(grid: List[List[str]]) -> int:
+def num_islands(grid: List[List[str]]) -> int:
     if not grid or not grid[0]:
         return 0
     
@@ -86,7 +88,7 @@ def num_island_bfs(grid: List[List[str]]) -> int:
             # Check 4 directions
             for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
                 nr, nc = row + dr, col + dc
-                if 0 <= nr < rows and 0 <= cols and grid[nr][nc] == '1':
+                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == '1':
                     grid[nr][nc] = '0'
                     queue.append((nr, nc))
     
@@ -103,7 +105,7 @@ def num_island_bfs(grid: List[List[str]]) -> int:
 # PROBLEM 2: CLONE GRAPH
 # ============================================================
 
-def clone_graph_dfs(node: Optional[Node]) -> Optional[Node]:
+def clone_graph(node: Optional[Node]) -> Optional[Node]:
     """
     Return a deep copy of an undirected graph.
     
@@ -286,6 +288,30 @@ def can_finish(num_courses: int, prerequisites: List[List[int]]) -> bool:
     
     return True
 
+def can_finish_bfs(num_courses: int, prerequisites: List[List[int]]) -> bool:
+    graph = {i: [] for i in range(num_courses)}
+    in_degree = [0] * num_courses
+
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        in_degree[course] += 1
+
+    # Start with 0 in-degree courses
+    queue = deque([i for i in range(num_courses) if in_degree[i] == 0])
+    processed = 0
+
+    while queue:
+        course = queue.popleft()
+        processed += 1
+
+        for next_course in graph[course]:
+            in_degree[next_course] -= 1
+            if in_degree[next_course] == 0:
+                queue.append(next_course)
+    
+    return processed == num_courses
+
+
 # ============================================================
 # PROBLEM 5: SURROUNDED REGIONS
 # ============================================================
@@ -321,7 +347,37 @@ def solve(board: List[List[str]]) -> None:
     Note: Modifies board in-place
     """
     # TODO: Implement surrounded regions
-    pass
+    if not board or not board[0]:
+        return
+    
+    rows, cols = len(board), len(board[0])
+
+    def dfs(r, c):
+        if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != 'O':
+            return
+        
+        board[r][c] = 'S' # Mark as safe
+
+        dfs(r + 1, c)
+        dfs(r - 1, c)
+        dfs(r, c + 1)
+        dfs(r, c - 1)
+
+    # Mark border-connected 'o's as safe
+    for r in range(rows):
+        dfs(r, 0)    # Left border
+        dfs(r, cols - 1) # Right border
+    
+    for c in range(cols):
+        dfs(0, c) # Top border
+        dfs(rows - 1, c) # Bottom border
+
+    for r in range(rows):
+        for c in range(cols):
+            if board[r][c] == 'O':
+                board[r][c] = 'X'
+            elif board[r][c] == 'S':
+                board[r][c] = 'O'
 
 
 # ============================================================
@@ -365,7 +421,41 @@ def oranges_rotting(grid: List[List[int]]) -> int:
     Space: O(m * n)
     """
     # TODO: Implement rotting oranges
-    pass
+    rows, cols = len(grid), len(grid[0])
+    queue = deque()
+    fresh = 0
+
+    # Find rotten orages and count fresh
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == 2:
+                queue.append((r, c))
+            elif grid[r][c] == 1:
+                fresh += 1
+
+    if fresh == 0:
+        return 0
+    
+    minutes = 0
+    directions = [(1,0), (-1,0), (0,1), (0,-1)]
+
+    # Mult-source BFS
+    while queue:
+        minutes += 1
+
+        # process all rotten oranges at current minute
+        for _ in range(len(queue)):
+            r, c = queue.popleft()
+
+            for dr, dc in directions:
+                nr, nc = r + dr, c + dc
+
+                if 0 <= nr < rows and 0 <= nc <  cols and grid[nr][nc] == 1:
+                    grid[nr][nc] = 2 #Rot it
+                    fresh -= 1
+                    queue.append((nr, nc))
+    
+    return minutes - 1 if fresh == 0 else -1
 
 
 # ============================================================
