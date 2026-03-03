@@ -19,7 +19,8 @@ class TrieNode:
     """
     def __init__(self):
         # TODO: Initialize children and end-of-word flag
-        pass
+        self.children = {}
+        self.is_end_of_word = False
 
 
 # ============================================================
@@ -49,7 +50,7 @@ class Trie:
     def __init__(self):
         """Initialize trie with root node"""
         # TODO: Create root node
-        pass
+        self.root = TrieNode()
     
     def insert(self, word: str) -> None:
         """
@@ -63,7 +64,14 @@ class Trie:
         3. Mark last node as end of word
         """
         # TODO: Implement insert
-        pass
+        node = self.root
+
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        
+        node.is_end_of_word = True
     
     def search(self, word: str) -> bool:
         """
@@ -75,7 +83,14 @@ class Trie:
         3. If reach end, check if it's marked as word end
         """
         # TODO: Implement search
-        pass
+        node = self.root
+
+        for char in word:
+            if char not in node.children:
+                return False
+            node = node.children[char]
+
+        return node.is_end_of_word
     
     def startsWith(self, prefix: str) -> bool:
         """
@@ -87,7 +102,14 @@ class Trie:
         3. Don't need to check is_end_of_word
         """
         # TODO: Implement startsWith
-        pass
+        node = self.root
+
+        for char in prefix:
+            if char not in node.children:
+                return False
+            node = node.children[char]
+        
+        return True
 
 
 # ============================================================
@@ -112,12 +134,19 @@ class WordDictionary:
     def __init__(self):
         """Initialize with root node"""
         # TODO: Create root
-        pass
+        self.root = TrieNode()
     
     def addWord(self, word: str) -> None:
         """Add word to dictionary (same as trie insert)"""
         # TODO: Implement addWord
-        pass
+        node = self.root
+
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+
+        node.is_end_of_word = True
     
     def search(self, word: str) -> bool:
         """
@@ -131,7 +160,26 @@ class WordDictionary:
         Time: O(M) for defined characters, O(26^M) worst case for all wildcards
         """
         # TODO: Implement wildcard search with DFS
-        pass
+        def dfs(node: TrieNode, index: int) -> bool:
+            # base case : reached end of the word
+            if index == len(word):
+                return node.is_end_of_word
+            
+            char = word[index]
+
+            if char == '.':
+                # Wildcard: try all possible children
+                for child in node.children.values():
+                    if dfs(child, index + 1):
+                        return True
+                return False
+            else:
+                # Regular character: follow specific path
+                if char not in node.children:
+                    return False
+                return dfs(node.children[char], index + 1)
+            
+        return dfs(self.root, 0)
 
 
 # ============================================================
@@ -165,7 +213,58 @@ def findWords(board: List[List[str]], words: List[str]) -> List[str]:
     Space: O(K) where K = total characters in all words
     """
     # TODO: Implement word search with trie
-    pass
+
+    # Build trir from words
+    root = TrieNode()
+    for word in words:
+        node = root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end_of_word = True
+        node.word = word # Store word at end node
+
+    rows, cols = len(board), len(board[0])
+    result = set()
+
+    def dfs(r: int, c: int, node: TrieNode) -> None:
+        # Out of bounds or already visited
+        if (r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] == '#'):
+            return
+        
+        char = board[r][c]
+
+        # No matching path in trie
+        if char not in node.children:
+            return 
+        
+        next_node = node.children[char]
+
+        # Found a word!
+        if next_node.is_end_of_word:
+            result.add(next_node.word)
+            # Optimisation: prevent duplicate finds
+            next_node.is_end_of_word = False
+        
+        # Mark as visited
+        board[r][c] = '#'
+
+        # Explalore 4 directions
+        for dr, dc in [(0,1), (0, -1), (1, 0), (-1, 0)]:
+            dfs(r + dr, c + dc, next_node)
+        
+        # Restore Call
+        board[r][c] = char
+
+    # Start dfs from each cell
+    for r in range(rows):
+        for c in range(cols):
+            dfs(r, c, root)
+    
+    return list(result)
+
+
 
 
 # ============================================================
