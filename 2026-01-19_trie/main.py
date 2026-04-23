@@ -292,8 +292,33 @@ def longestCommonPrefix(strs: List[str]) -> str:
     Space: O(1) for scanning, O(S) for trie
     """
     # TODO: Implement (try multiple approaches)
-    pass
+    if not strs:
+        return ""
+    
+    prefix = strs[0]
 
+    for s in strs[1:]:
+        # shorten prefix until it matches start of s
+        while not s.startswith(prefix):
+            prefix = prefix[:-1]
+            if not  prefix:
+                return ""
+    
+    return prefix 
+
+def longestCommonPrefix_vertical(strs: List[str]) -> str:
+    if not strs:
+        return ""
+    
+    for i in range(len(strs[0])):
+        char = strs[0][i]
+
+        # check if all strings have same char at position i
+        for s in strs[1:]:
+            if i >= len(s) or s[i] != char:
+                return strs[0][:i]
+
+    return strs[0]
 
 # ============================================================
 # PROBLEM 5: REPLACE WORDS
