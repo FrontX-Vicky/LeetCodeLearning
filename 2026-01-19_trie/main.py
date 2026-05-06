@@ -344,7 +344,36 @@ def replaceWords(dictionary: List[str], sentence: str) -> str:
     Space: O(D) for trie
     """
     # TODO: Implement replace words
-    pass
+    # build trie from dictionary
+    root = TrieNode()
+    for word in dictionary:
+        node = root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        node.is_end_of_word = True
+
+    def findRoot(word: str) -> str:
+        """Find shortest root for word"""
+        node = root
+        prefix = ""
+
+        for char in word:
+            if char not in node.children:
+                return word # No root found
+            
+            prefix += char
+            node = node.children[char]
+
+            if node.is_end_of_word:
+                return prefix #Found root, return early!
+        
+        return word # No root found
+    
+    # replace each word
+    words = sentence.split()
+    return " ".join(findRoot(word) for word in words)
 
 
 # ============================================================
@@ -372,7 +401,25 @@ class WordFilter:
     def __init__(self, words: List[str]):
         """Build trie with suffix#prefix combinations"""
         # TODO: Implement initialization
-        pass
+        self.trie = {}
+
+        # process each word with its index
+        for index, word in enumerate(words):
+            # Generate all suffix prefix combinations
+            for i in range(len(word) + 1):
+                suffix = word[i:] #Empty to full word
+                key = suffix + "#" + word
+
+                # Insert into trie
+                node = self.trie
+                for char in key:
+                    if char not in node:
+                        node[char] = {}
+                    node = node[char]
+                    # Store index at every node (higher index = later in list)
+                    node['#index'] = index
+    
+            
     
     def f(self, prefix: str, suffix: str) -> int:
         """
@@ -381,7 +428,15 @@ class WordFilter:
         Return -1 if no match found.
         """
         # TODO: Implement search
-        pass
+        search_key = suffix + "#" + prefix
+        node = self.trie
+
+        for char in search_key:
+            if char not in node:
+                return -1
+            node = node[char]
+        
+        return node.get('#index', -1)
 
 
 # ============================================================
