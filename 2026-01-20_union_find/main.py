@@ -33,7 +33,9 @@ class UnionFind:
         # TODO: Initialize parent array (self.parent = list(range(n)))
         # TODO: Initialize rank array (all zeros)
         # TODO: Initialize self.components = n
-        pass
+        self.parent = list(range(n)) # each node is its own parent initially
+        self.rank = [0] * n          # Rank is an upper bound on tree height
+        self.components = n           # Start with n saparate components
 
     def find(self, x: int) -> int:
         """
@@ -50,7 +52,9 @@ class UnionFind:
         # Hint: if self.parent[x] != x:
         #           self.parent[x] = self.find(self.parent[x])
         #       return self.parent[x]
-        pass
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x]) # path compression
+        return self.parent[x]
 
     def union(self, x: int, y: int) -> bool:
         """
@@ -70,12 +74,32 @@ class UnionFind:
         # 4. If equal ranks: pick root_x as root, increment self.rank[root_x]
         # 5. Decrement self.components by 1
         # 6. Return True
-        pass
+        root_x = self.find(x)
+        root_y = self.find(y)
+
+        if root_x == root_y:
+            return False # Already in same component -> adding edge = cycle
+        
+        # Attach lower-rank tree under higher-rank tree
+        if self.rank[root_x] < self.rank[root_y]:
+            self.parent[root_x] = root_y
+        elif self.rank[root_x] > self.rank[root_y]:
+            self.parent[root_y] = root_x
+        else:
+            # Eqaul rank: pick root_x as new root, bump its rank
+            self.parent[root_y] = root_x
+            self.rank[root_x] += 1
+        
+        self.components -= 1
+        return True
+        
+
 
     def connected(self, x: int, y: int) -> bool:
         """Return True if x and y are in the same component"""
         # TODO: return self.find(x) == self.find(y)
-        pass
+        return self.find(x) == self.find(y)
+    
 
 
 # ============================================================
