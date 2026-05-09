@@ -92,8 +92,6 @@ class UnionFind:
         
         self.components -= 1
         return True
-        
-
 
     def connected(self, x: int, y: int) -> bool:
         """Return True if x and y are in the same component"""
@@ -126,7 +124,15 @@ def findCircleNum(isConnected: List[List[int]]) -> int:
     Space: O(n)
     """
     # TODO: Implement number of provinces
-    pass
+    n = len(isConnected)
+    uf = UnionFind(n)
+
+    for i in range(n):
+        for j in range(i + 1, n): # Upper triangle only
+            if isConnected[i][j] == 1:
+                uf.union(i, j)
+    
+    return uf.components
 
 
 # ============================================================
@@ -156,7 +162,14 @@ def findRedundantConnection(edges: List[List[int]]) -> List[int]:
     """
     # TODO: Implement redundant connection
     # Note: nodes are 1-indexed, so initialize UnionFind(n + 1)
-    pass
+    n = len(edges)
+    uf = UnionFind(n + 1)
+
+    for u, v in edges:
+        if not uf.union(u, v):
+            return [u, v] # this edge creates a cycle
+    
+    return []
 
 
 # ============================================================
@@ -187,7 +200,16 @@ def validTree(n: int, edges: List[List[int]]) -> bool:
     Space: O(n)
     """
     # TODO: Implement valid tree check
-    pass
+    if len(edges) != n -1:
+        return False # Fast fail: wrong number of edges
+
+    uf = UnionFind(n)
+
+    for u, v in edges:
+        if not uf.union(u, v): 
+            return False # Cycle detected
+    
+    return True # n - 1, no cycle -> valid tree
 
 
 # ============================================================
@@ -216,7 +238,12 @@ def countComponents(n: int, edges: List[List[int]]) -> int:
     Space: O(n)
     """
     # TODO: Implement count connected components
-    pass
+    uf = UnionFind(n)
+
+    for u, v in edges:
+        uf.union(u, v)
+
+    return uf.components
 
 
 # ============================================================
@@ -264,7 +291,40 @@ def accountsMerge(accounts: List[List[str]]) -> List[List[str]]:
     # Pass 2: union emails within same account
     # Pass 3: group emails by root using uf.find()
     # Pass 4: sort each group and prepend name
-    pass
+    email_to_idx = {} # email string -> unique integer index
+    email_to_name = {} # email string -> account owners's name
+    idx = 0
+
+    # Pass 1: assign a unique index to every new email 
+    for account in accounts:
+        name = account[0]
+        for email in account[1:]:
+            if email not in email_to_idx:
+                email_to_idx[email] = idx
+                email_to_name[email] = name
+                idx += 1
+
+    uf = UnionFind(idx)
+
+    # Pass 2: union all email within the same account
+    for account in accounts:
+        first_idx = email_to_idx[account[1]]
+        for email in account[2:]:
+            uf.union(first_idx, email_to_idx[email])
+        
+    # Pass 3: group emails by their root components
+    root_to_emails = defaultdict(list)
+    for email, i in email_to_idx.items():
+        root = uf.find(i)
+        root_to_emails[root].append(email)
+    
+    #Pass 4: sort each group, prepend name
+    result = []
+    for root, emails in root_to_emails.items():
+        name = email_to_name[emails[0]]
+        result.append([name] + sorted(emails))
+    
+    return result
 
 
 # ============================================================
