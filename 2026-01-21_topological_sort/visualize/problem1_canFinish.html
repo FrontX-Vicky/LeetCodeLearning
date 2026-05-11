@@ -271,6 +271,59 @@
         .cm { color: #484f58; font-style: italic; }
         .nm { color: #f2cc60; }
         .op { color: #ff7b72; }
+
+        /* ── Variable hover ──────────────────────────────────────── */
+        .vt {
+            cursor: help;
+            border-bottom: 1px dotted #484f58;
+            transition: border-color 0.1s;
+        }
+        .vt:hover { border-bottom-color: var(--blue); }
+
+        #var-tooltip {
+            position: fixed;
+            background: #1c2128;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-family: 'SF Mono','Fira Code','Consolas',monospace;
+            font-size: 11px; line-height: 1.6;
+            color: var(--text);
+            pointer-events: none;
+            z-index: 9999;
+            max-width: 300px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.55);
+            display: none;
+        }
+        #var-tooltip .vt-name { color: var(--purple); font-weight: 700; font-size: 10px; margin-bottom: 3px; }
+        #var-tooltip .vt-val  { color: var(--green); }
+
+        /* ── Input / Output bars ─────────────────────────────────── */
+        .io-bar {
+            flex-shrink: 0;
+            padding: 5px 10px;
+            font-family: 'SF Mono','Fira Code','Consolas',monospace;
+            font-size: 10.5px;
+            display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+            min-height: 26px;
+            background: #0a0d13;
+        }
+        .io-bar.input  { border-bottom: 1px solid var(--border); }
+        .io-bar.output { border-top:    1px solid var(--border); }
+        .io-lbl {
+            font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; flex-shrink: 0; padding-top: 1px;
+            color: #484f58;
+        }
+        .io-bar.input  .io-lbl { color: #58a6ff55; }
+        .io-bar.output .io-lbl { color: var(--green); }
+        .io-kv { display: flex; gap: 4px; align-items: baseline; }
+        .io-key { color: var(--purple); }
+        .io-sep { color: #484f58; }
+        .io-v   { color: var(--text); }
+        .io-na  { color: #484f58; font-style: italic; }
     </style>
 </head>
 <body>
@@ -296,9 +349,12 @@
 
     <!-- Code -->
     <div class="code-panel" id="code-panel">
-        <div class="panel-label" style="padding:12px 12px 8px">Python Code — highlighted line = executing now</div>
+        <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing • hover var for value</div>
+        <div class="io-bar input" id="code-input"></div>
         <div class="code-block" id="code-block"></div>
+        <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
     </div>
+    <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
 
     <div class="resizer" id="resizer"></div>
 
@@ -457,31 +513,34 @@ const EX = [
 // ═══════════════════════════════════════════════════════════════════
 // CODE LINES  (html = syntax-highlighted source, phases = active phases)
 // ═══════════════════════════════════════════════════════════════════
+const V = (name, label) =>
+    `<span class="vt" data-var="${name}">${label || name}</span>`;
+
 const CODE_LINES = [
-    { h: '<span class="kw">def</span> <span class="fn">canFinish</span>(numCourses, prerequisites):',             phases: [] },
-    { h: '    graph <span class="op">=</span> <span class="bi">defaultdict</span>(list)',                        phases: ['build'] },
-    { h: '    indegree <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> numCourses', phases: ['build'] },
-    { h: '',                                                                                                      phases: [] },
-    { h: '    <span class="kw">for</span> course, prereq <span class="kw">in</span> prerequisites:',              phases: ['build'] },
-    { h: '        graph[prereq].append(course)',                                                                   phases: ['build'] },
-    { h: '        indegree[course] <span class="op">+=</span> <span class="nm">1</span>',                       phases: ['build'] },
-    { h: '',                                                                                                      phases: [] },
-    { h: '    queue <span class="op">=</span> <span class="bi">deque</span>(',                                   phases: ['seed'] },
-    { h: '        i <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(numCourses)', phases: ['seed'] },
-    { h: '        <span class="kw">if</span> indegree[i] <span class="op">==</span> <span class="nm">0</span>',   phases: ['seed'] },
-    { h: '    )',                                                                                                  phases: ['seed'] },
-    { h: '    processed <span class="op">=</span> <span class="nm">0</span>',                                   phases: ['seed'] },
-    { h: '',                                                                                                      phases: [] },
-    { h: '    <span class="kw">while</span> queue:',                                                             phases: ['pop'] },
-    { h: '        node <span class="op">=</span> queue.popleft()',                                               phases: ['pop'] },
-    { h: '        processed <span class="op">+=</span> <span class="nm">1</span>',                               phases: ['pop'] },
-    { h: '',                                                                                                      phases: [] },
-    { h: '        <span class="kw">for</span> nxt <span class="kw">in</span> graph[node]:',                       phases: ['pop', 'update'] },
-    { h: '            indegree[nxt] <span class="op">-=</span> <span class="nm">1</span>',                      phases: ['update'] },
-    { h: '            <span class="kw">if</span> indegree[nxt] <span class="op">==</span> <span class="nm">0</span>:', phases: ['update'] },
-    { h: '                queue.append(nxt)',                                                                      phases: ['update'] },
-    { h: '',                                                                                                      phases: [] },
-    { h: '    <span class="kw">return</span> processed <span class="op">==</span> numCourses',                    phases: ['done'], isReturn: true },
+    { h: `<span class="kw">def</span> <span class="fn">canFinish</span>(${V('numCourses')}, ${V('prerequisites')}):`, phases: [] },
+    { h: `    ${V('graph')} <span class="op">=</span> <span class="bi">defaultdict</span>(list)`,               phases: ['build'] },
+    { h: `    ${V('indegree')} <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> ${V('numCourses')}`, phases: ['build'] },
+    { h: '',                                                                                                       phases: [] },
+    { h: `    <span class="kw">for</span> course, prereq <span class="kw">in</span> ${V('prerequisites')}:`,      phases: ['build'] },
+    { h: `        ${V('graph')}[prereq].append(course)`,                                                           phases: ['build'] },
+    { h: `        ${V('indegree')}[course] <span class="op">+=</span> <span class="nm">1</span>`,             phases: ['build'] },
+    { h: '',                                                                                                       phases: [] },
+    { h: `    ${V('queue')} <span class="op">=</span> <span class="bi">deque</span>(`,                         phases: ['seed'] },
+    { h: `        i <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(${V('numCourses')})`, phases: ['seed'] },
+    { h: `        <span class="kw">if</span> ${V('indegree')}[i] <span class="op">==</span> <span class="nm">0</span>`, phases: ['seed'] },
+    { h: '    )',                                                                                                   phases: ['seed'] },
+    { h: `    ${V('processed')} <span class="op">=</span> <span class="nm">0</span>`,                         phases: ['seed'] },
+    { h: '',                                                                                                       phases: [] },
+    { h: `    <span class="kw">while</span> ${V('queue')}:`,                                                     phases: ['pop'] },
+    { h: `        ${V('node')} <span class="op">=</span> ${V('queue')}.popleft()`,                             phases: ['pop'] },
+    { h: `        ${V('processed')} <span class="op">+=</span> <span class="nm">1</span>`,                    phases: ['pop'] },
+    { h: '',                                                                                                       phases: [] },
+    { h: `        <span class="kw">for</span> ${V('nxt')} <span class="kw">in</span> ${V('graph')}[${V('node')}]:`, phases: ['pop', 'update'] },
+    { h: `            ${V('indegree')}[${V('nxt')}] <span class="op">-=</span> <span class="nm">1</span>`,    phases: ['update'] },
+    { h: `            <span class="kw">if</span> ${V('indegree')}[${V('nxt')}] <span class="op">==</span> <span class="nm">0</span>:`, phases: ['update'] },
+    { h: `                ${V('queue')}.append(${V('nxt')})`,                                                      phases: ['update'] },
+    { h: '',                                                                                                       phases: [] },
+    { h: `    <span class="kw">return</span> ${V('processed')} <span class="op">==</span> ${V('numCourses')}`,  phases: ['done'], isReturn: true },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -491,6 +550,27 @@ function renderCode() {
     const step   = stepIdx >= 0 ? steps[stepIdx] : null;
     const phase  = step ? step.phase  : '';
     const result = step ? step.result : null;
+    const ex     = EX[exIdx];
+
+    // ── Input bar
+    const inBar = document.getElementById('code-input');
+    inBar.innerHTML =
+        `<span class="io-lbl">IN</span>` +
+        `<span class="io-kv"><span class="io-key">numCourses</span><span class="io-sep">=</span><span class="io-v">${ex.n}</span></span>` +
+        `<span class="io-kv"><span class="io-key">prerequisites</span><span class="io-sep">=</span><span class="io-v">${escHtml(JSON.stringify(ex.prereqs))}</span></span>`;
+
+    // ── Output bar
+    const outBar = document.getElementById('code-output');
+    if (step && step.result !== null) {
+        outBar.innerHTML =
+            `<span class="io-lbl">OUT</span>` +
+            `<span class="io-kv"><span class="io-key">return</span><span class="io-sep">=</span>` +
+            `<span class="io-v" style="color:${step.result ? 'var(--green)' : 'var(--red)'};font-weight:700">${step.result}</span></span>`;
+    } else {
+        outBar.innerHTML = `<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+    }
+
+    // ── Code block
     const block  = document.getElementById('code-block');
     block.innerHTML = '';
     let lineNum = 0;
@@ -505,7 +585,7 @@ function renderCode() {
                 hlClass = 'hl-orange';
             }
         }
-        const row   = document.createElement('div');
+        const row = document.createElement('div');
         row.className = 'code-line' + (hlClass ? ' ' + hlClass : '');
         const ln = document.createElement('span');
         ln.className = 'ln';
@@ -516,13 +596,49 @@ function renderCode() {
         row.appendChild(ln);
         row.appendChild(lt);
         block.appendChild(row);
-        // Auto-scroll active line into view
         if (isActive && !block._scrolled) {
             block._scrolled = true;
             setTimeout(() => row.scrollIntoView({ block: 'nearest' }), 0);
         }
     }
     block._scrolled = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VARIABLE HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function fmtAdj(adj, n) {
+    const parts = [];
+    for (let i = 0; i < n; i++) {
+        if (adj[i] && adj[i].length) parts.push(`  ${i}: [${adj[i].join(', ')}]`);
+    }
+    return parts.length ? '{\n' + parts.join(',\n') + '\n}' : '{}';
+}
+
+function getVars(step) {
+    const ex = EX[exIdx];
+    const nxtVals = step && step.hilite && step.hilite.length
+        ? step.hilite.map(e => e[1]) : null;
+    return {
+        numCourses:    ex.n,
+        prerequisites: JSON.stringify(ex.prereqs),
+        graph:         step ? fmtAdj(step.adj, ex.n) : '(building...)',
+        indegree:      step ? JSON.stringify(step.indeg) : '(not set)',
+        queue:         step ? JSON.stringify(step.queue) : '(empty)',
+        processed:     step ? step.processed.length : 0,
+        node:          step && step.cur !== null ? step.cur : '(not in loop yet)',
+        nxt:           nxtVals ? 'neighbors: ' + JSON.stringify(nxtVals) : '(loop var, changes each iter)',
+    };
+}
+
+function formatVar(val) {
+    if (typeof val === 'number') return String(val);
+    if (typeof val === 'string') return val;
+    return JSON.stringify(val);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -576,6 +692,7 @@ function buildSteps(n, prereqs) {
             indeg:     [...indeg],
             queue:     [...queue],
             processed: [...processed],
+            adj:       JSON.parse(JSON.stringify(adj)),
             cur:       null,
             hilite:    [],   // [[from,to], ...] edges to highlight purple
             stuck:     [],
@@ -990,6 +1107,44 @@ document.addEventListener('keydown', e => {
 
 // ── Init
 loadEx(0);
+
+// ═══════════════════════════════════════════════════════════════════
+// TOOLTIP SETUP (runs once after DOM + first render)
+// ═══════════════════════════════════════════════════════════════════
+(function () {
+    const tooltip = document.getElementById('var-tooltip');
+    const vtName  = document.getElementById('vt-name');
+    const vtVal   = document.getElementById('vt-val');
+    const cb      = document.getElementById('code-block');
+
+    cb.addEventListener('mouseover', e => {
+        const vt = e.target.closest && e.target.closest('.vt');
+        if (!vt) return;
+        const varName = vt.dataset.var;
+        const step = stepIdx >= 0 ? steps[stepIdx] : null;
+        const vars = getVars(step);
+        if (!(varName in vars)) return;
+        vtName.textContent = varName + ':';
+        vtVal.textContent  = formatVar(vars[varName]);
+        tooltip.style.display = 'block';
+    });
+
+    cb.addEventListener('mousemove', e => {
+        if (tooltip.style.display === 'none') return;
+        let x = e.clientX + 16, y = e.clientY + 12;
+        if (x + 310 > window.innerWidth)  x = e.clientX - 320;
+        if (y + 100 > window.innerHeight) y = e.clientY - 80;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top  = y + 'px';
+    });
+
+    cb.addEventListener('mouseleave',   () => { tooltip.style.display = 'none'; });
+    cb.addEventListener('mouseout', e => {
+        if (!e.relatedTarget || !e.relatedTarget.closest('.vt')) {
+            tooltip.style.display = 'none';
+        }
+    });
+})();
 </script>
 </body>
 </html>
