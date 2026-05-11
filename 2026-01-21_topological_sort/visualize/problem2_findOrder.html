@@ -76,7 +76,7 @@
         .legend-dot { width:12px; height:12px; border-radius:50%; border:2px solid; flex-shrink:0; }
 
         /* State panel */
-        .state-panel { width:295px; flex-shrink:0; display:flex; flex-direction:column; padding:10px; gap:8px; overflow-y:auto; }
+        .state-panel { width:295px; flex-shrink:0; display:flex; flex-direction:column; padding:10px; gap:8px; overflow:hidden; }
         .state-panel::-webkit-scrollbar { width:3px; }
         .state-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
         .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:11px 13px; flex-shrink:0; }
@@ -96,8 +96,8 @@
         .empty-hint { font-size:11px; color:#484f58; font-style:italic; }
         .log-list { display:flex; flex-direction:column; gap:4px; max-height:110px; overflow-y:auto; }
         .log-list::-webkit-scrollbar { width:3px; }
-        .log-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-        .log-entry { font-size:11px; line-height:1.4; color:#484f58; padding:4px 8px; background:var(--bg); border-radius:4px; border-left:2px solid var(--border); }
+        .log-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }        .card-grow { flex:1; min-height:0; display:flex; flex-direction:column; }
+        .card-grow .log-list { flex:1; max-height:none; min-height:0; }        .log-entry { font-size:11px; line-height:1.4; color:#484f58; padding:4px 8px; background:var(--bg); border-radius:4px; border-left:2px solid var(--border); }
         .log-entry.active { color:var(--text); border-left-color:var(--blue); background:#0d1f38; }
 
         /* Bottom bar */
@@ -186,7 +186,7 @@
             <div class="card-title">Order — <span id="order-count">0</span> / <span id="total-count">?</span> placed</div>
             <div class="order-row" id="order-row"><span class="empty-hint">none yet</span></div>
         </div>
-        <div class="card">
+        <div class="card card-grow">
             <div class="card-title">Step Log</div>
             <div class="log-list" id="log-list"></div>
         </div>
