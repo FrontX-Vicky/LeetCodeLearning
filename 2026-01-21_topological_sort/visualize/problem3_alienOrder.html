@@ -104,6 +104,15 @@
         .btn.primary { background:#1c3458;border-color:var(--blue);color:var(--blue); }
         .btn.primary:hover:not(:disabled) { background:#1f4a7a; }
         .btn.playing { background:#3d2b00;border-color:var(--orange);color:var(--orange); }
+        /* ── Animations */
+        @keyframes fadeUp { from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)} }
+        @keyframes popIn  { 0%{opacity:0;transform:scale(0.72)}65%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)} }
+        .log-entry.active { animation:fadeUp 0.2s ease both; }
+        .result-tag.show  { animation:fadeUp 0.28s ease both; }
+        .q-node,.order-node { animation:popIn 0.2s ease both; }
+        .word-chip.hi { animation:fadeUp 0.2s ease both; }
+        .step-num { transition:color 0.25s ease; }
+        .btn.primary:hover:not(:disabled) { box-shadow:0 0 0 3px rgba(88,166,255,0.15); }
     </style>
 </head>
 <body>
@@ -500,7 +509,7 @@ function renderBottom(){
     document.getElementById('btn-prev').disabled=stepIdx<=0;
     document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
 }
-function renderAll(){ renderCode(); renderGraph(); renderSide(); renderLog(); renderBottom(); }
+function renderAll(){ renderCode(); renderGraph(); renderSide(); renderLog(); renderBottom(); const _d=document.getElementById('step-desc'); _d.style.animation='none'; void _d.offsetWidth; _d.style.animation='fadeUp 0.2s ease both'; }
 function go(dir){ const n=stepIdx+dir; if(n<0||n>=steps.length) return; stepIdx=n; renderAll(); }
 function reset(){ stopAuto(); stepIdx=-1; renderAll(); }
 function toggleAuto(){ if(autoTmr){stopAuto();return;} const b=document.getElementById('btn-auto'); b.textContent='⏸ Pause'; b.classList.add('playing'); autoTmr=setInterval(()=>{if(stepIdx>=steps.length-1){stopAuto();return;}go(+1);},1200); }
