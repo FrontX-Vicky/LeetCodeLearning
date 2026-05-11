@@ -142,7 +142,30 @@ def findMinHeightTrees(n: int, edges: List[List[int]]) -> List[int]:
     until <= 2 nodes remain.
     """
     # TODO: Implement leaf trimming BFS
-    pass
+    if n <= 2:
+        return list(range(n))
+    
+    graph = defaultdict(set)
+    for u,v in edges:
+        graph[u].add(v)
+        graph[v].add(u)
+
+    leaves = deque(node for node in range(n) if len(graph[node]) == 1)
+
+    remaining = n
+
+    while remaining > 2:
+        layer_size = len(leaves)
+        remaining -= layer_size
+
+        for _ in range(layer_size):
+            leaf = leaves.popleft()
+            neighbor = graph[leaf].pop()
+            graph[neighbor].remove(leaf)
+            if len(graph[neighbor]) == 1:
+                leaves.append(neighbor)
+    
+    return list(leaves)
 
 
 # ============================================================
@@ -161,7 +184,29 @@ def minimumSemesters(n: int, relations: List[List[int]]) -> int:
     Each BFS layer = one semester.
     """
     # TODO: Implement layered BFS topo sort
-    pass
+    graph = defaultdict(list)
+    indegree = [0] * (n + 1)
+
+    for pre, course in relations:
+        graph[pre].append(course)
+        indegree[course] += 1
+
+    queue = deque(i for i in range(1, n + 1) if indegree[i] == 0)
+    taken = 0
+    semester = 0
+
+    while queue:
+        semester += 1
+        for _ in range(len(queue)):
+            node = queue.popleft()
+            taken += 1
+
+            for nxt in graph[node]:
+                indegree[nxt] -= 1
+                if indegree[nxt] == 0:
+                    queue.append(nxt)
+                
+    return semester if taken == n else -1
 
 
 # ============================================================
