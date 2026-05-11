@@ -518,12 +518,12 @@ const V = (name, label) =>
 
 const CODE_LINES = [
     { h: `<span class="kw">def</span> <span class="fn">canFinish</span>(${V('numCourses')}, ${V('prerequisites')}):`, phases: [] },
-    { h: `    ${V('graph')} <span class="op">=</span> <span class="bi">defaultdict</span>(list)`,               phases: ['build'] },
-    { h: `    ${V('indegree')} <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> ${V('numCourses')}`, phases: ['build'] },
+    { h: `    ${V('graph')} <span class="op">=</span> <span class="bi">defaultdict</span>(list)`,               phases: ['build_init'] },
+    { h: `    ${V('indegree')} <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> ${V('numCourses')}`, phases: ['build_init'] },
     { h: '',                                                                                                       phases: [] },
-    { h: `    <span class="kw">for</span> course, prereq <span class="kw">in</span> ${V('prerequisites')}:`,      phases: ['build'] },
-    { h: `        ${V('graph')}[prereq].append(course)`,                                                           phases: ['build'] },
-    { h: `        ${V('indegree')}[course] <span class="op">+=</span> <span class="nm">1</span>`,             phases: ['build'] },
+    { h: `    <span class="kw">for</span> course, prereq <span class="kw">in</span> ${V('prerequisites')}:`,      phases: ['build_loop'] },
+    { h: `        ${V('graph')}[prereq].append(course)`,                                                           phases: ['build_loop'] },
+    { h: `        ${V('indegree')}[course] <span class="op">+=</span> <span class="nm">1</span>`,             phases: ['build_loop'] },
     { h: '',                                                                                                       phases: [] },
     { h: `    ${V('queue')} <span class="op">=</span> <span class="bi">deque</span>(`,                         phases: ['seed'] },
     { h: `        i <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(${V('numCourses')})`, phases: ['seed'] },
@@ -623,18 +623,17 @@ function fmtAdj(adj, n) {
 const NOT_YET = Symbol('not_yet');
 
 // Phase order (maps phase name → index used for "introduced" comparison)
-const PHASE_IDX = { build: 0, seed: 1, pop: 2, update: 3, done: 4 };
+const PHASE_IDX = { build_init: 0, build_loop: 1, seed: 2, pop: 3, update: 4, done: 5 };
 
-// Which phase each variable first appears in code (-1 = function params, always visible)
 const VAR_INTRO = {
-    numCourses:    -1,   // function param
-    prerequisites: -1,   // function param
-    graph:          0,   // created at build
-    indegree:       0,   // created at build
-    queue:          1,   // created at seed
-    processed:      1,   // created at seed
-    node:           2,   // assigned inside while loop (pop)
-    nxt:            3,   // assigned inside for loop   (update)
+    numCourses:    -1,
+    prerequisites: -1,
+    graph:          0,   // build_init
+    indegree:       0,   // build_init (all zeros at this point)
+    queue:          2,   // seed
+    processed:      2,   // seed
+    node:           3,   // pop
+    nxt:            4,   // update
 };
 
 function getVars(step) {
@@ -701,19 +700,17 @@ let autoTmr = null;
 function buildSteps(n, prereqs) {
     const out = [];
 
-    // Build adjacency list: prereq → [courses it unlocks]
+    // adj starts empty — populated during build_loop step
     const adj = {};
     for (let i = 0; i < n; i++) adj[i] = [];
-    for (const [course, pre] of prereqs) adj[pre].push(course);
 
     // Mutable working state
     const indeg = new Array(n).fill(0);
-    for (const [course] of prereqs) indeg[course]++;   // initial indegrees
 
     const queue     = [];   // BFS queue (we modify in place)
     const processed = [];   // done list
 
-    // Snapshot helper — captures current mutable state + optional overrides
+    // Snapshot helper
     function snap(extra = {}) {
         return {
             indeg:     [...indeg],
@@ -721,7 +718,7 @@ function buildSteps(n, prereqs) {
             processed: [...processed],
             adj:       JSON.parse(JSON.stringify(adj)),
             cur:       null,
-            hilite:    [],   // [[from,to], ...] edges to highlight purple
+            hilite:    [],
             stuck:     [],
             result:    null,
             phase:     '',
@@ -730,16 +727,26 @@ function buildSteps(n, prereqs) {
         };
     }
 
-    // ── Step 0: Build graph, show initial indegrees
+    // ── Step 0: graph + indegree just initialised (all zeros)
     out.push(snap({
-        phase: 'build',
+        phase: 'build_init',
         description:
-            `Build adjacency list from prerequisites. ` +
-            `Initial indegrees: [${indeg.map((v,i)=>`${i}:${v}`).join(', ')}]. ` +
-            `Indegree = how many prerequisite courses must be taken first.`,
+            `Initialise graph (defaultdict) and indegree array to all zeros: [${indeg.join(', ')}].`,
     }));
 
-    // ── Step 1: Seed queue with indegree-0 nodes
+    // ── Step 1: Fill graph + indegrees by looping over prerequisites
+    for (const [course, pre] of prereqs) {
+        adj[pre].push(course);
+        indeg[course]++;
+    }
+    out.push(snap({
+        phase: 'build_loop',
+        description:
+            `Loop over prerequisites → fill graph edges and increment indegrees. ` +
+            `Result: [${indeg.map((v,i)=>`${i}:${v}`).join(', ')}].`,
+    }));
+
+    // ── Step 2: Seed queue with indegree-0 nodes
     for (let i = 0; i < n; i++) {
         if (indeg[i] === 0) queue.push(i);
     }
