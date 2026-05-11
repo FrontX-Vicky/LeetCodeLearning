@@ -766,6 +766,49 @@
 
 ---
 
+### **Day 20: Union Find (Disjoint Set Union)** 📅 *2026-01-20* ✅ **COMPLETED**
+
+**Problems Solved** (5 union-find problems):
+1. **Number of Provinces** - connected components from adjacency matrix (LeetCode #547)
+2. **Redundant Connection** - detect cycle-forming edge using failed union (LeetCode #684)
+3. **Graph Valid Tree** - edge-count + cycle check validation (LeetCode #261)
+4. **Number of Connected Components** - component counting in undirected graph (LeetCode #323)
+5. **Accounts Merge** - map strings to indices and union overlapping emails (LeetCode #721)
+
+**Topics Covered**:
+- Disjoint Set Union structure (`parent`, `rank`, `components`)
+- Path compression in `find`
+- Union by rank in `union`
+- Amortized near O(1) connectivity operations
+- Cycle detection from repeated connectivity
+- Component counting and dynamic merging
+
+**Key Concepts Learned**:
+- `find(x)` returns the representative root of x's component
+- `union(x, y)` returns False when x and y are already connected (cycle signal)
+- Path compression flattens trees aggressively for fast future lookups
+- Union by rank limits tree height growth
+- With both optimizations, operation cost is O(α(n)) (effectively constant)
+- Non-integer entities (emails) can be solved by index mapping + DSU
+
+**Mistakes Made**:
+- Left TODO comments in `main.py` after finishing implementations
+- A test expectation in the suite used an incorrect final component count
+
+**Optimization Techniques Discovered**:
+- Process only upper triangle in adjacency matrix for undirected province problems
+- Fast fail for valid tree using `len(edges) != n - 1`
+- Union account emails to the first email in each account to merge all account nodes transitively
+
+**Personal Notes**:
+- Union Find is often cleaner than DFS/BFS for repeated connectivity checks
+- Failed union is one of the most useful interview signals for cycle detection
+- Mapping trick (string -> integer id) unlocks DSU for many real-world style problems
+
+**Test Results**: 42/43 tests passed (1 known test expectation issue) ✅
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -826,6 +869,11 @@
 - **Wildcard DFS on Trie**: Day 19
 - **Trie + Board DFS**: Day 19
 - **Suffix-Prefix Encoding**: Day 19
+- **Union Find (DSU)**: Day 20
+- **Path Compression**: Day 20
+- **Union by Rank**: Day 20
+- **Connected Components (DSU)**: Day 20
+- **Cycle Detection (DSU)**: Day 20
 
 ---
 
@@ -861,11 +909,11 @@
 - Day 17: Heap/Priority Queue ✅
 - Day 18: Graphs (BFS/DFS) ✅
 - Day 19: Trie (Prefix Tree) ✅
-- Day 20: Union Find (Disjoint Set) 🎯 **NEXT**
+- Day 20: Union Find (Disjoint Set) ✅
 
-### **Phase 5: Graph Algorithms** (Days 21-24) 📋 **PLANNED**
+### **Phase 5: Graph Algorithms** (Days 21-24) 🔄 **IN PROGRESS**
 **Focus**: Advanced graph traversal and optimization
-- Day 21: Topological Sort
+- Day 21: Topological Sort 🎯 **NEXT**
 - Day 22: Dijkstra's Shortest Path
 - Day 23: Minimum Spanning Tree (Kruskal/Prim)
 - Day 24: Advanced Graph Problems
@@ -904,12 +952,12 @@
 | Phase 1: Fundamentals | 1-8 | ✅ Complete | 8/8 (100%) |
 | Phase 2: Advanced Patterns | 9-12 | ✅ Complete | 4/4 (100%) |
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
-| Phase 4: Advanced Data Structures | 17-20 | 🔄 In Progress | 3/4 (75%) |
-| Phase 5: Graph Algorithms | 21-24 | 📋 Planned | 0/4 (0%) |
+| Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
+| Phase 5: Graph Algorithms | 21-24 | 🔄 In Progress | 0/4 (0%) |
 | Phase 6: Dynamic Programming | 25-32 | 📋 Planned | 0/8 (0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 19/40 days complete (47.5%)
+**Overall Progress**: 20/40 days complete (50.0%)
 
 ---
