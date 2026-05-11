@@ -69,6 +69,23 @@
             border-radius: 3px; padding: 1px 5px; font-size: 10px; color: var(--muted);
         }
 
+        /* ── Problem nav dropdown ──────────────────────────────── */
+        .prob-nav {
+            background: #21262d;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            flex-shrink: 0;
+            max-width: 200px;
+        }
+        .prob-nav:hover, .prob-nav:focus { border-color: var(--blue); color: var(--blue); }
+        .prob-nav option { background: #1c2128; color: var(--text); }
+
         /* ── Main ───────────────────────────────────────────── */
         .main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
@@ -330,9 +347,16 @@
 
 <!-- ── Header ─────────────────────────────────────────────────── -->
 <div class="header">
+    <select class="prob-nav" onchange="window.location.href=this.value">
+        <option value="problem1_canFinish.html" selected>P1 · canFinish</option>
+        <option value="problem2_findOrder.html">P2 · findOrder</option>
+        <option value="problem3_alienOrder.html">P3 · alienOrder</option>
+        <option value="problem4_findMinHeightTrees.html">P4 · findMinHeightTrees</option>
+        <option value="problem5_minimumSemesters.html">P5 · minimumSemesters</option>
+    </select>
     <div class="header-left">
-        <h1>Problem 1 — Course Schedule &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #207</span></h1>
-        <p>Can you finish all courses given prerequisites? → Detect cycle with Kahn's BFS Algorithm</p>
+        <h1>Course Schedule &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #207</span></h1>
+        <p>Can you finish all courses given prerequisites? → Detect cycle with Kahn’s BFS</p>
     </div>
     <div class="ex-btns">
         <button class="ex-btn active"  onclick="loadEx(0)">① Linear (true)</button>

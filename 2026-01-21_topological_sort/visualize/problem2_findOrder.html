@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC #210 Course Schedule II — Topological Order Visualizer</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg:#0d1117; --panel:#161b22; --border:#30363d; --muted:#8b949e;
+            --text:#c9d1d9; --head:#f0f6fc; --blue:#58a6ff; --orange:#d29922;
+            --green:#3fb950; --purple:#bc8cff; --red:#f85149;
+        }
+        body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+
+        /* Header */
+        .header { background:var(--panel); border-bottom:1px solid var(--border); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; gap:16px; }
+        .header-left h1 { font-size:15px; font-weight:600; color:var(--head); }
+        .header-left p  { font-size:11px; color:var(--muted); margin-top:3px; }
+        .ex-btns { display:flex; gap:6px; flex-shrink:0; }
+        .ex-btn { padding:5px 13px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text); font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+        .ex-btn:hover       { border-color:var(--blue); color:var(--blue); }
+        .ex-btn.active      { border-color:var(--blue); background:#1c3458; color:var(--blue); font-weight:600; }
+        .ex-btn.cycle:hover  { border-color:var(--red); color:var(--red); }
+        .ex-btn.cycle.active { border-color:var(--red); background:#2d1215; color:var(--red); font-weight:600; }
+        .kbd-hint { font-size:11px; color:#484f58; flex-shrink:0; white-space:nowrap; }
+        .kbd-hint kbd { background:#21262d; border:1px solid var(--border); border-radius:3px; padding:1px 5px; font-size:10px; color:var(--muted); }
+        .prob-nav { background:#21262d; border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 10px; font-size:12px; font-weight:500; cursor:pointer; outline:none; flex-shrink:0; max-width:200px; }
+        .prob-nav:hover, .prob-nav:focus { border-color:var(--blue); color:var(--blue); }
+        .prob-nav option { background:#1c2128; color:var(--text); }
+
+        /* Main */
+        .main { display:flex; flex:1; overflow:hidden; min-height:0; }
+
+        /* Code panel */
+        .code-panel { width:30%; min-width:120px; flex-shrink:0; display:flex; flex-direction:column; overflow:hidden; }
+        .resizer { width:5px; flex-shrink:0; cursor:col-resize; background:var(--border); position:relative; transition:background 0.15s; z-index:10; }
+        .resizer:hover, .resizer.dragging { background:var(--blue); }
+        .resizer::after { content:''; position:absolute; inset:0 -4px; }
+        .code-block { flex:1; overflow-y:auto; padding:6px 0; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:11.5px; line-height:1.65; }
+        .code-block::-webkit-scrollbar { width:3px; }
+        .code-block::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+        .code-line { display:flex; align-items:center; padding:0 10px 0 0; min-height:19px; border-left:2px solid transparent; transition:background 0.18s, border-color 0.18s; }
+        .code-line.hl-orange { background:rgba(210,153,34,0.13); border-left-color:var(--orange); }
+        .code-line.hl-green  { background:rgba(63,185,80,0.13);  border-left-color:var(--green);  }
+        .code-line.hl-red    { background:rgba(248,81,73,0.13);  border-left-color:var(--red);    }
+        .ln { width:26px; text-align:right; flex-shrink:0; color:#484f58; font-size:10px; padding-right:10px; user-select:none; }
+        .code-line.hl-orange .ln { color:var(--orange); }
+        .code-line.hl-green  .ln { color:var(--green); }
+        .code-line.hl-red    .ln { color:var(--red); }
+        .lt { white-space:pre; }
+        .kw { color:#ff7b72; } .fn { color:#d2a8ff; } .bi { color:#79c0ff; }
+        .cm { color:#484f58; font-style:italic; } .nm { color:#f2cc60; } .op { color:#ff7b72; }
+        .vt { cursor:help; border-bottom:1px dotted #484f58; transition:border-color 0.1s; }
+        .vt:hover { border-bottom-color:var(--blue); }
+        #var-tooltip { position:fixed; background:#1c2128; border:1px solid var(--border); border-radius:6px; padding:8px 12px; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:11px; line-height:1.6; color:var(--text); pointer-events:none; z-index:9999; max-width:320px; white-space:pre-wrap; word-break:break-all; box-shadow:0 6px 20px rgba(0,0,0,0.55); display:none; }
+        #var-tooltip .vt-name { color:var(--purple); font-weight:700; font-size:10px; margin-bottom:3px; }
+        #var-tooltip .vt-val  { color:var(--green); }
+        .io-bar { flex-shrink:0; padding:5px 10px; font-family:'SF Mono','Fira Code','Consolas',monospace; font-size:10.5px; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; min-height:26px; background:#0a0d13; }
+        .io-bar.input  { border-bottom:1px solid var(--border); }
+        .io-bar.output { border-top:1px solid var(--border); }
+        .io-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; flex-shrink:0; padding-top:1px; }
+        .io-bar.input  .io-lbl { color:#58a6ff55; }
+        .io-bar.output .io-lbl { color:var(--green); }
+        .io-kv { display:flex; gap:4px; align-items:baseline; }
+        .io-key { color:var(--purple); } .io-sep { color:#484f58; } .io-v { color:var(--text); }
+        .io-na  { color:#484f58; font-style:italic; }
+
+        /* Graph panel */
+        .graph-panel { flex:1; min-width:0; display:flex; flex-direction:column; padding:12px 16px; border-right:1px solid var(--border); }
+        .panel-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:10px; flex-shrink:0; }
+        .svg-wrap { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+        #g-svg { width:100%; height:100%; max-height:340px; }
+        .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; flex-shrink:0; }
+        .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+        .legend-dot { width:12px; height:12px; border-radius:50%; border:2px solid; flex-shrink:0; }
+
+        /* State panel */
+        .state-panel { width:295px; flex-shrink:0; display:flex; flex-direction:column; padding:10px; gap:8px; overflow-y:auto; }
+        .state-panel::-webkit-scrollbar { width:3px; }
+        .state-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+        .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:11px 13px; flex-shrink:0; }
+        .card-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted); margin-bottom:9px; }
+        .ind-grid { display:flex; gap:10px; flex-wrap:wrap; }
+        .ind-cell { display:flex; flex-direction:column; align-items:center; gap:3px; }
+        .ind-node { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; border:2px solid; font-family:monospace; }
+        .ind-val  { font-size:13px; font-weight:700; font-family:monospace; }
+        .ind-sub  { font-size:9px; color:#484f58; }
+        .queue-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:38px; }
+        .q-node { width:34px; height:34px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; background:#3d2b00; border:2px solid var(--orange); color:#e3b341; font-family:monospace; }
+        .q-arr { color:#484f58; font-size:15px; }
+        .q-front { font-size:9px; color:var(--orange); margin-top:2px; }
+        .order-row { display:flex; align-items:center; gap:5px; flex-wrap:wrap; min-height:38px; }
+        .order-node { width:34px; height:34px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; background:#0d2a16; border:2px solid var(--green); color:var(--green); font-family:monospace; }
+        .order-node.stuck { background:#2d1215; border-color:var(--red); color:var(--red); }
+        .empty-hint { font-size:11px; color:#484f58; font-style:italic; }
+        .log-list { display:flex; flex-direction:column; gap:4px; max-height:110px; overflow-y:auto; }
+        .log-list::-webkit-scrollbar { width:3px; }
+        .log-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+        .log-entry { font-size:11px; line-height:1.4; color:#484f58; padding:4px 8px; background:var(--bg); border-radius:4px; border-left:2px solid var(--border); }
+        .log-entry.active { color:var(--text); border-left-color:var(--blue); background:#0d1f38; }
+
+        /* Bottom bar */
+        .bottom-bar { background:var(--panel); border-top:1px solid var(--border); padding:9px 20px; display:flex; align-items:center; gap:12px; flex-shrink:0; }
+        .step-desc { flex:1; font-size:13px; line-height:1.45; color:var(--text); }
+        .result-tag { display:none; padding:4px 13px; border-radius:20px; font-size:12px; font-weight:700; flex-shrink:0; }
+        .result-tag.show { display:flex; align-items:center; gap:5px; }
+        .result-tag.t { background:#0d2a16; border:1px solid var(--green); color:var(--green); }
+        .result-tag.f { background:#2d1215; border:1px solid var(--red);   color:var(--red);   }
+        .step-num { font-size:11px; color:var(--muted); flex-shrink:0; min-width:60px; text-align:right; }
+        .controls { display:flex; gap:6px; flex-shrink:0; }
+        .btn { padding:7px 15px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
+        .btn:hover:not(:disabled) { border-color:var(--blue); color:var(--blue); }
+        .btn:disabled { opacity:0.3; cursor:not-allowed; }
+        .btn.primary { background:#1c3458; border-color:var(--blue); color:var(--blue); }
+        .btn.primary:hover:not(:disabled) { background:#1f4a7a; }
+        .btn.playing { background:#3d2b00; border-color:var(--orange); color:var(--orange); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <select class="prob-nav" onchange="window.location.href=this.value">
+        <option value="problem1_canFinish.html">P1 · canFinish</option>
+        <option value="problem2_findOrder.html" selected>P2 · findOrder</option>
+        <option value="problem3_alienOrder.html">P3 · alienOrder</option>
+        <option value="problem4_findMinHeightTrees.html">P4 · findMinHeightTrees</option>
+        <option value="problem5_minimumSemesters.html">P5 · minimumSemesters</option>
+    </select>
+    <div class="header-left">
+        <h1>Course Schedule II &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #210</span></h1>
+        <p>Return a valid topological ordering of courses, or [] if a cycle makes it impossible</p>
+    </div>
+    <div class="ex-btns">
+        <button class="ex-btn active" onclick="loadEx(0)">① Linear</button>
+        <button class="ex-btn"        onclick="loadEx(1)">② Diamond</button>
+        <button class="ex-btn cycle"  onclick="loadEx(2)">③ Cycle → []</button>
+    </div>
+    <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+    <div class="code-panel" id="code-panel">
+        <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+        <div class="io-bar input" id="code-input"></div>
+        <div class="code-block" id="code-block"></div>
+        <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+    </div>
+    <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+    <div class="resizer" id="resizer"></div>
+
+    <div class="graph-panel">
+        <div class="panel-label">Graph — prereq → unlocks · badge = indegree remaining</div>
+        <div class="svg-wrap">
+            <svg id="g-svg" viewBox="0 0 560 340" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="m-gray"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#484f58"/></marker>
+                    <marker id="m-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#d29922"/></marker>
+                    <marker id="m-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bc8cff"/></marker>
+                    <marker id="m-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3fb950"/></marker>
+                    <marker id="m-red"    markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f85149"/></marker>
+                </defs>
+                <g id="g-edges"></g>
+                <g id="g-nodes"></g>
+            </svg>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#58a6ff"></div>Unvisited</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3d2b00;border-color:#d29922"></div>In Queue</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2d1f69;border-color:#bc8cff"></div>Processing</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>In Order ✓</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2d1215;border-color:#f85149"></div>Stuck (Cycle)</div>
+        </div>
+    </div>
+
+    <div class="state-panel">
+        <div class="card">
+            <div class="card-title">Indegree — prereqs still needed</div>
+            <div class="ind-grid" id="ind-grid"></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Queue (FIFO)</div>
+            <div class="queue-row" id="queue-row"><span class="empty-hint">empty</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Order — <span id="order-count">0</span> / <span id="total-count">?</span> placed</div>
+            <div class="order-row" id="order-row"><span class="empty-hint">none yet</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Step Log</div>
+            <div class="log-list" id="log-list"></div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+    <div class="result-tag" id="result-tag"></div>
+    <div class="step-num" id="step-num">— / —</div>
+    <div class="controls">
+        <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+        <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+        <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+        <button class="btn"                        onclick="reset()">↺ Reset</button>
+    </div>
+</div>
+
+<script>
+// ── Resizer
+(function(){
+    const resizer=document.getElementById('resizer'),cp=document.getElementById('code-panel'),main=document.querySelector('.main');
+    let startX,startW;
+    resizer.addEventListener('mousedown',e=>{
+        startX=e.clientX; startW=cp.offsetWidth; resizer.classList.add('dragging');
+        document.body.style.cursor='col-resize'; document.body.style.userSelect='none';
+        const onMove=e=>{
+            const stateW=document.querySelector('.state-panel').offsetWidth;
+            const avail=main.offsetWidth-stateW-5;
+            const nw=Math.min(Math.floor(avail/2),Math.max(120,startW+(e.clientX-startX)));
+            cp.style.width=nw+'px';
+        };
+        const onUp=()=>{resizer.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};
+        document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+    });
+})();
+
+// ── Examples
+const EX = [
+    { label:'Linear', n:4, prereqs:[[1,0],[2,1],[3,2]],
+      pos:{0:{x:90,y:170},1:{x:210,y:170},2:{x:330,y:170},3:{x:450,y:170}} },
+    { label:'Diamond', n:4, prereqs:[[1,0],[2,0],[3,1],[3,2]],
+      pos:{0:{x:280,y:55},1:{x:150,y:180},2:{x:410,y:180},3:{x:280,y:300}} },
+    { label:'Cycle', n:3, prereqs:[[1,0],[2,1],[0,2]],
+      pos:{0:{x:165,y:80},1:{x:395,y:80},2:{x:280,y:275}} },
+];
+
+const ST = {
+    unvisited:  {fill:'#21262d',stroke:'#58a6ff',text:'#8b949e'},
+    inqueue:    {fill:'#3d2b00',stroke:'#d29922',text:'#e3b341'},
+    processing: {fill:'#2d1f69',stroke:'#bc8cff',text:'#d2b8ff'},
+    done:       {fill:'#0d2a16',stroke:'#3fb950',text:'#3fb950'},
+    stuck:      {fill:'#2d1215',stroke:'#f85149',text:'#f85149'},
+};
+const ARROW_MAP={'#484f58':'m-gray','#bc8cff':'m-purple','#3fb950':'m-green','#f85149':'m-red','#d29922':'m-orange'};
+
+let exIdx=0, steps=[], stepIdx=-1, autoTmr=null;
+
+// ── Not-yet sentinel
+const NOT_YET = Symbol('ny');
+const PHASE_IDX = {build_init:0,build_loop:1,seed:2,pop:3,update:4,done:5};
+const VAR_INTRO  = {numCourses:-1,prerequisites:-1,graph:0,indegree:0,queue:2,order:2,node:3,nxt:4};
+
+// ── Build steps
+function buildSteps(n,prereqs){
+    const out=[];
+    const adj={};
+    for(let i=0;i<n;i++) adj[i]=[];
+    const indeg=new Array(n).fill(0);
+    const queue=[], order=[];
+
+    function snap(ex={}){
+        return {indeg:[...indeg],queue:[...queue],order:[...order],adj:JSON.parse(JSON.stringify(adj)),cur:null,hilite:[],stuck:[],result:null,phase:'',description:'',...ex};
+    }
+
+    out.push(snap({phase:'build_init',description:`Initialise graph and indegree array to all zeros: [${indeg.join(', ')}].`}));
+
+    for(const [course,pre] of prereqs){ adj[pre].push(course); indeg[course]++; }
+    out.push(snap({phase:'build_loop',description:`Fill graph + indegrees from prerequisites. Result: [${indeg.map((v,i)=>`${i}:${v}`).join(', ')}].`}));
+
+    for(let i=0;i<n;i++) if(indeg[i]===0) queue.push(i);
+    out.push(snap({phase:'seed',description:queue.length?`Seed queue with 0-indegree courses: [${queue.join(', ')}].`:`⚠️ No 0-indegree course — queue empty. Cycle likely.`}));
+
+    while(queue.length){
+        const node=queue.shift();
+        order.push(node);
+        const hilite=adj[node].map(nb=>[node,nb]);
+        out.push(snap({phase:'pop',cur:node,hilite,description:adj[node].length?`Pop course ${node}. Unlocks: [${adj[node].join(', ')}]. Appended to order → [${order.join(', ')}].`:`Pop course ${node}. No outgoing edges. Order → [${order.join(', ')}].`}));
+
+        const newly=[];
+        for(const nb of adj[node]){ indeg[nb]--; if(indeg[nb]===0){queue.push(nb);newly.push(nb);} }
+        if(adj[node].length>0){
+            out.push(snap({phase:'update',cur:node,description:newly.length?`Decremented indegrees. [${newly.join(', ')}] hit 0 → enqueued. Queue: [${queue.join(', ')}].`:`Decremented indegrees. No new 0-indegree. Queue: [${queue.join(', ')}].`}));
+        }
+    }
+
+    const ok=order.length===n;
+    const stuck=ok?[]:[...Array(n).keys()].filter(i=>!order.includes(i));
+    out.push(snap({phase:'done',stuck,result:ok?[...order]:null,description:ok?`✅ All ${n} courses placed. Return [${order.join(', ')}].`:`❌ Only ${order.length}/${n} placed. Courses [${stuck.join(', ')}] stuck in cycle → return [].`}));
+    return out;
+}
+
+// ── Helpers
+function nodeState(id,step){
+    if(!step) return 'unvisited';
+    if(step.stuck.includes(id)) return 'stuck';
+    if(step.cur===id) return 'processing';
+    if(step.order.includes(id)) return 'done';
+    if(step.queue.includes(id)) return 'inqueue';
+    return 'unvisited';
+}
+function edgeColor(f,t,step){
+    if(!step) return '#484f58';
+    if(step.hilite.some(e=>e[0]===f&&e[1]===t)) return '#bc8cff';
+    if(step.stuck.includes(f)&&step.stuck.includes(t)) return '#f85149';
+    if(step.order.includes(f)&&step.order.includes(t)) return '#3fb950';
+    return '#484f58';
+}
+function svgEl(tag,attrs,text){
+    const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    if(text!==undefined) el.textContent=text;
+    return el;
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtAdj(adj,n){ const p=[]; for(let i=0;i<n;i++) if(adj[i]&&adj[i].length) p.push(`  ${i}: [${adj[i].join(', ')}]`); return p.length?'{\n'+p.join(',\n')+'\n}':'{}'; }
+function getVars(step){
+    const ex=EX[exIdx],phase=step?step.phase:null,pIdx=phase!=null?(PHASE_IDX[phase]??-1):-1;
+    const v=(name,val)=>pIdx>=VAR_INTRO[name]?val:NOT_YET;
+    const nxtVals=step&&step.hilite&&step.hilite.length?step.hilite.map(e=>e[1]):null;
+    return {
+        numCourses:ex.n, prerequisites:JSON.stringify(ex.prereqs),
+        graph:v('graph',step?fmtAdj(step.adj,ex.n):'{}'),
+        indegree:v('indegree',step?JSON.stringify(step.indeg):'[]'),
+        queue:v('queue',step?JSON.stringify(step.queue):'[]'),
+        order:v('order',step?JSON.stringify(step.order):'[]'),
+        node:v('node',step&&step.cur!==null?step.cur:'—'),
+        nxt:v('nxt',nxtVals?JSON.stringify(nxtVals)+' (neighbors)':'(changes each iter)'),
+    };
+}
+function formatVar(val){ if(val===NOT_YET) return '(not defined yet)'; return String(val); }
+
+// ── CODE LINES
+const V=(n,l)=>`<span class="vt" data-var="${n}">${l||n}</span>`;
+const CODE_LINES = [
+    {h:`<span class="kw">def</span> <span class="fn">findOrder</span>(${V('numCourses')}, ${V('prerequisites')}):`,phases:[]},
+    {h:`    ${V('graph')} <span class="op">=</span> <span class="bi">defaultdict</span>(list)`,phases:['build_init']},
+    {h:`    ${V('indegree')} <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> ${V('numCourses')}`,phases:['build_init']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">for</span> course, prereq <span class="kw">in</span> ${V('prerequisites')}:`,phases:['build_loop']},
+    {h:`        ${V('graph')}[prereq].append(course)`,phases:['build_loop']},
+    {h:`        ${V('indegree')}[course] <span class="op">+=</span> <span class="nm">1</span>`,phases:['build_loop']},
+    {h:'',phases:[]},
+    {h:`    ${V('queue')} <span class="op">=</span> <span class="bi">deque</span>(`,phases:['seed']},
+    {h:`        i <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(${V('numCourses')})`,phases:['seed']},
+    {h:`        <span class="kw">if</span> ${V('indegree')}[i] <span class="op">==</span> <span class="nm">0</span>`,phases:['seed']},
+    {h:'    )',phases:['seed']},
+    {h:`    ${V('order')} <span class="op">=</span> []`,phases:['seed']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">while</span> ${V('queue')}:`,phases:['pop']},
+    {h:`        ${V('node')} <span class="op">=</span> ${V('queue')}.popleft()`,phases:['pop']},
+    {h:`        ${V('order')}.append(${V('node')})`,phases:['pop']},
+    {h:'',phases:[]},
+    {h:`        <span class="kw">for</span> ${V('nxt')} <span class="kw">in</span> ${V('graph')}[${V('node')}]:`,phases:['pop','update']},
+    {h:`            ${V('indegree')}[${V('nxt')}] <span class="op">-=</span> <span class="nm">1</span>`,phases:['update']},
+    {h:`            <span class="kw">if</span> ${V('indegree')}[${V('nxt')}] <span class="op">==</span> <span class="nm">0</span>:`,phases:['update']},
+    {h:`                ${V('queue')}.append(${V('nxt')})`,phases:['update']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">return</span> ${V('order')} <span class="kw">if</span> len(${V('order')}) <span class="op">==</span> ${V('numCourses')} <span class="kw">else</span> []`,phases:['done'],isReturn:true},
+];
+
+// ── Render code panel
+function renderCode(){
+    const step=stepIdx>=0?steps[stepIdx]:null, phase=step?step.phase:'', result=step?step.result:null, ex=EX[exIdx];
+    document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">numCourses</span><span class="io-sep">=</span><span class="io-v">${ex.n}</span></span><span class="io-kv"><span class="io-key">prerequisites</span><span class="io-sep">=</span><span class="io-v">${escHtml(JSON.stringify(ex.prereqs))}</span></span>`;
+    const outBar=document.getElementById('code-output');
+    if(step&&step.result!==null){
+        const arr=step.result?JSON.stringify(step.result):'[]';
+        outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-key">return</span><span class="io-sep">=</span><span class="io-v" style="color:${step.result?'var(--green)':'var(--red)'};font-weight:700">${escHtml(arr)}</span></span>`;
+    } else { outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`; }
+    const block=document.getElementById('code-block'); block.innerHTML=''; let ln=0;
+    for(const cl of CODE_LINES){
+        if(cl.h!=='') ln++;
+        const active=phase&&cl.phases.includes(phase);
+        let hl=''; if(active){ if(cl.isReturn){ hl=result===null?'hl-orange':result?'hl-green':'hl-red'; }else{ hl='hl-orange'; } }
+        const row=document.createElement('div'); row.className='code-line'+(hl?' '+hl:'');
+        const lnEl=document.createElement('span'); lnEl.className='ln'; lnEl.textContent=cl.h!==''?String(ln):'';
+        const lt=document.createElement('span'); lt.className='lt'; lt.innerHTML=cl.h;
+        row.appendChild(lnEl); row.appendChild(lt); block.appendChild(row);
+        if(active&&!block._scrolled){ block._scrolled=true; setTimeout(()=>row.scrollIntoView({block:'nearest'}),0); }
+    }
+    block._scrolled=false;
+}
+
+// ── Render graph
+const R=26;
+function renderGraph(){
+    const ex=EX[exIdx], step=stepIdx>=0?steps[stepIdx]:null;
+    const gE=document.getElementById('g-edges'), gN=document.getElementById('g-nodes');
+    gE.innerHTML=''; gN.innerHTML='';
+    const edges=ex.prereqs.map(([c,p])=>[p,c]);
+    for(const [from,to] of edges){
+        const p1=ex.pos[from],p2=ex.pos[to],dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len;
+        const col=edgeColor(from,to,step), isHi=step&&step.hilite.some(e=>e[0]===from&&e[1]===to);
+        gE.appendChild(svgEl('line',{x1:p1.x+ux*R,y1:p1.y+uy*R,x2:p2.x-ux*(R+9),y2:p2.y-uy*(R+9),stroke:col,'stroke-width':isHi?'2.5':'1.5','marker-end':`url(#${ARROW_MAP[col]||'m-gray'})`}));
+    }
+    for(let i=0;i<ex.n;i++){
+        const p=ex.pos[i],state=nodeState(i,step),s=ST[state],g=svgEl('g',{});
+        if(state==='processing') g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R+8,fill:'none',stroke:'#bc8cff','stroke-width':'2',opacity:'0.3'}));
+        g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R,fill:s.fill,stroke:s.stroke,'stroke-width':state==='processing'?'2.5':'2'}));
+        g.appendChild(svgEl('text',{x:p.x,y:p.y+5,'text-anchor':'middle',fill:s.text,'font-size':'16','font-weight':'700','font-family':'monospace'},String(i)));
+        if(step){ const bx=p.x+R-3,by=p.y-R+3,bv=step.indeg[i]; g.appendChild(svgEl('circle',{cx:bx,cy:by,r:'12',fill:'#161b22',stroke:'#30363d','stroke-width':'1.5'})); g.appendChild(svgEl('text',{x:bx,y:by+4,'text-anchor':'middle',fill:bv===0?'#3fb950':'#8b949e','font-size':'11','font-weight':'700','font-family':'monospace'},String(bv))); }
+        g.appendChild(svgEl('text',{x:p.x,y:p.y+R+16,'text-anchor':'middle',fill:'#484f58','font-size':'10'},`C${i}`));
+        gN.appendChild(g);
+    }
+}
+
+// ── Render side
+function renderSide(){
+    const ex=EX[exIdx], step=stepIdx>=0?steps[stepIdx]:null;
+    let indeg,queue,order,stuck;
+    if(step){ indeg=step.indeg; queue=step.queue; order=step.order; stuck=step.stuck; }
+    else { indeg=new Array(ex.n).fill(0); for(const [c] of ex.prereqs) indeg[c]++; queue=[]; order=[]; stuck=[]; }
+    document.getElementById('total-count').textContent=ex.n;
+    document.getElementById('order-count').textContent=order.length;
+    const grid=document.getElementById('ind-grid'); grid.innerHTML='';
+    for(let i=0;i<ex.n;i++){
+        const state=step?nodeState(i,step):'unvisited', s=ST[state];
+        const cell=document.createElement('div'); cell.className='ind-cell';
+        cell.innerHTML=`<div class="ind-node" style="background:${s.fill};border-color:${s.stroke};color:${s.text}">${i}</div><div class="ind-val" style="color:${s.text}">${indeg[i]}</div><div class="ind-sub">indegree</div>`;
+        grid.appendChild(cell);
+    }
+    const qRow=document.getElementById('queue-row'); qRow.innerHTML='';
+    if(!queue.length){ qRow.innerHTML='<span class="empty-hint">empty</span>'; }
+    else { queue.forEach((n,i)=>{ if(i===0){ const w=document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;align-items:center'; w.innerHTML=`<div class="q-node">${n}</div><div class="q-front">← front</div>`; qRow.appendChild(w); } else { const a=document.createElement('span'); a.className='q-arr'; a.textContent='→'; qRow.appendChild(a); const nd=document.createElement('div'); nd.className='q-node'; nd.textContent=n; qRow.appendChild(nd); } }); }
+    const oRow=document.getElementById('order-row'); oRow.innerHTML='';
+    if(!order.length){ oRow.innerHTML='<span class="empty-hint">none yet</span>'; }
+    else { order.forEach((n,i)=>{ if(i>0){ const a=document.createElement('span'); a.style.color='#484f58'; a.textContent='→'; oRow.appendChild(a); } const nd=document.createElement('div'); nd.className='order-node'+(stuck.includes(n)?' stuck':''); nd.textContent=n; oRow.appendChild(nd); }); }
+}
+
+// ── Render log
+function renderLog(){
+    const log=document.getElementById('log-list'); log.innerHTML='';
+    for(let i=0;i<=stepIdx&&i<steps.length;i++){ const el=document.createElement('div'); el.className='log-entry'+(i===stepIdx?' active':''); el.textContent=`${i+1}. ${steps[i].description}`; log.appendChild(el); }
+    log.scrollTop=log.scrollHeight;
+}
+
+// ── Render bottom
+function renderBottom(){
+    const step=stepIdx>=0?steps[stepIdx]:null;
+    document.getElementById('step-desc').innerHTML=step?step.description:'Pick an example, then click <strong>Next Step ▶</strong>';
+    const tag=document.getElementById('result-tag');
+    if(step&&step.result!==null){
+        const arr=step.result?JSON.stringify(step.result):'[]';
+        tag.className='result-tag show '+(step.result?'t':'f');
+        tag.textContent='return '+arr;
+    } else { tag.className='result-tag'; }
+    document.getElementById('step-num').textContent=stepIdx<0?`— / ${steps.length}`:`${stepIdx+1} / ${steps.length}`;
+    document.getElementById('btn-prev').disabled=stepIdx<=0;
+    document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function renderAll(){ renderCode(); renderGraph(); renderSide(); renderLog(); renderBottom(); }
+
+function go(dir){ const n=stepIdx+dir; if(n<0||n>=steps.length) return; stepIdx=n; renderAll(); }
+function reset(){ stopAuto(); stepIdx=-1; renderAll(); }
+function toggleAuto(){ if(autoTmr){ stopAuto(); return; } const b=document.getElementById('btn-auto'); b.textContent='⏸ Pause'; b.classList.add('playing'); autoTmr=setInterval(()=>{ if(stepIdx>=steps.length-1){stopAuto();return;} go(+1); },1050); }
+function stopAuto(){ if(!autoTmr) return; clearInterval(autoTmr); autoTmr=null; const b=document.getElementById('btn-auto'); b.textContent='▶▶ Auto'; b.classList.remove('playing'); }
+
+function loadEx(idx){
+    stopAuto(); exIdx=idx; stepIdx=-1;
+    document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+    steps=buildSteps(EX[idx].n,EX[idx].prereqs); renderAll();
+}
+
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='l') go(+1); if(e.key==='ArrowLeft'||e.key==='h') go(-1); if(e.key===' '){e.preventDefault();toggleAuto();} if(e.key==='r'||e.key==='R') reset(); if(e.key==='1') loadEx(0); if(e.key==='2') loadEx(1); if(e.key==='3') loadEx(2); });
+
+// ── Tooltip
+(function(){
+    const tooltip=document.getElementById('var-tooltip'),vtName=document.getElementById('vt-name'),vtVal=document.getElementById('vt-val'),cb=document.getElementById('code-block');
+    cb.addEventListener('mouseover',e=>{ const vt=e.target.closest&&e.target.closest('.vt'); if(!vt) return; const vn=vt.dataset.var,step=stepIdx>=0?steps[stepIdx]:null,vars=getVars(step); if(!(vn in vars)) return; vtName.textContent=vn+':'; const rv=vars[vn]; vtVal.textContent=formatVar(rv); vtVal.style.color=rv===NOT_YET?'#484f58':''; vtVal.style.fontStyle=rv===NOT_YET?'italic':'normal'; tooltip.style.display='block'; });
+    cb.addEventListener('mousemove',e=>{ if(tooltip.style.display==='none') return; let x=e.clientX+16,y=e.clientY+12; if(x+320>window.innerWidth) x=e.clientX-330; if(y+100>window.innerHeight) y=e.clientY-80; tooltip.style.left=x+'px'; tooltip.style.top=y+'px'; });
+    cb.addEventListener('mouseleave',()=>{ tooltip.style.display='none'; });
+    cb.addEventListener('mouseout',e=>{ if(!e.relatedTarget||!e.relatedTarget.closest('.vt')) tooltip.style.display='none'; });
+})();
+
+loadEx(0);
+</script>
+</body>
+</html>

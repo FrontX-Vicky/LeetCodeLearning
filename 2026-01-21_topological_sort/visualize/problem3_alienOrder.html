@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC #269 Alien Dictionary — Topological Sort Visualizer</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149; }
+        body { background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden; }
+        .header { background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px; }
+        .header-left h1 { font-size:15px;font-weight:600;color:var(--head); }
+        .header-left p  { font-size:11px;color:var(--muted);margin-top:3px; }
+        .ex-btns { display:flex;gap:6px;flex-shrink:0; }
+        .ex-btn { padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s; }
+        .ex-btn:hover { border-color:var(--blue);color:var(--blue); }
+        .ex-btn.active { border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600; }
+        .ex-btn.cycle:hover  { border-color:var(--red);color:var(--red); }
+        .ex-btn.cycle.active { border-color:var(--red);background:#2d1215;color:var(--red);font-weight:600; }
+        .kbd-hint { font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap; }
+        .kbd-hint kbd { background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted); }
+        .prob-nav { background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:200px; }
+        .prob-nav:hover,.prob-nav:focus { border-color:var(--blue);color:var(--blue); }
+        .prob-nav option { background:#1c2128;color:var(--text); }
+        .main { display:flex;flex:1;overflow:hidden;min-height:0; }
+        .code-panel { width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden; }
+        .resizer { width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background 0.15s;z-index:10; }
+        .resizer:hover,.resizer.dragging { background:var(--blue); }
+        .resizer::after { content:'';position:absolute;inset:0 -4px; }
+        .code-block { flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65; }
+        .code-block::-webkit-scrollbar { width:3px; }
+        .code-block::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .code-line { display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background 0.18s,border-color 0.18s; }
+        .code-line.hl-orange { background:rgba(210,153,34,0.13);border-left-color:var(--orange); }
+        .code-line.hl-green  { background:rgba(63,185,80,0.13);border-left-color:var(--green); }
+        .code-line.hl-red    { background:rgba(248,81,73,0.13);border-left-color:var(--red); }
+        .ln { width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none; }
+        .code-line.hl-orange .ln { color:var(--orange); }
+        .code-line.hl-green  .ln { color:var(--green); }
+        .code-line.hl-red    .ln { color:var(--red); }
+        .lt { white-space:pre; }
+        .kw{color:#ff7b72;}.fn{color:#d2a8ff;}.bi{color:#79c0ff;}.cm{color:#484f58;font-style:italic;}.nm{color:#f2cc60;}.op{color:#ff7b72;}
+        .vt { cursor:help;border-bottom:1px dotted #484f58;transition:border-color 0.1s; }
+        .vt:hover { border-bottom-color:var(--blue); }
+        #var-tooltip { position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,0.55);display:none; }
+        #var-tooltip .vt-name { color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px; }
+        #var-tooltip .vt-val  { color:var(--green); }
+        .io-bar { flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13; }
+        .io-bar.input { border-bottom:1px solid var(--border); }
+        .io-bar.output { border-top:1px solid var(--border); }
+        .io-lbl { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;padding-top:1px; }
+        .io-bar.input  .io-lbl { color:#58a6ff55; }
+        .io-bar.output .io-lbl { color:var(--green); }
+        .io-kv { display:flex;gap:4px;align-items:baseline; }
+        .io-key{color:var(--purple);}.io-sep{color:#484f58;}.io-v{color:var(--text);}
+        .io-na { color:#484f58;font-style:italic; }
+        .graph-panel { flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border); }
+        .panel-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0; }
+        .svg-wrap { flex:1;min-height:0;display:flex;align-items:center;justify-content:center; }
+        #g-svg { width:100%;height:100%;max-height:330px; }
+        .legend { display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0; }
+        .legend-item { display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted); }
+        .legend-dot { width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0; }
+        .word-pair-bar { display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap;flex-shrink:0;min-height:28px; }
+        .word-chip { font-family:monospace;font-size:13px;padding:2px 8px;border-radius:4px;background:#21262d;border:1px solid var(--border);color:var(--text); }
+        .word-chip.hi { border-color:var(--orange);background:#3d2b00;color:#e3b341; }
+        .word-chip.diff { border-color:var(--purple);background:#2d1f69;color:#d2b8ff; }
+        .state-panel { width:295px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow-y:auto; }
+        .state-panel::-webkit-scrollbar { width:3px; }
+        .state-panel::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .card { background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0; }
+        .card-title { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:9px; }
+        .ind-grid { display:flex;gap:10px;flex-wrap:wrap; }
+        .ind-cell { display:flex;flex-direction:column;align-items:center;gap:3px; }
+        .ind-node { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;border:2px solid;font-family:monospace; }
+        .ind-val  { font-size:13px;font-weight:700;font-family:monospace; }
+        .ind-sub  { font-size:9px;color:#484f58; }
+        .queue-row { display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:38px; }
+        .q-node { width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:#3d2b00;border:2px solid var(--orange);color:#e3b341;font-family:monospace; }
+        .q-arr { color:#484f58;font-size:15px; }
+        .q-front { font-size:9px;color:var(--orange);margin-top:2px; }
+        .order-row { display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:38px; }
+        .order-node { width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;background:#0d2a16;border:2px solid var(--green);color:var(--green);font-family:monospace; }
+        .order-node.stuck { background:#2d1215;border-color:var(--red);color:var(--red); }
+        .empty-hint { font-size:11px;color:#484f58;font-style:italic; }
+        .log-list { display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto; }
+        .log-list::-webkit-scrollbar { width:3px; }
+        .log-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .log-entry { font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border); }
+        .log-entry.active { color:var(--text);border-left-color:var(--blue);background:#0d1f38; }
+        .bottom-bar { background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0; }
+        .step-desc { flex:1;font-size:13px;line-height:1.45;color:var(--text); }
+        .result-tag { display:none;padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0; }
+        .result-tag.show { display:flex;align-items:center;gap:5px; }
+        .result-tag.t { background:#0d2a16;border:1px solid var(--green);color:var(--green); }
+        .result-tag.f { background:#2d1215;border:1px solid var(--red);color:var(--red); }
+        .step-num { font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right; }
+        .controls { display:flex;gap:6px;flex-shrink:0; }
+        .btn { padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap; }
+        .btn:hover:not(:disabled) { border-color:var(--blue);color:var(--blue); }
+        .btn:disabled { opacity:0.3;cursor:not-allowed; }
+        .btn.primary { background:#1c3458;border-color:var(--blue);color:var(--blue); }
+        .btn.primary:hover:not(:disabled) { background:#1f4a7a; }
+        .btn.playing { background:#3d2b00;border-color:var(--orange);color:var(--orange); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <select class="prob-nav" onchange="window.location.href=this.value">
+        <option value="problem1_canFinish.html">P1 · canFinish</option>
+        <option value="problem2_findOrder.html">P2 · findOrder</option>
+        <option value="problem3_alienOrder.html" selected>P3 · alienOrder</option>
+        <option value="problem4_findMinHeightTrees.html">P4 · findMinHeightTrees</option>
+        <option value="problem5_minimumSemesters.html">P5 · minimumSemesters</option>
+    </select>
+    <div class="header-left">
+        <h1>Alien Dictionary &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #269</span></h1>
+        <p>Infer character ordering from a sorted alien word list → topological sort on characters</p>
+    </div>
+    <div class="ex-btns">
+        <button class="ex-btn active" onclick="loadEx(0)">① wrt… → "wertf"</button>
+        <button class="ex-btn"        onclick="loadEx(1)">② z,x → "zx"</button>
+        <button class="ex-btn cycle"  onclick="loadEx(2)">③ Cycle → ""</button>
+    </div>
+    <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+    <div class="code-panel" id="code-panel">
+        <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+        <div class="io-bar input" id="code-input"></div>
+        <div class="code-block" id="code-block"></div>
+        <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+    </div>
+    <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+    <div class="resizer" id="resizer"></div>
+
+    <div class="graph-panel">
+        <div class="panel-label">Character ordering graph — edge c1→c2 means c1 comes before c2 in alien alphabet · badge = indegree</div>
+        <div class="svg-wrap">
+            <svg id="g-svg" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="m-gray"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#484f58"/></marker>
+                    <marker id="m-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#d29922"/></marker>
+                    <marker id="m-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#bc8cff"/></marker>
+                    <marker id="m-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3fb950"/></marker>
+                    <marker id="m-red"    markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f85149"/></marker>
+                </defs>
+                <g id="g-edges"></g>
+                <g id="g-nodes"></g>
+            </svg>
+        </div>
+        <div class="word-pair-bar" id="word-pair-bar"></div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#58a6ff"></div>Unvisited</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3d2b00;border-color:#d29922"></div>In Queue</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2d1f69;border-color:#bc8cff"></div>Processing</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>In Order ✓</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2d1215;border-color:#f85149"></div>Stuck (Cycle)</div>
+        </div>
+    </div>
+
+    <div class="state-panel">
+        <div class="card">
+            <div class="card-title">Indegree per character</div>
+            <div class="ind-grid" id="ind-grid"></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Queue (FIFO)</div>
+            <div class="queue-row" id="queue-row"><span class="empty-hint">empty</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Order — <span id="order-count">0</span> / <span id="total-count">?</span> chars placed</div>
+            <div class="order-row" id="order-row"><span class="empty-hint">none yet</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Step Log</div>
+            <div class="log-list" id="log-list"></div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+    <div class="result-tag" id="result-tag"></div>
+    <div class="step-num" id="step-num">— / —</div>
+    <div class="controls">
+        <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+        <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+        <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+        <button class="btn"                        onclick="reset()">↺ Reset</button>
+    </div>
+</div>
+
+<script>
+// ── Resizer
+(function(){
+    const resizer=document.getElementById('resizer'),cp=document.getElementById('code-panel'),main=document.querySelector('.main');
+    let startX,startW;
+    resizer.addEventListener('mousedown',e=>{
+        startX=e.clientX; startW=cp.offsetWidth; resizer.classList.add('dragging');
+        document.body.style.cursor='col-resize'; document.body.style.userSelect='none';
+        const onMove=e=>{ const sw=document.querySelector('.state-panel').offsetWidth, av=main.offsetWidth-sw-5; cp.style.width=Math.min(Math.floor(av/2),Math.max(120,startW+(e.clientX-startX)))+'px'; };
+        const onUp=()=>{ resizer.classList.remove('dragging'); document.body.style.cursor=''; document.body.style.userSelect=''; document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); };
+        document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+    });
+})();
+
+// ── Examples
+const EX = [
+    {
+        label:'wrt,wrf,er,ett,rftt',
+        words:["wrt","wrf","er","ett","rftt"],
+        // chars and positions
+        nodes:['w','e','r','t','f'],
+        pos:{'w':{x:70,y:150},'e':{x:175,y:150},'r':{x:285,y:150},'t':{x:395,y:150},'f':{x:490,y:150}},
+        // pre-computed edges: [from,to]
+        edges:[['t','f'],['w','e'],['r','t'],['e','r']],
+    },
+    {
+        label:'z,x → "zx"',
+        words:["z","x"],
+        nodes:['z','x'],
+        pos:{'z':{x:180,y:150},'x':{x:380,y:150}},
+        edges:[['z','x']],
+    },
+    {
+        label:'z,x,z → "" (cycle)',
+        words:["z","x","z"],
+        nodes:['z','x'],
+        pos:{'z':{x:200,y:100},'x':{x:360,y:210}},
+        edges:[['z','x'],['x','z']],
+    },
+];
+
+const ST = {
+    unvisited:  {fill:'#21262d',stroke:'#58a6ff',text:'#8b949e'},
+    inqueue:    {fill:'#3d2b00',stroke:'#d29922',text:'#e3b341'},
+    processing: {fill:'#2d1f69',stroke:'#bc8cff',text:'#d2b8ff'},
+    done:       {fill:'#0d2a16',stroke:'#3fb950',text:'#3fb950'},
+    stuck:      {fill:'#2d1215',stroke:'#f85149',text:'#f85149'},
+};
+const ARROW_MAP={'#484f58':'m-gray','#bc8cff':'m-purple','#3fb950':'m-green','#f85149':'m-red','#d29922':'m-orange'};
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+const NOT_YET=Symbol('ny');
+const PHASE_IDX={init:0,build:1,seed:2,pop:3,update:4,done:5};
+const VAR_INTRO={words:-1,indegree:0,graph:1,queue:2,order:2,char:3,nxt:4};
+
+// ── Build steps
+function buildSteps(ex){
+    const {words,nodes,edges}=ex;
+    const out=[];
+    // indegree object
+    const indeg={};
+    for(const ch of nodes) indeg[ch]=0;
+    const graph={}; for(const ch of nodes) graph[ch]=[];
+    const queue=[],order=[];
+
+    function snap(extra={}){
+        return {indeg:{...indeg},queue:[...queue],order:[...order],graph:JSON.parse(JSON.stringify(graph)),cur:null,hilite:[],stuck:[],result:null,phase:'',wordPair:null,description:'',...extra};
+    }
+
+    // Phase 0: init — collect all chars
+    out.push(snap({phase:'init',description:`Collect all unique characters from words: {${nodes.join(', ')}}. Initialise indegree = 0 for each.`}));
+
+    // Phase 1: build — process all word pair comparisons
+    for(const [from,to] of edges){
+        if(!graph[from].includes(to)){ graph[from].push(to); indeg[to]++; }
+    }
+    // Show each word pair comparison
+    for(let i=0;i<words.length-1;i++){
+        const w1=words[i],w2=words[i+1];
+        if(w1.length>w2.length&&w1.startsWith(w2)){
+            out.push(snap({phase:'build',wordPair:[w1,w2,null,null],description:`⚠️ "${w1}" > "${w2}" but "${w1}" starts with "${w2}" — invalid ordering → return "".`,result:''}));
+            break;
+        }
+        let diffC1=null,diffC2=null;
+        for(let j=0;j<Math.min(w1.length,w2.length);j++){
+            if(w1[j]!==w2[j]){ diffC1=w1[j]; diffC2=w2[j]; break; }
+        }
+        if(diffC1){ out.push(snap({phase:'build',wordPair:[w1,w2,diffC1,diffC2],description:`Compare "${w1}" vs "${w2}": first difference at '${diffC1}' vs '${diffC2}' → edge ${diffC1}→${diffC2} (${diffC1} comes before ${diffC2} in alien alphabet).`})); }
+        else { out.push(snap({phase:'build',wordPair:[w1,w2,null,null],description:`Compare "${w1}" vs "${w2}": no difference found (one is prefix of other). No new edge.`})); }
+    }
+    out.push(snap({phase:'build',description:`Graph built. Edges: ${edges.map(([a,b])=>`${a}→${b}`).join(', ') || 'none'}. Indegrees: {${nodes.map(c=>`${c}:${indeg[c]}`).join(', ')}}.`}));
+
+    // Phase 2: seed
+    for(const ch of nodes) if(indeg[ch]===0) queue.push(ch);
+    out.push(snap({phase:'seed',description:queue.length?`Seed queue with 0-indegree chars: [${queue.join(', ')}].`:`⚠️ No 0-indegree char — cycle detected → return "".`}));
+
+    // BFS
+    while(queue.length){
+        const ch=queue.shift();
+        order.push(ch);
+        const hilite=(graph[ch]||[]).map(nb=>[ch,nb]);
+        out.push(snap({phase:'pop',cur:ch,hilite,description:graph[ch]&&graph[ch].length?`Pop '${ch}'. Unlocks: [${graph[ch].join(', ')}]. Order → "${order.join('')}".`:`Pop '${ch}'. No outgoing edges. Order → "${order.join('')}".`}));
+
+        const newly=[];
+        for(const nb of (graph[ch]||[])){ indeg[nb]--; if(indeg[nb]===0){queue.push(nb);newly.push(nb);} }
+        if(graph[ch]&&graph[ch].length){
+            out.push(snap({phase:'update',cur:ch,description:newly.length?`Decremented indegrees. '${newly.join("', '")}' hit 0 → enqueued. Queue: [${queue.join(', ')}].`:`Decremented. No new 0-indegree. Queue: [${queue.join(', ')}].`}));
+        }
+    }
+
+    const ok=order.length===nodes.length;
+    const stuck=ok?[]:nodes.filter(c=>!order.includes(c));
+    const result=ok?order.join(''):'';
+    out.push(snap({phase:'done',stuck,result,description:ok?`✅ All ${nodes.length} chars ordered. Return "${result}".`:`❌ Only ${order.length}/${nodes.length} chars processed. [${stuck.join(', ')}] stuck in cycle → return "".`}));
+    return out;
+}
+
+// ── Helpers
+function nodeState(ch,step){
+    if(!step) return 'unvisited';
+    if(step.stuck.includes(ch)) return 'stuck';
+    if(step.cur===ch) return 'processing';
+    if(step.order.includes(ch)) return 'done';
+    if(step.queue.includes(ch)) return 'inqueue';
+    return 'unvisited';
+}
+function edgeColor(f,t,step){
+    if(!step) return '#484f58';
+    if(step.hilite.some(e=>e[0]===f&&e[1]===t)) return '#bc8cff';
+    if(step.stuck.includes(f)&&step.stuck.includes(t)) return '#f85149';
+    if(step.order.includes(f)&&step.order.includes(t)) return '#3fb950';
+    return '#484f58';
+}
+function svgEl(tag,attrs,text){
+    const el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+    for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v);
+    if(text!==undefined) el.textContent=text;
+    return el;
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function getVars(step){
+    const ex=EX[exIdx],phase=step?step.phase:null,pIdx=phase!=null?(PHASE_IDX[phase]??-1):-1;
+    const v=(n,val)=>pIdx>=VAR_INTRO[n]?val:NOT_YET;
+    const nxtVals=step&&step.hilite&&step.hilite.length?step.hilite.map(e=>e[1]):null;
+    return {
+        words:JSON.stringify(ex.words),
+        indegree:v('indegree',step?JSON.stringify(step.indeg):'{}'),
+        graph:v('graph',step?JSON.stringify(step.graph):'{}'),
+        queue:v('queue',step?JSON.stringify(step.queue):'[]'),
+        order:v('order',step?JSON.stringify(step.order):'[]'),
+        char:v('char',step&&step.cur!==null?step.cur:'—'),
+        nxt:v('nxt',nxtVals?JSON.stringify(nxtVals)+' (neighbors)':'(changes each iter)'),
+    };
+}
+function formatVar(val){ if(val===NOT_YET) return '(not defined yet)'; return String(val); }
+
+// ── CODE LINES
+const V=(n,l)=>`<span class="vt" data-var="${n}">${l||n}</span>`;
+const CODE_LINES=[
+    {h:`<span class="kw">def</span> <span class="fn">alienOrder</span>(${V('words')}):`,phases:[]},
+    {h:`    ${V('indegree')} <span class="op">=</span> {c: <span class="nm">0</span> <span class="kw">for</span> w <span class="kw">in</span> ${V('words')} <span class="kw">for</span> c <span class="kw">in</span> w}`,phases:['init']},
+    {h:`    ${V('graph')} <span class="op">=</span> <span class="bi">defaultdict</span>(set)`,phases:['init']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(len(${V('words')}) - <span class="nm">1</span>):`,phases:['build']},
+    {h:`        w1, w2 <span class="op">=</span> ${V('words')}[i], ${V('words')}[i+<span class="nm">1</span>]`,phases:['build']},
+    {h:`        <span class="kw">if</span> len(w1) <span class="op">></span> len(w2) <span class="kw">and</span> w1.startswith(w2):`,phases:['build']},
+    {h:`            <span class="kw">return</span> <span class="nm">""</span>  <span class="cm"># invalid</span>`,phases:['build']},
+    {h:`        <span class="kw">for</span> c1, c2 <span class="kw">in</span> zip(w1, w2):`,phases:['build']},
+    {h:`            <span class="kw">if</span> c1 <span class="op">!=</span> c2:`,phases:['build']},
+    {h:`                <span class="kw">if</span> c2 <span class="kw">not in</span> ${V('graph')}[c1]:`,phases:['build']},
+    {h:`                    ${V('graph')}[c1].add(c2)`,phases:['build']},
+    {h:`                    ${V('indegree')}[c2] <span class="op">+=</span> <span class="nm">1</span>`,phases:['build']},
+    {h:`                <span class="kw">break</span>`,phases:['build']},
+    {h:'',phases:[]},
+    {h:`    ${V('queue')} <span class="op">=</span> <span class="bi">deque</span>(c <span class="kw">for</span> c <span class="kw">in</span> ${V('indegree')} <span class="kw">if</span> ${V('indegree')}[c] <span class="op">==</span> <span class="nm">0</span>)`,phases:['seed']},
+    {h:`    ${V('order')} <span class="op">=</span> []`,phases:['seed']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">while</span> ${V('queue')}:`,phases:['pop']},
+    {h:`        ${V('char')} <span class="op">=</span> ${V('queue')}.popleft()`,phases:['pop']},
+    {h:`        ${V('order')}.append(${V('char')})`,phases:['pop']},
+    {h:`        <span class="kw">for</span> ${V('nxt')} <span class="kw">in</span> ${V('graph')}[${V('char')}]:`,phases:['pop','update']},
+    {h:`            ${V('indegree')}[${V('nxt')}] <span class="op">-=</span> <span class="nm">1</span>`,phases:['update']},
+    {h:`            <span class="kw">if</span> ${V('indegree')}[${V('nxt')}] <span class="op">==</span> <span class="nm">0</span>:`,phases:['update']},
+    {h:`                ${V('queue')}.append(${V('nxt')})`,phases:['update']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">return</span> "".join(${V('order')}) <span class="kw">if</span> len(${V('order')}) <span class="op">==</span> len(${V('indegree')}) <span class="kw">else</span> ""`,phases:['done'],isReturn:true},
+];
+
+// ── Render code
+function renderCode(){
+    const step=stepIdx>=0?steps[stepIdx]:null,phase=step?step.phase:'',result=step?step.result:null,ex=EX[exIdx];
+    document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">words</span><span class="io-sep">=</span><span class="io-v">${escHtml(JSON.stringify(ex.words))}</span></span>`;
+    const outBar=document.getElementById('code-output');
+    if(step&&step.result!==null){ outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-key">return</span><span class="io-sep">=</span><span class="io-v" style="color:${step.result?'var(--green)':'var(--red)'};font-weight:700">"${escHtml(step.result)}"</span></span>`; }
+    else { outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`; }
+    const block=document.getElementById('code-block'); block.innerHTML=''; let ln=0;
+    for(const cl of CODE_LINES){
+        if(cl.h!=='') ln++;
+        const active=phase&&cl.phases.includes(phase);
+        let hl=''; if(active){ hl=cl.isReturn?(result===''?'hl-red':result?'hl-green':'hl-orange'):'hl-orange'; }
+        const row=document.createElement('div'); row.className='code-line'+(hl?' '+hl:'');
+        const lnEl=document.createElement('span'); lnEl.className='ln'; lnEl.textContent=cl.h!==''?String(ln):'';
+        const lt=document.createElement('span'); lt.className='lt'; lt.innerHTML=cl.h;
+        row.appendChild(lnEl); row.appendChild(lt); block.appendChild(row);
+        if(active&&!block._scrolled){ block._scrolled=true; setTimeout(()=>row.scrollIntoView({block:'nearest'}),0); }
+    }
+    block._scrolled=false;
+}
+
+// ── Render graph
+const R=28;
+function renderGraph(){
+    const ex=EX[exIdx],step=stepIdx>=0?steps[stepIdx]:null;
+    const gE=document.getElementById('g-edges'),gN=document.getElementById('g-nodes');
+    gE.innerHTML=''; gN.innerHTML='';
+
+    // Draw edges based on current step's graph (only edges added so far)
+    const currentEdges=step?Object.entries(step.graph).flatMap(([f,ts])=>ts.map(t=>[f,t])):[];
+    // Also always show pre-defined edges (greyed) so user can see the full picture
+    const allEdgesSet=new Set(ex.edges.map(([a,b])=>a+'>'+b));
+    const shownEdges=step?(step.phase==='init'?[]:currentEdges):[];
+
+    for(const [from,to] of shownEdges){
+        const p1=ex.pos[from],p2=ex.pos[to];
+        if(!p1||!p2) continue;
+        const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy);
+        if(len===0) continue;
+        const ux=dx/len,uy=dy/len;
+        // Slight arc for cycle edges (reverse direction)
+        const isReverse=shownEdges.some(([a,b])=>a===to&&b===from);
+        const col=edgeColor(from,to,step),isHi=step&&step.hilite.some(e=>e[0]===from&&e[1]===to);
+        if(isReverse){
+            // Curved arc
+            const mx=(p1.x+p2.x)/2+(dy*0.4),my=(p1.y+p2.y)/2-(dx*0.4);
+            const x1s=p1.x+ux*R,y1s=p1.y+uy*R;
+            const x2e=p2.x-ux*(R+9),y2e=p2.y-uy*(R+9);
+            gE.appendChild(svgEl('path',{d:`M${x1s},${y1s} Q${mx},${my} ${x2e},${y2e}`,stroke:col,'stroke-width':isHi?'2.5':'1.5',fill:'none','marker-end':`url(#${ARROW_MAP[col]||'m-gray'})`}));
+        } else {
+            gE.appendChild(svgEl('line',{x1:p1.x+ux*R,y1:p1.y+uy*R,x2:p2.x-ux*(R+9),y2:p2.y-uy*(R+9),stroke:col,'stroke-width':isHi?'2.5':'1.5','marker-end':`url(#${ARROW_MAP[col]||'m-gray'})`}));
+        }
+    }
+
+    for(const ch of ex.nodes){
+        const p=ex.pos[ch],state=nodeState(ch,step),s=ST[state],g=svgEl('g',{});
+        if(state==='processing') g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R+8,fill:'none',stroke:'#bc8cff','stroke-width':'2',opacity:'0.3'}));
+        g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R,fill:s.fill,stroke:s.stroke,'stroke-width':state==='processing'?'2.5':'2'}));
+        g.appendChild(svgEl('text',{x:p.x,y:p.y+6,'text-anchor':'middle',fill:s.text,'font-size':'17','font-weight':'700','font-family':'monospace'},ch));
+        if(step&&step.indeg[ch]!==undefined){ const bx=p.x+R-3,by=p.y-R+3,bv=step.indeg[ch]; g.appendChild(svgEl('circle',{cx:bx,cy:by,r:'12',fill:'#161b22',stroke:'#30363d','stroke-width':'1.5'})); g.appendChild(svgEl('text',{x:bx,y:by+4,'text-anchor':'middle',fill:bv===0?'#3fb950':'#8b949e','font-size':'11','font-weight':'700','font-family':'monospace'},String(bv))); }
+        gN.appendChild(g);
+    }
+
+    // Word pair bar
+    const wpBar=document.getElementById('word-pair-bar'); wpBar.innerHTML='';
+    if(step&&step.wordPair){
+        const [w1,w2,d1,d2]=step.wordPair;
+        wpBar.innerHTML=`<span style="font-size:10px;color:var(--muted)">Compare:</span>`;
+        // Highlight words, mark differing chars
+        [w1,w2].forEach((w,wi)=>{
+            const diffChar=wi===0?d1:d2;
+            let html='';
+            for(const c of w) html+=`<span style="${c===diffChar?'color:var(--purple);font-weight:700':''}">${c}</span>`;
+            const chip=document.createElement('span'); chip.className='word-chip hi'; chip.innerHTML=html; wpBar.appendChild(chip);
+            if(wi===0){ const arr=document.createElement('span'); arr.style.cssText='color:#484f58;font-size:14px'; arr.textContent='vs'; wpBar.appendChild(arr); }
+        });
+        if(d1&&d2){ const arrow=document.createElement('span'); arrow.style.cssText='color:var(--purple);font-size:12px;font-weight:600'; arrow.textContent=`→ edge: ${d1}→${d2}`; wpBar.appendChild(arrow); }
+    }
+}
+
+// ── Render side
+function renderSide(){
+    const ex=EX[exIdx],step=stepIdx>=0?steps[stepIdx]:null;
+    const indeg=step?step.indeg:Object.fromEntries(ex.nodes.map(c=>[c,0]));
+    const queue=step?step.queue:[], order=step?step.order:[], stuck=step?step.stuck:[];
+    document.getElementById('total-count').textContent=ex.nodes.length;
+    document.getElementById('order-count').textContent=order.length;
+    const grid=document.getElementById('ind-grid'); grid.innerHTML='';
+    for(const ch of ex.nodes){
+        const state=step?nodeState(ch,step):'unvisited',s=ST[state];
+        const cell=document.createElement('div'); cell.className='ind-cell';
+        cell.innerHTML=`<div class="ind-node" style="background:${s.fill};border-color:${s.stroke};color:${s.text}">${ch}</div><div class="ind-val" style="color:${s.text}">${indeg[ch]??0}</div><div class="ind-sub">indegree</div>`;
+        grid.appendChild(cell);
+    }
+    const qRow=document.getElementById('queue-row'); qRow.innerHTML='';
+    if(!queue.length){ qRow.innerHTML='<span class="empty-hint">empty</span>'; }
+    else { queue.forEach((c,i)=>{ if(i===0){ const w=document.createElement('div'); w.style.cssText='display:flex;flex-direction:column;align-items:center'; w.innerHTML=`<div class="q-node">${c}</div><div class="q-front">← front</div>`; qRow.appendChild(w); } else { const a=document.createElement('span'); a.className='q-arr'; a.textContent='→'; qRow.appendChild(a); const nd=document.createElement('div'); nd.className='q-node'; nd.textContent=c; qRow.appendChild(nd); } }); }
+    const oRow=document.getElementById('order-row'); oRow.innerHTML='';
+    if(!order.length){ oRow.innerHTML='<span class="empty-hint">none yet</span>'; }
+    else { order.forEach((c,i)=>{ if(i>0){ const a=document.createElement('span'); a.style.color='#484f58'; a.textContent='→'; oRow.appendChild(a); } const nd=document.createElement('div'); nd.className='order-node'+(stuck.includes(c)?' stuck':''); nd.textContent=c; oRow.appendChild(nd); }); }
+}
+
+function renderLog(){
+    const log=document.getElementById('log-list'); log.innerHTML='';
+    for(let i=0;i<=stepIdx&&i<steps.length;i++){ const el=document.createElement('div'); el.className='log-entry'+(i===stepIdx?' active':''); el.textContent=`${i+1}. ${steps[i].description}`; log.appendChild(el); }
+    log.scrollTop=log.scrollHeight;
+}
+function renderBottom(){
+    const step=stepIdx>=0?steps[stepIdx]:null;
+    document.getElementById('step-desc').innerHTML=step?step.description:'Pick an example, then click <strong>Next Step ▶</strong>';
+    const tag=document.getElementById('result-tag');
+    if(step&&step.result!==null){ tag.className='result-tag show '+(step.result?'t':'f'); tag.textContent=step.result?`return "${step.result}"`:' return ""'; }
+    else { tag.className='result-tag'; }
+    document.getElementById('step-num').textContent=stepIdx<0?`— / ${steps.length}`:`${stepIdx+1} / ${steps.length}`;
+    document.getElementById('btn-prev').disabled=stepIdx<=0;
+    document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function renderAll(){ renderCode(); renderGraph(); renderSide(); renderLog(); renderBottom(); }
+function go(dir){ const n=stepIdx+dir; if(n<0||n>=steps.length) return; stepIdx=n; renderAll(); }
+function reset(){ stopAuto(); stepIdx=-1; renderAll(); }
+function toggleAuto(){ if(autoTmr){stopAuto();return;} const b=document.getElementById('btn-auto'); b.textContent='⏸ Pause'; b.classList.add('playing'); autoTmr=setInterval(()=>{if(stepIdx>=steps.length-1){stopAuto();return;}go(+1);},1200); }
+function stopAuto(){ if(!autoTmr)return; clearInterval(autoTmr); autoTmr=null; const b=document.getElementById('btn-auto'); b.textContent='▶▶ Auto'; b.classList.remove('playing'); }
+function loadEx(idx){ stopAuto(); exIdx=idx; stepIdx=-1; document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===idx)); steps=buildSteps(EX[idx]); renderAll(); }
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='l')go(+1); if(e.key==='ArrowLeft'||e.key==='h')go(-1); if(e.key===' '){e.preventDefault();toggleAuto();} if(e.key==='r'||e.key==='R')reset(); if(e.key==='1')loadEx(0); if(e.key==='2')loadEx(1); if(e.key==='3')loadEx(2); });
+
+// ── Tooltip
+(function(){
+    const tooltip=document.getElementById('var-tooltip'),vtName=document.getElementById('vt-name'),vtVal=document.getElementById('vt-val'),cb=document.getElementById('code-block');
+    cb.addEventListener('mouseover',e=>{ const vt=e.target.closest&&e.target.closest('.vt'); if(!vt)return; const vn=vt.dataset.var,step=stepIdx>=0?steps[stepIdx]:null,vars=getVars(step); if(!(vn in vars))return; vtName.textContent=vn+':'; const rv=vars[vn]; vtVal.textContent=formatVar(rv); vtVal.style.color=rv===NOT_YET?'#484f58':''; vtVal.style.fontStyle=rv===NOT_YET?'italic':'normal'; tooltip.style.display='block'; });
+    cb.addEventListener('mousemove',e=>{ if(tooltip.style.display==='none')return; let x=e.clientX+16,y=e.clientY+12; if(x+320>window.innerWidth)x=e.clientX-330; if(y+100>window.innerHeight)y=e.clientY-80; tooltip.style.left=x+'px'; tooltip.style.top=y+'px'; });
+    cb.addEventListener('mouseleave',()=>{ tooltip.style.display='none'; });
+    cb.addEventListener('mouseout',e=>{ if(!e.relatedTarget||!e.relatedTarget.closest('.vt'))tooltip.style.display='none'; });
+})();
+
+loadEx(0);
+</script>
+</body>
+</html>

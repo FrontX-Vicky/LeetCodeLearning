@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LC #310 Minimum Height Trees — Leaf Peeling Visualizer</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149; }
+        body { background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden; }
+        .header { background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px; }
+        .header-left h1 { font-size:15px;font-weight:600;color:var(--head); }
+        .header-left p  { font-size:11px;color:var(--muted);margin-top:3px; }
+        .ex-btns { display:flex;gap:6px;flex-shrink:0; }
+        .ex-btn { padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.15s; }
+        .ex-btn:hover { border-color:var(--blue);color:var(--blue); }
+        .ex-btn.active { border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600; }
+        .kbd-hint { font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap; }
+        .kbd-hint kbd { background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted); }
+        .prob-nav { background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:200px; }
+        .prob-nav:hover,.prob-nav:focus { border-color:var(--blue);color:var(--blue); }
+        .prob-nav option { background:#1c2128;color:var(--text); }
+        .main { display:flex;flex:1;overflow:hidden;min-height:0; }
+        .code-panel { width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden; }
+        .resizer { width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background 0.15s;z-index:10; }
+        .resizer:hover,.resizer.dragging { background:var(--blue); }
+        .resizer::after { content:'';position:absolute;inset:0 -4px; }
+        .code-block { flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65; }
+        .code-block::-webkit-scrollbar { width:3px; }
+        .code-block::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .code-line { display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background 0.18s,border-color 0.18s; }
+        .code-line.hl-orange { background:rgba(210,153,34,0.13);border-left-color:var(--orange); }
+        .code-line.hl-green  { background:rgba(63,185,80,0.13);border-left-color:var(--green); }
+        .code-line.hl-red    { background:rgba(248,81,73,0.13);border-left-color:var(--red); }
+        .ln { width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none; }
+        .code-line.hl-orange .ln { color:var(--orange); }
+        .code-line.hl-green  .ln { color:var(--green); }
+        .code-line.hl-red    .ln { color:var(--red); }
+        .lt { white-space:pre; }
+        .kw{color:#ff7b72;}.fn{color:#d2a8ff;}.bi{color:#79c0ff;}.cm{color:#484f58;font-style:italic;}.nm{color:#f2cc60;}.op{color:#ff7b72;}
+        .vt { cursor:help;border-bottom:1px dotted #484f58;transition:border-color 0.1s; }
+        .vt:hover { border-bottom-color:var(--blue); }
+        #var-tooltip { position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,0.55);display:none; }
+        #var-tooltip .vt-name { color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px; }
+        #var-tooltip .vt-val  { color:var(--green); }
+        .io-bar { flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13; }
+        .io-bar.input { border-bottom:1px solid var(--border); }
+        .io-bar.output { border-top:1px solid var(--border); }
+        .io-lbl { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;padding-top:1px; }
+        .io-bar.input  .io-lbl { color:#58a6ff55; }
+        .io-bar.output .io-lbl { color:var(--green); }
+        .io-kv { display:flex;gap:4px;align-items:baseline; }
+        .io-key{color:var(--purple);}.io-sep{color:#484f58;}.io-v{color:var(--text);}
+        .io-na { color:#484f58;font-style:italic; }
+        .graph-panel { flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border); }
+        .panel-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0; }
+        .svg-wrap { flex:1;min-height:0;display:flex;align-items:center;justify-content:center; }
+        #g-svg { width:100%;height:100%;max-height:330px; }
+        .legend { display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0; }
+        .legend-item { display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted); }
+        .legend-dot { width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0; }
+        .state-panel { width:295px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow-y:auto; }
+        .state-panel::-webkit-scrollbar { width:3px; }
+        .state-panel::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .card { background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0; }
+        .card-title { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:9px; }
+        .counter-row { display:flex;gap:16px;align-items:center; }
+        .counter-box { display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px; }
+        .counter-val { font-size:28px;font-weight:700;font-family:monospace;color:var(--blue);line-height:1; }
+        .counter-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em; }
+        .ind-grid { display:flex;gap:10px;flex-wrap:wrap; }
+        .ind-cell { display:flex;flex-direction:column;align-items:center;gap:3px; }
+        .ind-node { width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;border:2px solid;font-family:monospace; }
+        .ind-val  { font-size:13px;font-weight:700;font-family:monospace; }
+        .ind-sub  { font-size:9px;color:#484f58; }
+        .leaves-row { display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:38px; }
+        .leaf-node { width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:#3d2b00;border:2px solid var(--orange);color:#e3b341;font-family:monospace; }
+        .result-row { display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:38px; }
+        .result-node { width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;background:#0d2a16;border:2px solid var(--green);color:var(--green);font-family:monospace; }
+        .empty-hint { font-size:11px;color:#484f58;font-style:italic; }
+        .log-list { display:flex;flex-direction:column;gap:4px;max-height:110px;overflow-y:auto; }
+        .log-list::-webkit-scrollbar { width:3px; }
+        .log-list::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+        .log-entry { font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border); }
+        .log-entry.active { color:var(--text);border-left-color:var(--blue);background:#0d1f38; }
+        .bottom-bar { background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0; }
+        .step-desc { flex:1;font-size:13px;line-height:1.45;color:var(--text); }
+        .result-tag { display:none;padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0; }
+        .result-tag.show { display:flex;align-items:center;gap:5px; }
+        .result-tag.t { background:#0d2a16;border:1px solid var(--green);color:var(--green); }
+        .step-num { font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right; }
+        .controls { display:flex;gap:6px;flex-shrink:0; }
+        .btn { padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap; }
+        .btn:hover:not(:disabled) { border-color:var(--blue);color:var(--blue); }
+        .btn:disabled { opacity:0.3;cursor:not-allowed; }
+        .btn.primary { background:#1c3458;border-color:var(--blue);color:var(--blue); }
+        .btn.primary:hover:not(:disabled) { background:#1f4a7a; }
+        .btn.playing { background:#3d2b00;border-color:var(--orange);color:var(--orange); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <select class="prob-nav" onchange="window.location.href=this.value">
+        <option value="problem1_canFinish.html">P1 · canFinish</option>
+        <option value="problem2_findOrder.html">P2 · findOrder</option>
+        <option value="problem3_alienOrder.html">P3 · alienOrder</option>
+        <option value="problem4_findMinHeightTrees.html" selected>P4 · findMinHeightTrees</option>
+        <option value="problem5_minimumSemesters.html">P5 · minimumSemesters</option>
+    </select>
+    <div class="header-left">
+        <h1>Minimum Height Trees &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #310</span></h1>
+        <p>Find centroid(s) by iteratively peeling leaves until ≤ 2 nodes remain</p>
+    </div>
+    <div class="ex-btns">
+        <button class="ex-btn active" onclick="loadEx(0)">① n=6, → [3,4]</button>
+        <button class="ex-btn"        onclick="loadEx(1)">② n=4, → [1]</button>
+        <button class="ex-btn"        onclick="loadEx(2)">③ n=2, → [0,1]</button>
+    </div>
+    <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+    <div class="code-panel" id="code-panel">
+        <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+        <div class="io-bar input" id="code-input"></div>
+        <div class="code-block" id="code-block"></div>
+        <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+    </div>
+    <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+    <div class="resizer" id="resizer"></div>
+
+    <div class="graph-panel">
+        <div class="panel-label">Undirected graph — badge = degree (neighbors remaining) · leaf = degree 1</div>
+        <div class="svg-wrap">
+            <svg id="g-svg" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+                <g id="g-edges"></g>
+                <g id="g-nodes"></g>
+            </svg>
+        </div>
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#58a6ff"></div>Inner (deg>1)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3d2b00;border-color:#d29922"></div>Leaf (deg=1)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#2d1f69;border-color:#bc8cff"></div>Being Peeled</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#161b22;border-color:#484f58;opacity:0.5"></div>Removed</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>Centroid ✓</div>
+        </div>
+    </div>
+
+    <div class="state-panel">
+        <div class="card">
+            <div class="card-title">Progress</div>
+            <div class="counter-row">
+                <div class="counter-box"><div class="counter-val" id="remaining-val">—</div><div class="counter-lbl">Remaining</div></div>
+                <div class="counter-box"><div class="counter-val" id="round-val" style="color:var(--orange)">0</div><div class="counter-lbl">Round</div></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Degree per node</div>
+            <div class="ind-grid" id="deg-grid"></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Current Leaves (peeling)</div>
+            <div class="leaves-row" id="leaves-row"><span class="empty-hint">none yet</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Result Centroids</div>
+            <div class="result-row" id="result-row"><span class="empty-hint">not yet</span></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Step Log</div>
+            <div class="log-list" id="log-list"></div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+    <div class="result-tag" id="result-tag"></div>
+    <div class="step-num" id="step-num">— / —</div>
+    <div class="controls">
+        <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+        <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+        <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+        <button class="btn"                        onclick="reset()">↺ Reset</button>
+    </div>
+</div>
+
+<script>
+// ── Resizer
+(function(){
+    const resizer=document.getElementById('resizer'),cp=document.getElementById('code-panel'),main=document.querySelector('.main');
+    let startX,startW;
+    resizer.addEventListener('mousedown',e=>{
+        startX=e.clientX; startW=cp.offsetWidth; resizer.classList.add('dragging');
+        document.body.style.cursor='col-resize'; document.body.style.userSelect='none';
+        const onMove=e=>{ const sw=document.querySelector('.state-panel').offsetWidth,av=main.offsetWidth-sw-5; cp.style.width=Math.min(Math.floor(av/2),Math.max(120,startW+(e.clientX-startX)))+'px'; };
+        const onUp=()=>{ resizer.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp); };
+        document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+    });
+})();
+
+// ── Examples
+const EX = [
+    { n:6, edges:[[3,0],[3,1],[3,2],[3,4],[5,4]],
+      pos:{0:{x:90,y:110},1:{x:90,y:210},2:{x:90,y:310},3:{x:240,y:210},4:{x:390,y:210},5:{x:510,y:210}} },
+    { n:4, edges:[[1,0],[1,2],[1,3]],
+      pos:{0:{x:280,y:60},1:{x:280,y:185},2:{x:150,y:310},3:{x:410,y:310}} },
+    { n:2, edges:[[0,1]],
+      pos:{0:{x:190,y:165},1:{x:370,y:165}} },
+];
+
+// Node states
+const ST = {
+    inner:    {fill:'#21262d',stroke:'#58a6ff',text:'#8b949e'},
+    leaf:     {fill:'#3d2b00',stroke:'#d29922',text:'#e3b341'},
+    peeling:  {fill:'#2d1f69',stroke:'#bc8cff',text:'#d2b8ff'},
+    removed:  {fill:'#0d1117',stroke:'#30363d',text:'#484f58'},
+    centroid: {fill:'#0d2a16',stroke:'#3fb950',text:'#3fb950'},
+};
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+const NOT_YET=Symbol('ny');
+const PHASE_IDX={build:0,find_leaves:1,peel:2,done:3};
+const VAR_INTRO={n:-1,edges:-1,adj:0,degree:0,remaining:0,leaves:1,node:2,neighbor:2,result:3};
+
+// ── Build steps
+function buildSteps(ex){
+    const {n,edges}=ex;
+    const out=[];
+    // Build adjacency (sets)
+    const adj=Array.from({length:n},()=>new Set());
+    const degree=new Array(n).fill(0);
+    for(const [a,b] of edges){ adj[a].add(b); adj[b].add(a); degree[a]++; degree[b]++; }
+    let remaining=n;
+    const removed=new Set();
+    const leaves=[];
+
+    function snap(extra={}){
+        return {degree:[...degree],removed:new Set(removed),leaves:[...leaves],peeling:[],result:null,round:0,remaining,phase:'',description:'',...extra};
+    }
+
+    // Edge case: n===1
+    if(n===1){
+        out.push(snap({phase:'build',description:`Build adjacency. n=1, no edges. Only 1 node.`}));
+        out.push(snap({phase:'done',result:[0],description:`n ≤ 2 immediately → return [0].`}));
+        return out;
+    }
+
+    out.push(snap({phase:'build',description:`Build adjacency and degree array. Degrees: [${degree.join(', ')}].`}));
+
+    // Find initial leaves
+    for(let i=0;i<n;i++) if(degree[i]===1) leaves.push(i);
+    out.push(snap({phase:'find_leaves',description:`Initial leaves (degree=1): [${leaves.join(', ')}]. Remaining: ${remaining}.`}));
+
+    let round=0;
+    while(remaining>2){
+        round++;
+        const batch=[...leaves];
+        leaves.length=0;
+        const peelingSet=new Set(batch);
+        out.push(snap({phase:'peel',peeling:batch,round,description:`Round ${round}: Peel ${batch.length} leaf node(s): [${batch.join(', ')}]. Remaining before: ${remaining}.`}));
+        for(const leaf of batch){
+            removed.add(leaf);
+            remaining--;
+            for(const nb of adj[leaf]){
+                if(!removed.has(nb)){
+                    degree[nb]--;
+                    if(degree[nb]===1) leaves.push(nb);
+                }
+            }
+        }
+        out.push(snap({phase:'peel',round,description:`After round ${round}: removed [${batch.join(', ')}]. New leaves: [${leaves.join(', ')}]. Remaining: ${remaining}.`}));
+    }
+
+    const result=[...Array(n).keys()].filter(i=>!removed.has(i));
+    out.push(snap({phase:'done',result,description:`✅ ${remaining} node(s) left — these are the MHT root(s). Return [${result.join(', ')}].`}));
+    return out;
+}
+
+// ── Helpers
+function nodeState(id,step){
+    if(!step) return 'inner';
+    if(step.result&&step.result.includes(id)) return 'centroid';
+    if(step.removed.has(id)) return 'removed';
+    if(step.peeling&&step.peeling.includes(id)) return 'peeling';
+    if(step.leaves&&step.leaves.includes(id)) return 'leaf';
+    if(step.degree[id]===1) return 'leaf';
+    return 'inner';
+}
+function svgEl(tag,attrs,text){ const el=document.createElementNS('http://www.w3.org/2000/svg',tag); for(const [k,v] of Object.entries(attrs)) el.setAttribute(k,v); if(text!==undefined) el.textContent=text; return el; }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function getVars(step){
+    const ex=EX[exIdx],phase=step?step.phase:null,pIdx=phase!=null?(PHASE_IDX[phase]??-1):-1;
+    const v=(nm,val)=>pIdx>=VAR_INTRO[nm]?val:NOT_YET;
+    return {
+        n:ex.n, edges:JSON.stringify(ex.edges),
+        adj:v('adj',step?step.degree.map((d,i)=>`${i}:[${[...Array(ex.n).keys()].filter(j=>ex.edges.some(([a,b])=>(a===i&&b===j)||(b===i&&a===j))).join(',')}]`).join(','):''),
+        degree:v('degree',step?JSON.stringify(step.degree):'[]'),
+        remaining:v('remaining',step?step.remaining:'—'),
+        leaves:v('leaves',step?JSON.stringify(step.leaves):'[]'),
+        node:v('node',step&&step.peeling&&step.peeling.length?step.peeling[0]:'—'),
+        neighbor:v('neighbor','(changes each iter)'),
+        result:v('result',step&&step.result!==null?JSON.stringify(step.result):'—'),
+    };
+}
+function formatVar(val){ if(val===NOT_YET) return '(not defined yet)'; return String(val); }
+
+const V=(nm,l)=>`<span class="vt" data-var="${nm}">${l||nm}</span>`;
+const CODE_LINES=[
+    {h:`<span class="kw">def</span> <span class="fn">findMinHeightTrees</span>(${V('n')}, ${V('edges')}):`,phases:[]},
+    {h:`    <span class="kw">if</span> ${V('n')} <span class="op">==</span> <span class="nm">1</span>: <span class="kw">return</span> [<span class="nm">0</span>]`,phases:['build']},
+    {h:`    ${V('adj','adj')} <span class="op">=</span> [set() <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(${V('n')})]`,phases:['build']},
+    {h:`    ${V('degree')} <span class="op">=</span> [<span class="nm">0</span>] <span class="op">*</span> ${V('n')}`,phases:['build']},
+    {h:`    <span class="kw">for</span> a, b <span class="kw">in</span> ${V('edges')}:`,phases:['build']},
+    {h:`        adj[a].add(b); adj[b].add(a)`,phases:['build']},
+    {h:`        ${V('degree')}[a] <span class="op">+=</span> <span class="nm">1</span>; ${V('degree')}[b] <span class="op">+=</span> <span class="nm">1</span>`,phases:['build']},
+    {h:'',phases:[]},
+    {h:`    ${V('remaining')} <span class="op">=</span> ${V('n')}`,phases:['find_leaves']},
+    {h:`    ${V('leaves')} <span class="op">=</span> <span class="bi">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(${V('n')}) <span class="kw">if</span> ${V('degree')}[i] <span class="op">==</span> <span class="nm">1</span>)`,phases:['find_leaves']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">while</span> ${V('remaining')} <span class="op">></span> <span class="nm">2</span>:`,phases:['peel']},
+    {h:`        ${V('remaining')} <span class="op">-=</span> len(${V('leaves')})`,phases:['peel']},
+    {h:`        next_leaves <span class="op">=</span> []`,phases:['peel']},
+    {h:`        <span class="kw">for</span> ${V('node')} <span class="kw">in</span> ${V('leaves')}:`,phases:['peel']},
+    {h:`            <span class="kw">for</span> ${V('neighbor')} <span class="kw">in</span> adj[${V('node')}]:`,phases:['peel']},
+    {h:`                ${V('degree')}[${V('neighbor')}] <span class="op">-=</span> <span class="nm">1</span>`,phases:['peel']},
+    {h:`                <span class="kw">if</span> ${V('degree')}[${V('neighbor')}] <span class="op">==</span> <span class="nm">1</span>:`,phases:['peel']},
+    {h:`                    next_leaves.append(${V('neighbor')})`,phases:['peel']},
+    {h:`        ${V('leaves')} <span class="op">=</span> next_leaves`,phases:['peel']},
+    {h:'',phases:[]},
+    {h:`    <span class="kw">return</span> list(${V('leaves')})`,phases:['done'],isReturn:true},
+];
+
+// ── Render code
+function renderCode(){
+    const step=stepIdx>=0?steps[stepIdx]:null,phase=step?step.phase:'',result=step?step.result:null,ex=EX[exIdx];
+    document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${ex.n}</span></span><span class="io-kv"><span class="io-key">edges</span><span class="io-sep">=</span><span class="io-v">${escHtml(JSON.stringify(ex.edges))}</span></span>`;
+    const outBar=document.getElementById('code-output');
+    if(step&&step.result!==null){ outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-key">return</span><span class="io-sep">=</span><span class="io-v" style="color:var(--green);font-weight:700">${escHtml(JSON.stringify(step.result))}</span></span>`; }
+    else { outBar.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`; }
+    const block=document.getElementById('code-block'); block.innerHTML=''; let ln=0;
+    for(const cl of CODE_LINES){
+        if(cl.h!=='') ln++;
+        const active=phase&&cl.phases.includes(phase);
+        let hl=''; if(active){ hl=cl.isReturn?'hl-green':'hl-orange'; }
+        const row=document.createElement('div'); row.className='code-line'+(hl?' '+hl:'');
+        const lnEl=document.createElement('span'); lnEl.className='ln'; lnEl.textContent=cl.h!==''?String(ln):'';
+        const lt=document.createElement('span'); lt.className='lt'; lt.innerHTML=cl.h;
+        row.appendChild(lnEl); row.appendChild(lt); block.appendChild(row);
+        if(active&&!block._scrolled){ block._scrolled=true; setTimeout(()=>row.scrollIntoView({block:'nearest'}),0); }
+    }
+    block._scrolled=false;
+}
+
+// ── Render graph (undirected)
+const R=26;
+function renderGraph(){
+    const ex=EX[exIdx],step=stepIdx>=0?steps[stepIdx]:null;
+    const gE=document.getElementById('g-edges'),gN=document.getElementById('g-nodes');
+    gE.innerHTML=''; gN.innerHTML='';
+    const drawnEdges=new Set();
+    for(const [a,b] of ex.edges){
+        const key=Math.min(a,b)+'-'+Math.max(a,b);
+        if(drawnEdges.has(key)) continue; drawnEdges.add(key);
+        const p1=ex.pos[a],p2=ex.pos[b];
+        const aRemoved=step&&step.removed.has(a),bRemoved=step&&step.removed.has(b);
+        const col=(aRemoved||bRemoved)?'#21262d':'#484f58';
+        const sw=(aRemoved||bRemoved)?'1':'1.5';
+        gE.appendChild(svgEl('line',{x1:p1.x,y1:p1.y,x2:p2.x,y2:p2.y,stroke:col,'stroke-width':sw,'stroke-dasharray':(aRemoved||bRemoved)?'4,3':'none',opacity:(aRemoved||bRemoved)?'0.3':'1'}));
+    }
+    for(let i=0;i<ex.n;i++){
+        const p=ex.pos[i],state=nodeState(i,step),s=ST[state];
+        const g=svgEl('g',{});
+        const opacity=state==='removed'?'0.35':'1';
+        if(state==='peeling') g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R+8,fill:'none',stroke:'#bc8cff','stroke-width':'2',opacity:'0.3'}));
+        g.appendChild(svgEl('circle',{cx:p.x,cy:p.y,r:R,fill:s.fill,stroke:s.stroke,'stroke-width':state==='peeling'?'2.5':'2',opacity}));
+        g.appendChild(svgEl('text',{x:p.x,y:p.y+5,'text-anchor':'middle',fill:s.text,'font-size':'15','font-weight':'700','font-family':'monospace',opacity},String(i)));
+        // degree badge
+        if(step&&state!=='removed'&&state!=='centroid'){
+            const bx=p.x+R-3,by=p.y-R+3,bv=step.degree[i];
+            g.appendChild(svgEl('circle',{cx:bx,cy:by,r:'12',fill:'#161b22',stroke:'#30363d','stroke-width':'1.5'}));
+            g.appendChild(svgEl('text',{x:bx,y:by+4,'text-anchor':'middle',fill:bv<=1?'#d29922':'#8b949e','font-size':'11','font-weight':'700','font-family':'monospace'},String(bv)));
+        }
+        gN.appendChild(g);
+    }
+}
+
+// ── Render side
+function renderSide(){
+    const ex=EX[exIdx],step=stepIdx>=0?steps[stepIdx]:null;
+    const degree=step?step.degree:ex.edges.reduce((d,[a,b])=>{d[a]=(d[a]||0)+1;d[b]=(d[b]||0)+1;return d;},new Array(ex.n).fill(0));
+    const remaining=step?step.remaining:ex.n;
+    const leaves=step?step.leaves:[];
+    const result=step?step.result:null;
+    const round=step?step.round:0;
+    document.getElementById('remaining-val').textContent=remaining;
+    document.getElementById('round-val').textContent=round||0;
+    const grid=document.getElementById('deg-grid'); grid.innerHTML='';
+    for(let i=0;i<ex.n;i++){
+        const state=step?nodeState(i,step):'inner',s=ST[state];
+        const cell=document.createElement('div'); cell.className='ind-cell';
+        cell.innerHTML=`<div class="ind-node" style="background:${s.fill};border-color:${s.stroke};color:${s.text};opacity:${state==='removed'?'0.35':'1'}">${i}</div><div class="ind-val" style="color:${s.text};opacity:${state==='removed'?'0.35':'1'}">${degree[i]}</div><div class="ind-sub">degree</div>`;
+        grid.appendChild(cell);
+    }
+    const lRow=document.getElementById('leaves-row'); lRow.innerHTML='';
+    if(!leaves.length){ lRow.innerHTML='<span class="empty-hint">none</span>'; }
+    else { leaves.forEach(id=>{ const nd=document.createElement('div'); nd.className='leaf-node'; nd.textContent=id; lRow.appendChild(nd); }); }
+    const rRow=document.getElementById('result-row'); rRow.innerHTML='';
+    if(!result){ rRow.innerHTML='<span class="empty-hint">not yet</span>'; }
+    else { result.forEach(id=>{ const nd=document.createElement('div'); nd.className='result-node'; nd.textContent=id; rRow.appendChild(nd); }); }
+}
+
+function renderLog(){
+    const log=document.getElementById('log-list'); log.innerHTML='';
+    for(let i=0;i<=stepIdx&&i<steps.length;i++){ const el=document.createElement('div'); el.className='log-entry'+(i===stepIdx?' active':''); el.textContent=`${i+1}. ${steps[i].description}`; log.appendChild(el); }
+    log.scrollTop=log.scrollHeight;
+}
+function renderBottom(){
+    const step=stepIdx>=0?steps[stepIdx]:null;
+    document.getElementById('step-desc').innerHTML=step?step.description:'Pick an example, then click <strong>Next Step ▶</strong>';
+    const tag=document.getElementById('result-tag');
+    if(step&&step.result!==null){ tag.className='result-tag show t'; tag.textContent='return '+JSON.stringify(step.result); }
+    else { tag.className='result-tag'; }
+    document.getElementById('step-num').textContent=stepIdx<0?`— / ${steps.length}`:`${stepIdx+1} / ${steps.length}`;
+    document.getElementById('btn-prev').disabled=stepIdx<=0;
+    document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function renderAll(){ renderCode(); renderGraph(); renderSide(); renderLog(); renderBottom(); }
+function go(dir){ const n=stepIdx+dir; if(n<0||n>=steps.length)return; stepIdx=n; renderAll(); }
+function reset(){ stopAuto(); stepIdx=-1; renderAll(); }
+function toggleAuto(){ if(autoTmr){stopAuto();return;} const b=document.getElementById('btn-auto'); b.textContent='⏸ Pause'; b.classList.add('playing'); autoTmr=setInterval(()=>{if(stepIdx>=steps.length-1){stopAuto();return;}go(+1);},1100); }
+function stopAuto(){ if(!autoTmr)return; clearInterval(autoTmr); autoTmr=null; const b=document.getElementById('btn-auto'); b.textContent='▶▶ Auto'; b.classList.remove('playing'); }
+function loadEx(idx){ stopAuto(); exIdx=idx; stepIdx=-1; document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===idx)); steps=buildSteps(EX[idx]); renderAll(); }
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='l')go(+1); if(e.key==='ArrowLeft'||e.key==='h')go(-1); if(e.key===' '){e.preventDefault();toggleAuto();} if(e.key==='r'||e.key==='R')reset(); if(e.key==='1')loadEx(0); if(e.key==='2')loadEx(1); if(e.key==='3')loadEx(2); });
+
+// ── Tooltip
+(function(){
+    const tooltip=document.getElementById('var-tooltip'),vtName=document.getElementById('vt-name'),vtVal=document.getElementById('vt-val'),cb=document.getElementById('code-block');
+    cb.addEventListener('mouseover',e=>{ const vt=e.target.closest&&e.target.closest('.vt'); if(!vt)return; const vn=vt.dataset.var,step=stepIdx>=0?steps[stepIdx]:null,vars=getVars(step); if(!(vn in vars))return; vtName.textContent=vn+':'; const rv=vars[vn]; vtVal.textContent=formatVar(rv); vtVal.style.color=rv===NOT_YET?'#484f58':''; vtVal.style.fontStyle=rv===NOT_YET?'italic':'normal'; tooltip.style.display='block'; });
+    cb.addEventListener('mousemove',e=>{ if(tooltip.style.display==='none')return; let x=e.clientX+16,y=e.clientY+12; if(x+320>window.innerWidth)x=e.clientX-330; if(y+100>window.innerHeight)y=e.clientY-80; tooltip.style.left=x+'px'; tooltip.style.top=y+'px'; });
+    cb.addEventListener('mouseleave',()=>{ tooltip.style.display='none'; });
+    cb.addEventListener('mouseout',e=>{ if(!e.relatedTarget||!e.relatedTarget.closest('.vt'))tooltip.style.display='none'; });
+})();
+
+loadEx(0);
+</script>
+</body>
+</html>
