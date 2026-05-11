@@ -619,26 +619,53 @@ function fmtAdj(adj, n) {
     return parts.length ? '{\n' + parts.join(',\n') + '\n}' : '{}';
 }
 
+// Sentinel: variable not yet defined at this point in execution
+const NOT_YET = Symbol('not_yet');
+
+// Phase order (maps phase name → index used for "introduced" comparison)
+const PHASE_IDX = { build: 0, seed: 1, pop: 2, update: 3, done: 4 };
+
+// Which phase each variable first appears in code (-1 = function params, always visible)
+const VAR_INTRO = {
+    numCourses:    -1,   // function param
+    prerequisites: -1,   // function param
+    graph:          0,   // created at build
+    indegree:       0,   // created at build
+    queue:          1,   // created at seed
+    processed:      1,   // created at seed
+    node:           2,   // assigned inside while loop (pop)
+    nxt:            3,   // assigned inside for loop   (update)
+};
+
 function getVars(step) {
-    const ex = EX[exIdx];
+    const ex      = EX[exIdx];
+    const phase   = step ? step.phase : null;
+    const pIdx    = phase !== null ? (PHASE_IDX[phase] ?? -1) : -1;
+
+    // Returns value if the variable exists at this phase, NOT_YET otherwise
+    function v(name, value) {
+        return pIdx >= VAR_INTRO[name] ? value : NOT_YET;
+    }
+
     const nxtVals = step && step.hilite && step.hilite.length
         ? step.hilite.map(e => e[1]) : null;
+
     return {
         numCourses:    ex.n,
         prerequisites: JSON.stringify(ex.prereqs),
-        graph:         step ? fmtAdj(step.adj, ex.n) : '(building...)',
-        indegree:      step ? JSON.stringify(step.indeg) : '(not set)',
-        queue:         step ? JSON.stringify(step.queue) : '(empty)',
-        processed:     step ? step.processed.length : 0,
-        node:          step && step.cur !== null ? step.cur : '(not in loop yet)',
-        nxt:           nxtVals ? 'neighbors: ' + JSON.stringify(nxtVals) : '(loop var, changes each iter)',
+        graph:         v('graph',     step ? fmtAdj(step.adj, ex.n) : '{}'),
+        indegree:      v('indegree',  step ? JSON.stringify(step.indeg) : '[]'),
+        queue:         v('queue',     step ? JSON.stringify(step.queue) : '[]'),
+        processed:     v('processed', step ? step.processed.length : 0),
+        node:          v('node',      step && step.cur !== null ? step.cur : '—'),
+        nxt:           v('nxt',       nxtVals ? JSON.stringify(nxtVals) + ' (neighbors)' : '(changes each iter)'),
     };
 }
 
 function formatVar(val) {
+    if (val === NOT_YET)        return '(not defined yet)';
     if (typeof val === 'number') return String(val);
-    if (typeof val === 'string') return val;
-    return JSON.stringify(val);
+    return String(val);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1124,8 +1151,11 @@ loadEx(0);
         const step = stepIdx >= 0 ? steps[stepIdx] : null;
         const vars = getVars(step);
         if (!(varName in vars)) return;
-        vtName.textContent = varName + ':';
-        vtVal.textContent  = formatVar(vars[varName]);
+        const rawVal = vars[varName];
+        vtName.textContent    = varName + ':';
+        vtVal.textContent     = formatVar(rawVal);
+        vtVal.style.color     = rawVal === NOT_YET ? '#484f58' : '';
+        vtVal.style.fontStyle = rawVal === NOT_YET ? 'italic'  : 'normal';
         tooltip.style.display = 'block';
     });
 
