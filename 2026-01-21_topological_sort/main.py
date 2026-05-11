@@ -23,7 +23,26 @@ def canFinish(numCourses: int, prerequisites: List[List[int]]) -> bool:
     - If processed count == numCourses => no cycle
     """
     # TODO: Implement Kahn's algorithm
-    pass
+    graph = defaultdict(list)
+    indegree = [0] * numCourses
+
+    for course, prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+
+    queue = deque(i for i in range(numCourses) if indegree[i] == 0)
+    processed = 0
+
+    while queue:
+        node = queue.popleft()
+        processed += 1
+
+        for nxt in graph[node]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+
+    return processed == numCourses
 
 
 # ============================================================
@@ -38,7 +57,27 @@ def findOrder(numCourses: int, prerequisites: List[List[int]]) -> List[int]:
     Return [] if impossible (cycle exists).
     """
     # TODO: Implement BFS topo sort and return order list
-    pass
+    graph = defaultdict(list)
+    indegree = [0] * numCourses
+
+    for course,prereq in prerequisites:
+        graph[prereq].append(course)
+        indegree[course] += 1
+    
+    queue = deque(i for i in range(numCourses) if indegree[i] == 0)
+    order = []
+
+    while queue:
+        node = queue.popleft()
+        order.append(node)
+
+        for nxt in graph[node]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt) 
+    
+    return order if len(order) == numCourses else []
+
 
 
 # ============================================================
@@ -57,7 +96,36 @@ def alienOrder(words: List[str]) -> str:
     Example: ["abc", "ab"] -> invalid
     """
     # TODO: Build character graph and run topological sort on chars
-    pass
+    indegree = {c: 0 for word in words for c in word}
+    graph = defaultdict(set)
+
+    for i in range(len(words) - 1):
+        w1, w2 = words[i], words[i + 1]
+
+        if len(w1) > len(w2) and w1.startswith(w2):
+            return ""
+        
+        for c1, c2 in zip(w1, w2):
+            if c1 != c2:
+                if c2 not in graph[c1]:
+                    graph[c1].add(c2)
+                    indegree[c2] += 1
+                break
+        
+    queue = deque(c for c in indegree if indegree[c] == 0)
+    order = []
+
+    while queue:
+        char = queue.popleft()
+        order.append(char)
+
+        for nxt in graph[char]:
+            indegree[nxt] -= 1
+            if indegree[nxt] == 0:
+                queue.append(nxt)
+
+    return "".join(order) if len(order) == len(indegree) else "" 
+
 
 
 # ============================================================
