@@ -127,8 +127,31 @@ Topological sort exists **iff no directed cycle exists**.
 
 ## ✅ Success Criteria
 
-- [ ] Implement topological sort with Kahn's algorithm
-- [ ] Detect directed cycles correctly
-- [ ] Return valid ordering when possible
-- [ ] Handle edge cases (isolated nodes, disconnected DAGs)
-- [ ] Solve all 5 problems
+- [x] Implement topological sort with Kahn's algorithm
+- [x] Detect directed cycles correctly
+- [x] Return valid ordering when possible
+- [x] Handle edge cases (isolated nodes, disconnected DAGs)
+- [x] Solve all 5 problems
+
+---
+
+## 📝 Wrap-Up Notes
+
+**Test Results**: 25/25 passed
+
+### Key Takeaways
+
+- **Kahn's algorithm** is the go-to for all 4 of these problems — build graph + indegree, queue indegree-0 nodes, process layer by layer.
+- **Cycle detection** is a free byproduct: if `processed < n` after Kahn's, a cycle blocked the remaining nodes.
+- **Alien Dictionary** is just topo sort on a char graph — the tricky part is building edges correctly from adjacent word pairs and catching the invalid prefix edge case (`["abc", "ab"]`).
+- **Minimum Height Trees** doesn't need a directed graph — it's Kahn's applied to an undirected tree by trimming leaves inward until ≤ 2 nodes remain (those are always the centroids).
+- **Parallel Courses** = layered BFS: process the whole queue per semester, increment semester counter each round.
+
+### Patterns Locked In
+
+| Pattern | When to use |
+|---|---|
+| `processed == n` | Cycle detection (Kahn's) |
+| `len(order) == numCourses` | Valid topo order check |
+| `remaining -= layer_size` then `while remaining > 2` | MHT leaf trimming |
+| `semester += 1` per BFS layer | Min time / parallel scheduling |
