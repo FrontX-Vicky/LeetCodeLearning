@@ -290,7 +290,7 @@ function buildSteps(ex){
             const newly=[];
             for(const nb of graph[node]){ indeg[nb]--; if(indeg[nb]===0){queue.push(nb);newly.push(nb);} }
             if(graph[node].length){
-                out.push(snap({phase:'update',cur:node,semester,currentBatch:[...batch],description:newly.length?`Decremented indegrees. [${newly.join(', ')}] hit 0 → enqueued for next semester.`:`Decremented. No new 0-indegree.`}));
+                out.push(snap({phase:'update',cur:node,nxtList:[...graph[node]],semester,currentBatch:[...batch],description:newly.length?`Decremented indegrees. [${newly.join(', ')}] hit 0 → enqueued for next semester.`:`Decremented. No new 0-indegree.`}));
             }
         }
     }
@@ -335,7 +335,7 @@ function getVars(step){
         taken:v('taken',step?step.taken:'—'),
         semester:v('semester',step?step.semester:'—'),
         node:v('node',step&&step.cur!==null?step.cur:'—'),
-        nxt:v('nxt',nxtVals?JSON.stringify(nxtVals)+' (unlocked)':'(changes each iter)'),
+        nxt:v('nxt',step&&step.nxtList?JSON.stringify(step.nxtList):nxtVals?JSON.stringify(nxtVals)+' (unlocked)':'—'),
     };
 }
 function formatVar(val){ if(val===NOT_YET) return '(not defined yet)'; return String(val); }

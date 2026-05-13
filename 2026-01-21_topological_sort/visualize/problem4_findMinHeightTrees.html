@@ -275,7 +275,7 @@ function buildSteps(ex){
         const batch=[...leaves];
         leaves.length=0;
         const peelingSet=new Set(batch);
-        out.push(snap({phase:'peel',peeling:batch,round,description:`Round ${round}: Peel ${batch.length} leaf node(s): [${batch.join(', ')}]. Remaining before: ${remaining}.`}));
+        out.push(snap({phase:'peel',peeling:batch,round,neighborList:batch.flatMap(l=>[...adj[l]].filter(nb=>!removed.has(nb))),description:`Round ${round}: Peel ${batch.length} leaf node(s): [${batch.join(', ')}]. Remaining before: ${remaining}.`}));
         for(const leaf of batch){
             removed.add(leaf);
             remaining--;
@@ -316,7 +316,7 @@ function getVars(step){
         remaining:v('remaining',step?step.remaining:'—'),
         leaves:v('leaves',step?JSON.stringify(step.leaves):'[]'),
         node:v('node',step&&step.peeling&&step.peeling.length?step.peeling[0]:'—'),
-        neighbor:v('neighbor','(changes each iter)'),
+        neighbor:v('neighbor',step&&step.neighborList?JSON.stringify(step.neighborList):'—'),
         result:v('result',step&&step.result!==null?JSON.stringify(step.result):'—'),
     };
 }

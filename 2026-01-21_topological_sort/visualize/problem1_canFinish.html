@@ -709,7 +709,7 @@ function getVars(step) {
         queue:         v('queue',     step ? JSON.stringify(step.queue) : '[]'),
         processed:     v('processed', step ? step.processed.length : 0),
         node:          v('node',      step && step.cur !== null ? step.cur : '—'),
-        nxt:           v('nxt',       nxtVals ? JSON.stringify(nxtVals) + ' (neighbors)' : '(changes each iter)'),
+        nxt:           v('nxt',       step && step.nxtList ? JSON.stringify(step.nxtList) : nxtVals ? JSON.stringify(nxtVals)+' (neighbors)' : '—'),
     };
 }
 
@@ -839,6 +839,7 @@ function buildSteps(n, prereqs) {
             out.push(snap({
                 phase: 'update',
                 cur: node,
+                nxtList: [...adj[node]],
                 description: newly.length
                     ? `Decremented indegrees. Course(s) [${newly.join(', ')}] hit 0 → added to queue.` +
                       ` Queue is now: [${queue.join(', ')}].`

@@ -285,7 +285,7 @@ function buildSteps(n,prereqs){
         const newly=[];
         for(const nb of adj[node]){ indeg[nb]--; if(indeg[nb]===0){queue.push(nb);newly.push(nb);} }
         if(adj[node].length>0){
-            out.push(snap({phase:'update',cur:node,description:newly.length?`Decremented indegrees. [${newly.join(', ')}] hit 0 → enqueued. Queue: [${queue.join(', ')}].`:`Decremented indegrees. No new 0-indegree. Queue: [${queue.join(', ')}].`}));
+            out.push(snap({phase:'update',cur:node,nxtList:[...adj[node]],description:newly.length?`Decremented indegrees. [${newly.join(', ')}] hit 0 → enqueued. Queue: [${queue.join(', ')}].`:`Decremented indegrees. No new 0-indegree. Queue: [${queue.join(', ')}].`}));
         }
     }
 
@@ -330,7 +330,7 @@ function getVars(step){
         queue:v('queue',step?JSON.stringify(step.queue):'[]'),
         order:v('order',step?JSON.stringify(step.order):'[]'),
         node:v('node',step&&step.cur!==null?step.cur:'—'),
-        nxt:v('nxt',nxtVals?JSON.stringify(nxtVals)+' (neighbors)':'(changes each iter)'),
+        nxt:v('nxt',step&&step.nxtList?JSON.stringify(step.nxtList):nxtVals?JSON.stringify(nxtVals)+' (neighbors)':'—'),
     };
 }
 function formatVar(val){ if(val===NOT_YET) return '(not defined yet)'; return String(val); }
