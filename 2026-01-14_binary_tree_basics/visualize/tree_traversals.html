@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #144/94/145 Binary Tree Traversals — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns,.tab-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn,.tab-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.tab-btn:hover{border-color:var(--purple);color:var(--purple)}.tab-btn.active{border-color:var(--purple);background:#2d1f69;color:var(--purple);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:12px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+/* Tree */
+.tree-section{flex-shrink:0;overflow:auto;max-height:210px}
+svg.tree{display:block;overflow:visible}
+/* Result row */
+.result-row-section{flex-shrink:0}
+.result-cells{display:flex;gap:6px;flex-wrap:wrap}
+.res-cell{padding:8px 12px;border-radius:7px;border:2px solid var(--border);font-size:15px;font-weight:700;font-family:monospace;color:#484f58;transition:all .2s;min-width:38px;text-align:center}
+.res-cell.filled{border-color:var(--green);background:#0d2a16;color:var(--green);animation:fadeUp .2s ease}
+.res-cell.current{border-color:var(--purple);background:#2d1f69;color:#d2b8ff}
+.res-cell-idx{font-size:9px;color:var(--muted);font-family:monospace;text-align:center;margin-top:2px}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:55px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Binary Tree Traversals &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #144/94/145 · Day 14 — Tree Basics</span></h1>
+    <p>Pre: Root→Left→Right &nbsp;·&nbsp; In: Left→Root→Right &nbsp;·&nbsp; Post: Left→Right→Root</p>
+  </div>
+  <div class="tab-btns">
+    <button class="tab-btn active" onclick="setMode(0)">Preorder</button>
+    <button class="tab-btn"        onclick="setMode(1)">Inorder</button>
+    <button class="tab-btn"        onclick="setMode(2)">Postorder</button>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① Tree 1→2→3 etc</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② Tree [1,null,2,3]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ Tree [4,2,6,1,3,5,7]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="tree-section">
+      <div class="panel-label">Tree — purple=current node · green=visited · orange=queued</div>
+      <svg class="tree" id="tree-svg" width="500" height="200"></svg>
+    </div>
+    <div class="result-row-section">
+      <div class="panel-label">Result array (nodes visited in order)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="result-cells"></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Choose traversal mode and example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+// Trees: array format (index=0 is root, i*2+1=left, i*2+2=right), null=missing
+const EX=[
+  [1,2,3,4,5,null,8,null,null,6,7],
+  [1,null,2,null,null,3],
+  [4,2,6,1,3,5,7],
+];
+// Build node positions for SVG
+function buildPositions(arr){
+  const pos={};
+  const W=500,levelH=60;
+  function go(i,depth,minX,maxX){
+    if(i>=arr.length||arr[i]===null) return;
+    const x=(minX+maxX)/2;
+    const y=40+depth*levelH;
+    pos[i]={x,y,val:arr[i]};
+    go(2*i+1,depth+1,minX,x);
+    go(2*i+2,depth+1,x,maxX);
+  }
+  go(0,0,30,W-30);
+  return pos;
+}
+
+const MODES=['preorder','inorder','postorder'];
+const MODE_LABELS=['Preorder (Root→L→R)','Inorder (L→Root→R)','Postorder (L→R→Root)'];
+const CODE=[
+  // preorder
+  [`<span class="kw">def</span> <span class="fn">preorder</span>(root):`,
+   `    result = []`,
+   `    <span class="kw">def</span> <span class="fn">dfs</span>(node):`,
+   `        <span class="kw">if not</span> node: <span class="kw">return</span>`,
+   `        result.append(node.val)   <span class="cm"># visit root</span>`,
+   `        dfs(node.left)            <span class="cm"># left</span>`,
+   `        dfs(node.right)           <span class="cm"># right</span>`,
+   `    dfs(root)`,
+   `    <span class="kw">return</span> result`],
+  // inorder
+  [`<span class="kw">def</span> <span class="fn">inorder</span>(root):`,
+   `    result = []`,
+   `    <span class="kw">def</span> <span class="fn">dfs</span>(node):`,
+   `        <span class="kw">if not</span> node: <span class="kw">return</span>`,
+   `        dfs(node.left)            <span class="cm"># left first</span>`,
+   `        result.append(node.val)   <span class="cm"># visit root</span>`,
+   `        dfs(node.right)           <span class="cm"># right</span>`,
+   `    dfs(root)`,
+   `    <span class="kw">return</span> result`],
+  // postorder
+  [`<span class="kw">def</span> <span class="fn">postorder</span>(root):`,
+   `    result = []`,
+   `    <span class="kw">def</span> <span class="fn">dfs</span>(node):`,
+   `        <span class="kw">if not</span> node: <span class="kw">return</span>`,
+   `        dfs(node.left)            <span class="cm"># left first</span>`,
+   `        dfs(node.right)           <span class="cm"># right</span>`,
+   `        result.append(node.val)   <span class="cm"># visit root last</span>`,
+   `    dfs(root)`,
+   `    <span class="kw">return</span> result`],
+];
+// Line index for "visit" in each mode
+const VISIT_LINE=[4,5,6]; // 0-indexed within CODE arrays
+
+function simulate(arr,mode){
+  const steps=[];
+  const pos=buildPositions(arr);
+  const result=[];const visited=new Set();
+  function dfs(i){
+    if(i>=arr.length||arr[i]===null){
+      steps.push({nodeIdx:-1,phase:'null',result:[...result],visited:new Set(visited),log:`node is null → return`});
+      return;
+    }
+    const val=arr[i];
+    steps.push({nodeIdx:i,phase:'enter',result:[...result],visited:new Set(visited),log:`dfs(node=${val})`});
+    if(mode===0){// preorder: root first
+      result.push(val);visited.add(i);
+      steps.push({nodeIdx:i,phase:'visit',result:[...result],visited:new Set(visited),log:`Visit root ${val}. result=[${result}]`});
+      steps.push({nodeIdx:2*i+1,phase:'go_left',result:[...result],visited:new Set(visited),log:`Go left from ${val}`});
+      dfs(2*i+1);
+      steps.push({nodeIdx:2*i+2,phase:'go_right',result:[...result],visited:new Set(visited),log:`Go right from ${val}`});
+      dfs(2*i+2);
+    } else if(mode===1){// inorder: left first
+      steps.push({nodeIdx:2*i+1,phase:'go_left',result:[...result],visited:new Set(visited),log:`Go left from ${val}`});
+      dfs(2*i+1);
+      result.push(val);visited.add(i);
+      steps.push({nodeIdx:i,phase:'visit',result:[...result],visited:new Set(visited),log:`Visit root ${val}. result=[${result}]`});
+      steps.push({nodeIdx:2*i+2,phase:'go_right',result:[...result],visited:new Set(visited),log:`Go right from ${val}`});
+      dfs(2*i+2);
+    } else {// postorder: root last
+      steps.push({nodeIdx:2*i+1,phase:'go_left',result:[...result],visited:new Set(visited),log:`Go left from ${val}`});
+      dfs(2*i+1);
+      steps.push({nodeIdx:2*i+2,phase:'go_right',result:[...result],visited:new Set(visited),log:`Go right from ${val}`});
+      dfs(2*i+2);
+      result.push(val);visited.add(i);
+      steps.push({nodeIdx:i,phase:'visit',result:[...result],visited:new Set(visited),log:`Visit root ${val}. result=[${result}]`});
+    }
+  }
+  dfs(0);
+  steps.push({nodeIdx:-1,phase:'done',result:[...result],visited:new Set(visited),result_final:[...result],log:`Done. return [${result}]`});
+  return steps;
+}
+
+function drawTree(arr,step){
+  const pos=buildPositions(arr);
+  const visited=step?step.visited:new Set();
+  const curIdx=step?step.nodeIdx:-1;
+  const svg=document.getElementById('tree-svg');
+  const maxY=Math.max(...Object.values(pos).map(p=>p.y));
+  svg.setAttribute('height',maxY+50);
+  let html='';
+  // Edges
+  Object.keys(pos).forEach(ki=>{
+    const i=parseInt(ki);
+    const p=pos[i];
+    [2*i+1,2*i+2].forEach(ci=>{if(pos[ci]) html+=`<line x1="${p.x}" y1="${p.y}" x2="${pos[ci].x}" y2="${pos[ci].y}" stroke="#30363d" stroke-width="1.5"/>`;});
+  });
+  // Nodes
+  Object.keys(pos).forEach(ki=>{
+    const i=parseInt(ki);
+    const {x,y,val}=pos[i];
+    const isCur=i===curIdx;
+    const isDone=visited.has(i);
+    const fill=isCur?'#2d1f69':isDone?'#0d2a16':'#21262d';
+    const stroke=isCur?'#bc8cff':isDone?'#3fb950':'#30363d';
+    const textC=isCur?'#d2b8ff':isDone?'#3fb950':'#c9d1d9';
+    html+=`<circle cx="${x}" cy="${y}" r="20" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    html+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="14" font-weight="700" fill="${textC}">${val}</text>`;
+  });
+  svg.innerHTML=html;
+}
+
+function renderResult(arr,step){
+  const result=step?step.result:[];
+  const rc=document.getElementById('result-cells');
+  if(result.length===0){rc.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">—</span>';return;}
+  const lastIdx=result.length-1;
+  const isVisit=step&&step.phase==='visit';
+  rc.innerHTML=result.map((v,i)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+    <div class="res-cell ${isVisit&&i===lastIdx?'current':'filled'}">${v}</div>
+    <div class="res-cell-idx">[${i}]</div>
+  </div>`).join('');
+}
+
+function renderCode(mode,arr,step){
+  const phase=step?step.phase:'';
+  const lines=CODE[mode];
+  const hl=phase==='visit'?'hl-green':phase==='enter'||phase==='go_left'||phase==='go_right'?'hl-orange':'';
+  const visitLine=VISIT_LINE[mode];
+  document.getElementById('code-block').innerHTML=lines.map((l,i)=>{
+    const active=(i===visitLine&&phase==='visit')||(i>=2&&i<=6&&(phase==='enter'||phase==='go_left'||phase==='go_right'));
+    return `<div class="code-line${active?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`;
+  }).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">root</span><span class="io-sep">=</span><span class="io-v">[${arr.filter(v=>v!==null)}...]</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result_final) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">[${step.result_final}]</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+function renderVars(arr,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const ni=step.nodeIdx;
+  const val=ni>=0&&ni<arr.length&&arr[ni]!==null?arr[ni]:'null';
+  const rows=[['node',val],['len(result)',step.result.length]];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${v}</span></div>`).join('');
+}
+
+let exIdx=0,modeIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const arr=EX[exIdx];
+  drawTree(arr,step);renderResult(arr,step);renderCode(modeIdx,arr,step);renderVars(arr,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result_final){rt.className='result-tag show';rt.textContent='['+step.result_final+']';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Choose traversal and example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function setMode(m){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  modeIdx=m;steps=simulate(EX[exIdx],modeIdx);stepIdx=-1;
+  document.querySelectorAll('.tab-btn').forEach((b,j)=>b.classList.toggle('active',j===m));
+  render();
+}
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i],modeIdx);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},700)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

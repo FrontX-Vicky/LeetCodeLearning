@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #98 Validate BST — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:12px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.range-badge{display:inline-block;background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:monospace;font-size:12px;color:var(--orange);margin-top:6px}
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:55px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.result-tag.invalid{background:#2d0f0f;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Validate BST &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #98 · Day 15 Problem 3 — BST</span></h1>
+    <p>Each node must be strictly between (min_val, max_val). Ranges propagate down as constraints.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① Valid BST [5,3,7,2,4]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② Invalid [10,5,15,null,null,6,20]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ Valid BST [4,2,6,1,3,5,7]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python (range validation)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">BST — purple=current · green=valid · red=invalid · orange=checking</div>
+      <svg id="tree-svg" width="500" height="200" style="overflow:visible;display:block"></svg>
+    </div>
+    <div>
+      <div class="panel-label">Current node range constraint</div>
+      <div id="range-display"></div>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {arr:[5,3,7,2,4,null,null], positions:{0:{x:220,y:40},1:{x:120,y:100},2:{x:320,y:100},3:{x:60,y:160},4:{x:180,y:160}}, valid:true},
+  {arr:[10,5,15,null,null,6,20], positions:{0:{x:220,y:40},1:{x:120,y:100},2:{x:320,y:100},5:{x:270,y:160},6:{x:370,y:160}}, valid:false},
+  {arr:[4,2,6,1,3,5,7], positions:{0:{x:220,y:40},1:{x:120,y:100},2:{x:320,y:100},3:{x:60,y:160},4:{x:180,y:160},5:{x:270,y:160},6:{x:380,y:160}}, valid:true},
+];
+const EDGES_MAP=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
+
+function simulate(ex){
+  const {arr}=ex;
+  const steps=[];
+  const visited={};// idx -> 'valid'|'invalid'
+  let earlyInvalid=false;
+  function dfs(i,mn,mx){
+    if(earlyInvalid) return;
+    if(i>=arr.length||arr[i]===null||arr[i]===undefined) return;
+    const val=arr[i];
+    const mnStr=mn===null?'-∞':mn;const mxStr=mx===null?'+∞':mx;
+    steps.push({curIdx:i,val,mn,mx,visited:{...visited},phase:'check',log:`validate(${val}, min=${mnStr}, max=${mxStr})`});
+    const ok=(mn===null||val>mn)&&(mx===null||val<mx);
+    if(!ok){
+      visited[i]='invalid';
+      steps.push({curIdx:i,val,mn,mx,visited:{...visited},phase:'invalid',result:false,log:`${val} violates range (${mnStr}, ${mxStr}) → return False`});
+      earlyInvalid=true;return;
+    }
+    visited[i]='valid';
+    steps.push({curIdx:i,val,mn,mx,visited:{...visited},phase:'valid',log:`${val} ∈ (${mnStr}, ${mxStr}) ✓`});
+    dfs(2*i+1,mn,val);
+    if(!earlyInvalid) dfs(2*i+2,val,mx);
+  }
+  dfs(0,null,null);
+  if(!earlyInvalid) steps.push({curIdx:-1,visited:{...visited},phase:'done',result:true,log:`All nodes valid → return True`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">is_valid_bst</span>(root):`,
+  `    <span class="kw">def</span> <span class="fn">validate</span>(node, mn, mx):`,
+  `        <span class="kw">if not</span> node: <span class="kw">return True</span>`,
+  `        <span class="kw">if not</span> (mn < node.val < mx):`,
+  `            <span class="kw">return False</span>   <span class="cm"># violates range</span>`,
+  `        <span class="kw">return</span> (`,
+  `            validate(node.left, mn, node.val) <span class="kw">and</span>`,
+  `            validate(node.right, node.val, mx)`,
+  `        )`,
+  `    <span class="kw">return</span> validate(root, -<span class="bi">inf</span>, +<span class="bi">inf</span>)`,
+];
+function phaseLines(ph){
+  if(ph==='check') return{3:'hl-orange'};
+  if(ph==='valid') return{5:'hl-green',6:'hl-green',7:'hl-green'};
+  if(ph==='invalid') return{4:'hl-red'};
+  if(ph==='done') return{9:'hl-green'};
+  return{};
+}
+
+function drawTree(ex,step){
+  const {arr,positions}=ex;
+  const visited=step?step.visited:{};
+  const cur=step?step.curIdx:-1;
+  const ph=step?step.phase:'';
+  let html='';
+  EDGES_MAP.forEach(([p,c])=>{if(positions[p]&&positions[c]) html+=`<line x1="${positions[p].x}" y1="${positions[p].y}" x2="${positions[c].x}" y2="${positions[c].y}" stroke="#30363d" stroke-width="1.5"/>`;});
+  for(let i=0;i<arr.length;i++){
+    if(arr[i]===null||arr[i]===undefined||!positions[i]) continue;
+    const isCur=i===cur;const st=visited[i];
+    const fill=isCur?'#2d1f69':st==='valid'?'#0d2a16':st==='invalid'?'#2d0f0f':'#21262d';
+    const stroke=isCur?'#bc8cff':st==='valid'?'#3fb950':st==='invalid'?'#f85149':'#30363d';
+    const tc=isCur?'#d2b8ff':st==='valid'?'#3fb950':st==='invalid'?'#f85149':'#c9d1d9';
+    html+=`<circle cx="${positions[i].x}" cy="${positions[i].y}" r="20" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    html+=`<text x="${positions[i].x}" y="${positions[i].y+5}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="14" font-weight="700" fill="${tc}">${arr[i]}</text>`;
+  }
+  document.getElementById('tree-svg').innerHTML=html;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  drawTree(ex,step);
+  const ph=step?step.phase:'';const hl=phaseLines(ph);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-key">root</span><span class="io-sep">=</span><span class="io-v">[${ex.arr.filter(v=>v!==null).join(',')}...]</span>`;
+  const co=document.getElementById('code-output');
+  if(step&&step.result!==undefined) co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:${step.result?'var(--green)':'var(--red)'}">${step.result}</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const rd=document.getElementById('range-display');
+  if(step&&step.mn!==undefined){const mn=step.mn===null?'-∞':step.mn;const mx=step.mx===null?'+∞':step.mx;rd.innerHTML=`<span class="range-badge">node.val must be in (${mn}, ${mx})</span>`;}else rd.innerHTML='';
+  const vl=document.getElementById('var-list');
+  if(step){const mn=step.mn===null?'-∞':step.mn;const mx=step.mx===null?'+∞':step.mx;vl.innerHTML=`<div class="var-row"><span class="var-name">node.val</span><span class="var-eq">=</span><span class="var-val">${step.val!==undefined?step.val:'—'}</span></div><div class="var-row"><span class="var-name">min</span><span class="var-eq">=</span><span class="var-val">${mn}</span></div><div class="var-row"><span class="var-name">max</span><span class="var-eq">=</span><span class="var-val">${mx}</span></div>`;}else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className=`result-tag show${step.result?'':' invalid'}`;rt.textContent=step.result?'Valid BST ✓':'Invalid BST ✗';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1) stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>

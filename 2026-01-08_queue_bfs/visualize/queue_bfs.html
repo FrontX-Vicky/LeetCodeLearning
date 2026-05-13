@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #933 Number of Recent Calls — Queue / Deque BFS Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);transition:background .15s;z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}.st{color:#a5d6ff}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+/* Timeline */
+.timeline-section{flex-shrink:0}
+.timeline-calls{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.call-chip{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default}
+.call-box{padding:5px 10px;border-radius:7px;border:2px solid;font-size:13px;font-weight:700;font-family:monospace;transition:all .2s;min-width:56px;text-align:center}
+.call-box.future{background:#161b22;border-color:#21262d;color:#484f58}
+.call-box.current{background:#2d1f69;border-color:var(--purple);color:#d2b8ff;transform:translateY(-3px);box-shadow:0 0 0 3px rgba(188,140,255,.2)}
+.call-box.in-window{background:#1c3458;border-color:var(--blue);color:var(--blue)}
+.call-box.out-window{background:#2d1215;border-color:var(--red);color:var(--red);opacity:.5}
+.call-box.done{background:#161b22;border-color:#21262d;color:#484f58}
+.call-ret{font-size:9px;color:var(--green);font-family:monospace;min-height:13px}
+.call-idx{font-size:9px;color:var(--muted);font-family:monospace}
+/* Deque visualization */
+.deque-section{flex:1;min-height:0;display:flex;flex-direction:column}
+.deque-rail{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:8px;background:var(--bg);padding:8px 12px;flex-wrap:wrap;gap:4px;min-height:70px}
+.deque-arrow{font-size:10px;color:#484f58;flex-shrink:0}
+.deque-item{display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .25s}
+.deque-box{padding:8px 12px;border-radius:6px;border:2px solid;font-size:14px;font-weight:700;font-family:monospace;transition:all .2s}
+.deque-box.normal{background:#0d1f38;border-color:var(--blue);color:var(--blue)}
+.deque-box.new{background:#1a1200;border-color:var(--orange);color:var(--orange);animation:popIn .2s ease}
+.deque-box.removing{background:#2d1215;border-color:var(--red);color:var(--red)}
+.deque-pos{font-size:9px;color:#484f58;font-family:monospace}
+.deque-label{display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:#484f58;font-family:monospace}
+/* Window diagram */
+.window-info{flex-shrink:0;display:flex;gap:12px;flex-wrap:wrap}
+.win-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1}
+.win-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.win-val{font-size:18px;font-weight:700;font-family:monospace;color:var(--text);transition:color .2s}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:60px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1;word-break:break-all}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.7)}65%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Number of Recent Calls &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #933 · Day 8 — Queue / Deque</span></h1>
+    <p>ping(t): add t to deque; remove all t' where t' &lt; t−3000; return len(deque). Window = [t−3000, t].</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [1,100,3001,3002] → [1,2,3,3]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [1,2,3000,3001,3002,6000] → [1,2,3,4,5,3]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [100,200,300,3200] → [1,2,3,2]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code (deque approach)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="timeline-section">
+      <div class="panel-label">ping() calls — purple=current call · blue=inside window · red=outside window (evicted)</div>
+      <div class="timeline-calls" id="timeline-calls"></div>
+    </div>
+    <div class="window-info" id="window-info">
+      <div class="win-card"><div class="win-title">Current t</div><div class="win-val" id="wv-t" style="color:var(--purple)">—</div></div>
+      <div class="win-card"><div class="win-title">Window start (t−3000)</div><div class="win-val" id="wv-start" style="color:var(--orange)">—</div></div>
+      <div class="win-card"><div class="win-title">Deque size (answer)</div><div class="win-val" id="wv-size" style="color:var(--green)">0</div></div>
+    </div>
+    <div class="deque-section">
+      <div class="panel-label">Deque — front (popleft) ←→ back (append) — orange=just appended · red=being removed</div>
+      <div class="deque-rail" id="deque-rail"></div>
+      <div class="deque-label"><span>← FRONT (oldest)</span><span>BACK (newest) →</span></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">All Returns</div>
+      <div class="var-list" id="returns-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  [1,100,3001,3002],
+  [1,2,3000,3001,3002,6000],
+  [100,200,300,3200],
+];
+
+const CODE_LINES=[
+  {h:`<span class="kw">class</span> <span class="fn">RecentCounter</span>:`,phases:[]},
+  {h:`    <span class="kw">def</span> <span class="fn">__init__</span>(self):`,phases:[]},
+  {h:`        self.queue = deque()`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">def</span> <span class="fn">ping</span>(self, t):`,phases:[]},
+  {h:`        self.queue.append(t)   <span class="cm"># add to back</span>`,phases:['append']},
+  {h:`        <span class="kw">while</span> self.queue[<span class="nm">0</span>] < t <span class="op">-</span> <span class="nm">3000</span>:`,phases:['check','remove']},
+  {h:`            self.queue.popleft()  <span class="cm"># evict old</span>`,phases:['remove']},
+  {h:`        <span class="kw">return</span> <span class="bi">len</span>(self.queue)`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',append:'hl-orange',check:'hl-orange',remove:'hl-red',done:'hl-green'};
+
+function simulate(pings){
+  const steps=[];
+  steps.push({phase:'init',callIdx:-1,t:null,dq:[],returns:[],log:'Init: queue = deque()'});
+  let dq=[],returns=[];
+  for(let ci=0;ci<pings.length;ci++){
+    const t=pings[ci];
+    const winStart=t-3000;
+    steps.push({phase:'append',callIdx:ci,t,winStart,dq:[...dq],returns:[...returns],log:`ping(${t}): append ${t} to back of deque`});
+    dq.push(t);
+    steps.push({phase:'append',callIdx:ci,t,winStart,dq:[...dq],returns:[...returns],log:`deque after append: [${dq}]`});
+    // Check/remove loop
+    while(dq.length>0&&dq[0]<winStart){
+      const removing=dq[0];
+      steps.push({phase:'remove',callIdx:ci,t,winStart,dq:[...dq],removing,returns:[...returns],log:`dq[0]=${removing} < t-3000=${winStart} → popleft`});
+      dq.shift();
+      steps.push({phase:'check',callIdx:ci,t,winStart,dq:[...dq],returns:[...returns],log:`After popleft: [${dq}]. Check again: dq[0]=${dq[0]} vs ${winStart}`});
+    }
+    if(dq.length===0||dq[0]>=winStart){
+      steps.push({phase:'check',callIdx:ci,t,winStart,dq:[...dq],returns:[...returns],log:dq.length===0?`deque empty. Stop.`:`dq[0]=${dq[0]} >= ${winStart}. Stop removing.`});
+    }
+    const ret=dq.length;
+    returns=[...returns,{t,ret}];
+    steps.push({phase:'done',callIdx:ci,t,winStart,dq:[...dq],returns:[...returns],ret,log:`Return len(deque) = ${ret}`});
+  }
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderTimeline(pings,step){
+  const callIdx=step?step.callIdx:-1;
+  const t=step?step.t:null;
+  const winStart=step?step.winStart:null;
+  const returns=step?step.returns:[];
+  const retMap={};returns.forEach(r=>retMap[r.t]=r.ret);
+  document.getElementById('timeline-calls').innerHTML=pings.map((p,i)=>{
+    let cls='future';
+    if(step){
+      if(i===callIdx) cls='current';
+      else if(i<callIdx&&winStart!==null&&p>=winStart) cls='in-window';
+      else if(i<callIdx&&winStart!==null&&p<winStart) cls='out-window';
+      else if(i<callIdx) cls='done';
+    }
+    const ret=retMap[p];
+    return `<div class="call-chip">
+      <div class="call-box ${cls}">${p}</div>
+      <div class="call-ret">${ret!==undefined?'→'+ret:''}</div>
+      <div class="call-idx">call ${i+1}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDeque(step){
+  const dq=step?step.dq:[];
+  const removing=step?step.removing:null;
+  const newT=step&&step.phase==='append'?step.t:null;
+  const rail=document.getElementById('deque-rail');
+  if(dq.length===0){rail.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">deque empty</span>';return;}
+  rail.innerHTML=dq.map((v,i)=>{
+    const isNew=v===newT&&i===dq.length-1;
+    const isRemoving=v===removing&&i===0;
+    return `<div class="deque-item">
+      <div class="deque-box ${isRemoving?'removing':isNew?'new':'normal'}">${v}</div>
+    </div>`;
+  }).join('<div class="deque-arrow" style="padding:0 2px;color:#21262d;font-size:16px">›</div>');
+  document.getElementById('wv-t').textContent=step?step.t:'—';
+  document.getElementById('wv-start').textContent=step&&step.winStart!==null?step.winStart:'—';
+  const sz=dq.length;
+  document.getElementById('wv-size').textContent=sz;
+  document.getElementById('wv-size').style.color=sz>0?'var(--green)':'#484f58';
+}
+
+function renderVars(step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=[['t',step.t||'—'],['t−3000',step.winStart||'—'],['len(dq)',step.dq?step.dq.length:'—']];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${esc(String(v))}</span></div>`).join('');
+  const rl=document.getElementById('returns-list');
+  if(step.returns&&step.returns.length>0){
+    rl.innerHTML=step.returns.map(r=>`<div class="var-row"><span class="var-name">ping(${r.t})</span><span class="var-eq">→</span><span class="var-val" style="color:var(--green)">${r.ret}</span></div>`).join('');
+  } else rl.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">no calls yet</span>';
+}
+
+function renderCode(pings,step){
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">pings</span><span class="io-sep">=</span><span class="io-v">${esc(JSON.stringify(pings))}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.ret!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">${step.ret} (for ping(${step.t}))</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const pings=EX[exIdx];
+  renderTimeline(pings,step);renderDeque(step);renderVars(step);renderCode(pings,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.ret!==undefined){rt.className='result-tag show pos';rt.textContent='ping('+step.t+') = '+step.ret}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},800)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

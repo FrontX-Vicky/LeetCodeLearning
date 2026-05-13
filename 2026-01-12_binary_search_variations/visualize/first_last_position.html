@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #34 Find First and Last Position — Binary Search Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:18px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}.code-line.hl-blue{background:rgba(88,166,255,.1);border-left-color:var(--blue)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}.code-line.hl-blue .ln{color:var(--blue)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}.st{color:#a5d6ff}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+.pass-label{font-size:11px;font-weight:700;padding:4px 10px;border-radius:5px;margin-bottom:8px;display:inline-block}
+.pass-first{background:#1a1200;color:var(--orange);border:1px solid var(--orange)}
+.pass-last{background:#1c3458;color:var(--blue);border:1px solid var(--blue)}
+.arr-cells{display:flex;gap:0;flex-wrap:nowrap;overflow-x:auto}
+.arr-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.arr-box{width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);font-size:16px;font-weight:700;font-family:monospace;transition:all .2s}
+.arr-col:first-child .arr-box{border-radius:8px 0 0 8px}.arr-col:last-child .arr-box{border-radius:0 8px 8px 0}
+.arr-box.elim{background:#0a0d13;color:#30363d;border-color:#21262d}
+.arr-box.active{background:#161b22;color:var(--text)}
+.arr-box.target-match{background:#0d1f38;border-color:var(--blue);color:var(--blue)}
+.arr-box.mid-f{background:#2d1f69;border-color:var(--orange);color:var(--orange)}
+.arr-box.mid-l{background:#2d1f69;border-color:var(--blue);color:var(--blue)}
+.arr-box.result-pos{background:#0d2a16;border-color:var(--green);color:var(--green);box-shadow:0 0 0 2px rgba(63,185,80,.2)}
+.arr-idx{font-size:9px;color:var(--muted);font-family:monospace;margin-top:3px}
+/* Result badges */
+.result-row{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.res-badge{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 16px;flex:1;text-align:center}
+.res-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.res-val{font-size:24px;font-weight:700;font-family:monospace}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:55px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}.result-tag.neg{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>First &amp; Last Position &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #34 · Day 12 — Binary Search Variations</span></h1>
+    <p>Two binary searches: find_first (go left on match), find_last (go right on match). Both O(log n).</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① target=8 → [3,4]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② target=6 → [-1,-1]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ target=5 → [0,0]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div>
+      <span class="pass-label" id="pass-label">Pass 1: Find First</span>
+      <div class="panel-label" style="margin-top:0">Array — orange mid=find_first pass · blue mid=find_last pass · green=result positions</div>
+      <div class="arr-cells" id="arr-cells"></div>
+    </div>
+    <div class="result-row">
+      <div class="res-badge"><div class="res-title">First occurrence</div><div class="res-val" id="rv-first" style="color:var(--orange)">—</div></div>
+      <div class="res-badge"><div class="res-title">Last occurrence</div><div class="res-val" id="rv-last" style="color:var(--blue)">—</div></div>
+      <div class="res-badge"><div class="res-title">Answer</div><div class="res-val" id="rv-ans" style="color:var(--green)">—</div></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {nums:[5,7,7,8,8,10],target:8},
+  {nums:[5,7,7,8,8,10],target:6},
+  {nums:[5,7,7,8,8,10],target:5},
+];
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">searchRange</span>(nums, target):`,phases:[]},
+  {h:`    <span class="kw">def</span> <span class="fn">find_first</span>():`,phases:[]},
+  {h:`        lo, hi, res = <span class="nm">0</span>, n-<span class="nm">1</span>, -<span class="nm">1</span>`,phases:['f_init']},
+  {h:`        <span class="kw">while</span> lo <= hi:`,phases:['f_check']},
+  {h:`            mid = (lo+hi)//<span class="nm">2</span>`,phases:['f_mid']},
+  {h:`            <span class="kw">if</span> nums[mid] == target:`,phases:['f_cmp']},
+  {h:`                res = mid; hi = mid-<span class="nm">1</span>  <span class="cm"># go left</span>`,phases:['f_match']},
+  {h:`            <span class="kw">elif</span> nums[mid] < target: lo = mid+<span class="nm">1</span>`,phases:['f_right']},
+  {h:`            <span class="kw">else</span>: hi = mid-<span class="nm">1</span>`,phases:['f_left']},
+  {h:`        <span class="kw">return</span> res`,phases:['f_ret']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">def</span> <span class="fn">find_last</span>():`,phases:[]},
+  {h:`        lo, hi, res = <span class="nm">0</span>, n-<span class="nm">1</span>, -<span class="nm">1</span>`,phases:['l_init']},
+  {h:`        <span class="kw">while</span> lo <= hi:`,phases:['l_check']},
+  {h:`            mid = (lo+hi)//<span class="nm">2</span>`,phases:['l_mid']},
+  {h:`            <span class="kw">if</span> nums[mid] == target:`,phases:['l_cmp']},
+  {h:`                res = mid; lo = mid+<span class="nm">1</span>  <span class="cm"># go right</span>`,phases:['l_match']},
+  {h:`            <span class="kw">elif</span> nums[mid] < target: lo = mid+<span class="nm">1</span>`,phases:['l_right']},
+  {h:`            <span class="kw">else</span>: hi = mid-<span class="nm">1</span>`,phases:['l_left']},
+  {h:`        <span class="kw">return</span> res`,phases:['l_ret']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> [find_first(), find_last()]`,phases:['done']},
+];
+const PHASE_HL={f_init:'hl-orange',f_check:'hl-orange',f_mid:'hl-orange',f_cmp:'hl-orange',f_match:'hl-green',f_right:'hl-orange',f_left:'hl-orange',f_ret:'hl-green',
+  l_init:'hl-blue',l_check:'hl-blue',l_mid:'hl-blue',l_cmp:'hl-blue',l_match:'hl-green',l_right:'hl-blue',l_left:'hl-blue',l_ret:'hl-green',done:'hl-green'};
+// Extra for hl-blue
+const HLC={f_init:'hl-orange',f_check:'hl-orange',f_mid:'hl-orange',f_cmp:'hl-orange',f_match:'hl-green',f_right:'hl-orange',f_left:'hl-orange',f_ret:'hl-green',
+  l_init:'hl-blue',l_check:'hl-blue',l_mid:'hl-blue',l_cmp:'hl-blue',l_match:'hl-green',l_right:'hl-blue',l_left:'hl-blue',l_ret:'hl-green',done:'hl-green'};
+
+function simulate({nums,target}){
+  const steps=[];const n=nums.length;
+  // Find first
+  let lo=0,hi=n-1,res=-1;
+  steps.push({phase:'f_init',lo,hi,mid:-1,res,pass:'first',firstRes:-1,lastRes:-1,log:`find_first: lo=${lo}, hi=${hi}, res=-1`});
+  while(lo<=hi){
+    steps.push({phase:'f_check',lo,hi,mid:-1,res,pass:'first',firstRes:-1,lastRes:-1,log:`lo=${lo} <= hi=${hi}: continue`});
+    const mid=Math.floor((lo+hi)/2);
+    steps.push({phase:'f_mid',lo,hi,mid,res,pass:'first',firstRes:-1,lastRes:-1,log:`mid=${mid}, nums[${mid}]=${nums[mid]}`});
+    if(nums[mid]===target){
+      res=mid;
+      steps.push({phase:'f_match',lo,hi:mid-1,mid,res,pass:'first',firstRes:-1,lastRes:-1,log:`Match! res=${mid}, go left: hi=${mid-1}`});
+      hi=mid-1;
+    } else if(nums[mid]<target){
+      steps.push({phase:'f_right',lo:lo+1,hi,mid,res,pass:'first',firstRes:-1,lastRes:-1,log:`nums[${mid}]<target → lo=${mid+1}`});
+      lo=mid+1;
+    } else {
+      steps.push({phase:'f_left',lo,hi:mid-1,mid,res,pass:'first',firstRes:-1,lastRes:-1,log:`nums[${mid}]>target → hi=${mid-1}`});
+      hi=mid-1;
+    }
+  }
+  const firstRes=res;
+  steps.push({phase:'f_ret',lo,hi,mid:-1,res,pass:'first',firstRes,lastRes:-1,log:`find_first returns ${firstRes}`});
+  // Find last
+  lo=0;hi=n-1;res=-1;
+  steps.push({phase:'l_init',lo,hi,mid:-1,res,pass:'last',firstRes,lastRes:-1,log:`find_last: lo=${lo}, hi=${hi}, res=-1`});
+  while(lo<=hi){
+    steps.push({phase:'l_check',lo,hi,mid:-1,res,pass:'last',firstRes,lastRes:-1,log:`lo=${lo} <= hi=${hi}: continue`});
+    const mid=Math.floor((lo+hi)/2);
+    steps.push({phase:'l_mid',lo,hi,mid,res,pass:'last',firstRes,lastRes:-1,log:`mid=${mid}, nums[${mid}]=${nums[mid]}`});
+    if(nums[mid]===target){
+      res=mid;
+      steps.push({phase:'l_match',lo:mid+1,hi,mid,res,pass:'last',firstRes,lastRes:-1,log:`Match! res=${mid}, go right: lo=${mid+1}`});
+      lo=mid+1;
+    } else if(nums[mid]<target){
+      steps.push({phase:'l_right',lo:lo+1,hi,mid,res,pass:'last',firstRes,lastRes:-1,log:`nums[${mid}]<target → lo=${mid+1}`});
+      lo=mid+1;
+    } else {
+      steps.push({phase:'l_left',lo,hi:mid-1,mid,res,pass:'last',firstRes,lastRes:-1,log:`nums[${mid}]>target → hi=${mid-1}`});
+      hi=mid-1;
+    }
+  }
+  const lastRes=res;
+  steps.push({phase:'l_ret',lo,hi,mid:-1,res,pass:'last',firstRes,lastRes,log:`find_last returns ${lastRes}`});
+  steps.push({phase:'done',lo,hi,mid:-1,res:0,pass:'done',firstRes,lastRes,result:[firstRes,lastRes],log:`Return [${firstRes}, ${lastRes}]`});
+  return steps;
+}
+
+function renderArray({nums,target},step){
+  const n=nums.length;
+  const lo=step?step.lo:0,hi=step?step.hi:n-1,mid=step?step.mid:-1;
+  const pass=step?step.pass:'first';
+  const fr=step?step.firstRes:-1,lr=step?step.lastRes:-1;
+  document.getElementById('arr-cells').innerHTML=nums.map((v,i)=>{
+    let cls='active';
+    if(step){
+      if(pass==='done'||(pass==='last'&&step.phase==='l_ret')){
+        if(i===fr||i===lr) cls='result-pos';
+      }
+      if(pass==='first'||pass==='last'){
+        if(i<lo||i>hi) cls='elim';
+        if(i===mid) cls=pass==='first'?'mid-f':'mid-l';
+      }
+    }
+    const ptrs=[];
+    if(step&&i===lo) ptrs.push('lo');
+    if(step&&i===hi&&hi!==lo) ptrs.push('hi');
+    if(i===mid) ptrs.push('mid');
+    return `<div class="arr-col">
+      <div style="font-size:9px;font-weight:700;font-family:monospace;min-height:12px;text-align:center;color:${i===mid?'var(--purple)':'var(--muted)'}">
+        ${ptrs.join('/')}
+      </div>
+      <div class="arr-box ${cls}">${v}</div>
+      <div class="arr-idx">[${i}]</div>
+    </div>`;
+  }).join('');
+  const pl=document.getElementById('pass-label');
+  if(!step){pl.textContent='Pass 1: Find First';pl.className='pass-label pass-first';return;}
+  if(pass==='first'){pl.textContent='Pass 1: Find First (keep going left on match)';pl.className='pass-label pass-first';}
+  else if(pass==='last'){pl.textContent='Pass 2: Find Last (keep going right on match)';pl.className='pass-label pass-last';}
+  else{pl.textContent='Complete';pl.className='pass-label pass-last';}
+  document.getElementById('rv-first').textContent=step.firstRes!==-1?step.firstRes:(pass!=='first'?step.firstRes:'—');
+  document.getElementById('rv-last').textContent=step.lastRes!==-1?step.lastRes:'—';
+  const ans=document.getElementById('rv-ans');
+  if(step.result){ans.textContent=`[${step.result}]`;ans.style.color=step.result[0]===-1?'var(--red)':'var(--green)';}
+  else ans.textContent='—';
+}
+
+function renderCode({nums,target},step){
+  const phase=step?step.phase:'';
+  const hl=HLC[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">nums</span><span class="io-sep">=</span><span class="io-v">[${nums}]</span></span><span class="io-kv"><span class="io-key">target</span><span class="io-sep">=</span><span class="io-v">${target}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:${step.result[0]===-1?'var(--red)':'var(--green)'}">[${step.result}]</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+function renderVars({nums},step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=[['pass',step.pass],['lo',step.lo],['hi',step.hi],['mid',step.mid>=0?step.mid:'—'],['res',step.res!==-1?step.res:'—']];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${v}</span></div>`).join('');
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  renderArray(ex,step);renderCode(ex,step);renderVars(ex,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result){rt.className='result-tag show '+(step.result[0]===-1?'neg':'pos');rt.textContent='['+step.result+']';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},700)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

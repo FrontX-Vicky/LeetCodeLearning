@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #739 Daily Temperatures — Monotonic Stack Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);transition:background .15s;z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}.st{color:#a5d6ff}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+/* Bar chart */
+.chart-section{flex-shrink:0}
+.bar-chart{display:flex;gap:4px;align-items:flex-end;height:110px;padding-bottom:0}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1}
+.bar{border-radius:4px 4px 0 0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;transition:all .2s;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);min-width:26px;font-family:monospace}
+.bar.normal{background:#21262d;border:1px solid var(--border)}
+.bar.current{background:#2d1f69;border:2px solid var(--purple);box-shadow:0 0 0 2px rgba(188,140,255,.2)}
+.bar.in-stack{background:#1a1200;border:2px solid var(--orange)}
+.bar.popped{background:#0d2a16;border:2px solid var(--green);animation:flash .3s ease}
+.bar.done-pos{background:#0d2a16;border:1px solid var(--green);opacity:.65}
+.bar.done-zero{background:#21262d;border:1px solid var(--border);opacity:.45}
+.bar-lbl{font-size:9px;color:var(--muted);font-family:monospace}
+.bar-res{font-size:10px;font-weight:700;font-family:monospace;min-height:14px;color:var(--green)}
+/* Stack */
+.stack-section{flex-shrink:0}
+.stack-row{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.stack-item{display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .25s}
+.stack-box{padding:7px 11px;border-radius:6px;border:2px solid var(--orange);background:#1a1200;font-size:13px;font-weight:700;font-family:monospace;color:var(--orange);transition:all .2s}
+.stack-box.top{border-color:var(--orange);background:#3d2b00;box-shadow:0 0 0 2px rgba(210,153,34,.2)}
+.stack-box.popping{border-color:var(--red);background:#2d1215;color:var(--red);animation:shake .3s ease}
+.stack-sub{font-size:9px;color:#484f58;font-family:monospace}
+.stack-empty{font-size:11px;color:#484f58;font-style:italic;font-family:monospace;padding:8px 0}
+/* Result array */
+.result-section{flex-shrink:0}
+.result-cells{display:flex;gap:4px;flex-wrap:wrap}
+.res-cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+.res-box{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:5px;border:1px solid var(--border);font-size:14px;font-weight:700;font-family:monospace;color:#484f58;transition:all .2s}
+.res-box.filled{border-color:var(--green);background:#0d2a16;color:var(--green)}
+.res-box.zero{border-color:#21262d;color:#484f58}
+.res-idx{font-size:9px;color:var(--muted);font-family:monospace}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:60px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1;word-break:break-all}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flash{0%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}100%{transform:translateX(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Daily Temperatures &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #739 · Day 9 — Monotonic Stack</span></h1>
+    <p>Monotonic decreasing stack of indices. When temp[i] &gt; temp[stack.top], pop and record days waited. Push i.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [73,74,75,71,69,72,76,73]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [30,40,50,60]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [30,60,90]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code (monotonic stack)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="chart-section">
+      <div class="panel-label">Temperature bars — purple=current · orange=in stack (waiting) · green=just resolved</div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div class="stack-section">
+      <div class="panel-label">Monotonic stack (indices, decreasing temps) — top is rightmost</div>
+      <div class="stack-row" id="stack-row"></div>
+    </div>
+    <div class="result-section">
+      <div class="panel-label">Result array (days until warmer)</div>
+      <div class="result-cells" id="result-cells"></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  [73,74,75,71,69,72,76,73],
+  [30,40,50,60],
+  [30,60,90],
+];
+
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">daily_temperatures</span>(temps):`,phases:[]},
+  {h:`    n = <span class="bi">len</span>(temps)`,phases:['init']},
+  {h:`    result = [<span class="nm">0</span>] * n`,phases:['init']},
+  {h:`    stack = []  <span class="cm"># indices, decreasing temps</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n):`,phases:['loop']},
+  {h:`        <span class="kw">while</span> stack <span class="kw">and</span> temps[i] > temps[stack[<span class="op">-</span><span class="nm">1</span>]]:`,phases:['check','pop']},
+  {h:`            prev = stack.pop()`,phases:['pop']},
+  {h:`            result[prev] = i <span class="op">-</span> prev`,phases:['pop']},
+  {h:`        stack.append(i)`,phases:['push']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> result`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',loop:'hl-orange',check:'hl-orange',pop:'hl-green',push:'hl-orange',done:'hl-green'};
+
+function simulate(temps){
+  const steps=[];
+  const n=temps.length;
+  steps.push({phase:'init',i:-1,stack:[],result:new Array(n).fill(0),poppedThis:[],log:`Init n=${n}, result=[${Array(n).fill(0)}], stack=[]`});
+  let stack=[],result=new Array(n).fill(0);
+  for(let i=0;i<n;i++){
+    steps.push({phase:'loop',i,stack:[...stack],result:[...result],poppedThis:[],log:`i=${i}: temp[${i}]=${temps[i]}. Check stack top.`});
+    const poppedThis=[];
+    while(stack.length>0&&temps[i]>temps[stack[stack.length-1]]){
+      const top=stack[stack.length-1];
+      steps.push({phase:'check',i,stack:[...stack],result:[...result],poppedThis:[...poppedThis],checking:top,log:`temp[${i}]=${temps[i]} > temp[${top}]=${temps[top]} → pop ${top}`});
+      stack.pop();
+      result[top]=i-top;
+      poppedThis.push(top);
+      steps.push({phase:'pop',i,stack:[...stack],result:[...result],poppedThis:[...poppedThis],resolved:top,log:`result[${top}] = ${i} - ${top} = ${i-top}. Stack=[${stack}]`});
+    }
+    steps.push({phase:'push',i,stack:[...stack],result:[...result],poppedThis:[...poppedThis],log:`Push i=${i}(temp=${temps[i]}) onto stack. Stack=[${[...stack,i]}]`});
+    stack.push(i);
+    steps.push({phase:'push',i,stack:[...stack],result:[...result],poppedThis:[...poppedThis],log:`Stack=[${stack.map(x=>`${x}(${temps[x]})`)}]`});
+  }
+  steps.push({phase:'done',i:n,stack:[...stack],result:[...result],poppedThis:[],log:`Done. result=[${result}]`});
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderBars(temps,step){
+  const n=temps.length;
+  const maxT=Math.max(...temps);
+  const i=step?step.i:-1;
+  const stackSet=step?new Set(step.stack):new Set();
+  const poppedSet=step&&step.poppedThis?new Set(step.poppedThis):new Set();
+  const result=step?step.result:new Array(n).fill(0);
+  document.getElementById('bar-chart').innerHTML=temps.map((t,idx)=>{
+    const pct=Math.max(18,Math.round((t/maxT)*100));
+    let cls='normal';
+    if(step){
+      if(idx===i) cls='current';
+      else if(poppedSet.has(idx)) cls='popped';
+      else if(stackSet.has(idx)) cls='in-stack';
+      else if(idx<i) cls=result[idx]>0?'done-pos':'done-zero';
+    }
+    return `<div class="bar-col">
+      <div class="bar-res">${step&&idx<i?result[idx]:''}</div>
+      <div class="bar ${cls}" style="height:${pct}px">${t}</div>
+      <div class="bar-lbl">[${idx}]</div>
+    </div>`;
+  }).join('');
+}
+
+function renderStack(temps,step){
+  const stack=step?step.stack:[];
+  const popping=step&&step.checking!==undefined?step.checking:-1;
+  const sr=document.getElementById('stack-row');
+  if(stack.length===0){sr.innerHTML='<span class="stack-empty">empty</span>';return;}
+  sr.innerHTML=stack.map((idx,si)=>{
+    const isTop=si===stack.length-1;
+    const isPopping=idx===popping;
+    return `<div class="stack-item">
+      <div class="stack-box ${isPopping?'popping':isTop?'top':''}">${idx}</div>
+      <div class="stack-sub">t=${temps[idx]}</div>
+    </div>`;
+  }).join('<div style="color:#484f58;padding:0 2px;font-size:12px;align-self:center">›</div>');
+}
+
+function renderResult(n,step){
+  const result=step?step.result:new Array(n).fill(0);
+  const i=step?step.i:-1;
+  document.getElementById('result-cells').innerHTML=Array.from({length:n},(_,idx)=>{
+    const val=result[idx];
+    const isFilled=step&&idx<i&&val>0;
+    return `<div class="res-cell">
+      <div class="res-box ${step&&idx<i?(val>0?'filled':'zero'):''}">${step&&idx<i?val:'?'}</div>
+      <div class="res-idx">[${idx}]</div>
+    </div>`;
+  }).join('');
+}
+
+function renderVars(temps,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=[['i',step.i<0?'—':step.i],['temp[i]',step.i>=0&&step.i<temps.length?temps[step.i]:'—'],['stack',`[${step.stack.join(',')}]`],['len(stack)',step.stack.length]];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${esc(String(v))}</span></div>`).join('');
+}
+
+function renderCode(temps,step){
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">temps</span><span class="io-sep">=</span><span class="io-v">[${temps}]</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.phase==='done') out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">[${step.result}]</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const temps=EX[exIdx];
+  renderBars(temps,step);renderStack(temps,step);renderResult(temps.length,step);renderVars(temps,step);renderCode(temps,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.phase==='done'){rt.className='result-tag show pos';rt.textContent='['+step.result+']';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},700)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #701 Insert into BST — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:12px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:55px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Insert into BST &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #701 · Day 15 Problem 2 — BST</span></h1>
+    <p>Traverse until null leaf slot found (left if val smaller, right if larger). Insert new node there.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① insert 5</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② insert 6</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ insert 0</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python (iterative)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">BST — purple=current · orange=traversed · green=newly inserted node</div>
+      <svg id="tree-svg" width="500" height="220" style="overflow:visible;display:block"></svg>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+// BST: [4, 2, 7, 1, 3] with well-placed positions
+// We'll model as a mutable array and add nodes during simulation
+const BASE_TREE=[4,2,7,1,3,null,null]; // indices 0-6
+const BASE_POS={
+  0:{x:220,y:40},
+  1:{x:120,y:100},2:{x:320,y:100},
+  3:{x:60,y:160},4:{x:180,y:160}
+};
+const BASE_EDGES=[[0,1],[0,2],[1,3],[1,4]];
+
+// For each example, we know where the new node goes
+const EX=[
+  {val:5, parentIdx:2, side:'left', newPos:{x:270,y:160}}, // 5 < 7 → left of 7
+  {val:6, parentIdx:2, side:'left', newPos:{x:270,y:160}}, // 6 < 7 → left of 7
+  {val:0, parentIdx:3, side:'left', newPos:{x:10,y:220}},  // 0 < 1 → left of 1
+];
+
+function buildSteps(exData){
+  const {val}=exData;
+  const steps=[];
+  const tree=[...BASE_TREE];
+  const visited=[];
+  let cur=0;
+  steps.push({cur,visited:[],newNode:false,log:`Insert ${val}. Start at root=${tree[0]}`});
+  while(true){
+    const v=tree[cur];
+    if(val<v){
+      const left=2*cur+1;
+      if(cur>=tree.length||tree[left]===null||tree[left]===undefined){
+        visited.push(cur);
+        steps.push({cur,visited:[...visited],newNode:false,goDir:'left',log:`${val} < ${v} → go left → null found! Insert here.`});
+        steps.push({cur,visited:[...visited],newNode:true,newVal:val,log:`Created Node(${val}) as left child of ${v}`});
+        break;
+      }
+      visited.push(cur);
+      steps.push({cur,visited:[...visited],newNode:false,goDir:'left',log:`${val} < ${v} → go left`});
+      cur=left;
+    } else {
+      const right=2*cur+2;
+      if(cur>=tree.length||tree[right]===null||tree[right]===undefined){
+        visited.push(cur);
+        steps.push({cur,visited:[...visited],newNode:false,goDir:'right',log:`${val} > ${v} → go right → null found! Insert here.`});
+        steps.push({cur,visited:[...visited],newNode:true,newVal:val,log:`Created Node(${val}) as right child of ${v}`});
+        break;
+      }
+      visited.push(cur);
+      steps.push({cur,visited:[...visited],newNode:false,goDir:'right',log:`${val} > ${v} → go right`});
+      cur=right;
+    }
+  }
+  steps.push({cur:-1,visited:[...visited],newNode:true,newVal:val,done:true,log:`Inserted ${val}. BST property maintained.`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">insert_bst</span>(root, val):`,
+  `    <span class="kw">if not</span> root: <span class="kw">return</span> TreeNode(val)`,
+  `    current = root`,
+  `    <span class="kw">while</span> <span class="bi">True</span>:`,
+  `        <span class="kw">if</span> val < current.val:`,
+  `            <span class="kw">if not</span> current.left:`,
+  `                current.left = TreeNode(val)`,
+  `                <span class="kw">break</span>`,
+  `            current = current.left`,
+  `        <span class="kw">else</span>:`,
+  `            <span class="kw">if not</span> current.right:`,
+  `                current.right = TreeNode(val)`,
+  `                <span class="kw">break</span>`,
+  `            current = current.right`,
+  `    <span class="kw">return</span> root`,
+];
+function phaseLines(step){
+  if(!step) return{};
+  const ph=step.goDir;const nn=step.newNode;
+  if(nn&&!step.done) return{6:'hl-green',11:'hl-green'};
+  if(step.done) return{14:'hl-green'};
+  if(ph==='left') return{4:'hl-orange',8:'hl-orange'};
+  if(ph==='right') return{9:'hl-orange',13:'hl-orange'};
+  return{};
+}
+
+function drawTree(exData,step){
+  const visited=step?new Set(step.visited):new Set();
+  const cur=step&&!step.newNode?step.cur:-1;
+  const showNew=step&&step.newNode;
+  let html='';
+  const pos={...BASE_POS};
+  if(showNew) pos['new']=exData.newPos;
+  // edges
+  BASE_EDGES.forEach(([p,c])=>{if(pos[p]&&pos[c]) html+=`<line x1="${pos[p].x}" y1="${pos[p].y}" x2="${pos[c].x}" y2="${pos[c].y}" stroke="#30363d" stroke-width="1.5"/>`;});
+  if(showNew){const pp=BASE_POS[exData.parentIdx];html+=`<line x1="${pp.x}" y1="${pp.y}" x2="${exData.newPos.x}" y2="${exData.newPos.y}" stroke="var(--green)" stroke-width="2" stroke-dasharray="4"/>`;}
+  // original nodes
+  for(let i=0;i<BASE_TREE.length;i++){
+    if(BASE_TREE[i]===null||!pos[i]) continue;
+    const isCur=i===cur;const isVis=visited.has(i)&&!isCur;
+    const fill=isCur?'#2d1f69':isVis?'#2a1800':'#21262d';
+    const stroke=isCur?'#bc8cff':isVis?'#d29922':'#30363d';
+    const tc=isCur?'#d2b8ff':isVis?'var(--orange)':'#c9d1d9';
+    html+=`<circle cx="${pos[i].x}" cy="${pos[i].y}" r="20" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    html+=`<text x="${pos[i].x}" y="${pos[i].y+5}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="14" font-weight="700" fill="${tc}">${BASE_TREE[i]}</text>`;
+  }
+  if(showNew){const p=exData.newPos;html+=`<circle cx="${p.x}" cy="${p.y}" r="20" fill="#0d2a16" stroke="var(--green)" stroke-width="2.5" style="animation:fadeIn .3s ease"/>`;html+=`<text x="${p.x}" y="${p.y+5}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="14" font-weight="700" fill="var(--green)">${exData.val}</text>`;}
+  document.getElementById('tree-svg').innerHTML=html;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const exData=EX[exIdx];
+  drawTree(exData,step);
+  const ph=phaseLines(step);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${ph[i]?' '+ph[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-key">val</span><span class="io-sep">=</span><span class="io-v">${exData.val}</span>`;
+  const co=document.getElementById('code-output');
+  if(step&&step.done) co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">root (tree with ${exData.val} inserted)</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const vl=document.getElementById('var-list');
+  if(step){const curNode=step.cur>=0?BASE_TREE[step.cur]:'null';vl.innerHTML=`<div class="var-row"><span class="var-name">val</span><span class="var-eq">=</span><span class="var-val">${exData.val}</span></div><div class="var-row"><span class="var-name">current</span><span class="var-eq">=</span><span class="var-val">${curNode}</span></div>`;}else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.done){rt.className='result-tag show';rt.textContent='Inserted '+exData.val+' ✓';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=buildSteps(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1) stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>

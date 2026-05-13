@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #206 Reverse Linked List — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns,.tab-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn,.tab-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover,.tab-btn:hover{border-color:var(--blue);color:var(--blue)}
+.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.tab-btn.active{border-color:var(--purple);background:#2d1f69;color:var(--purple);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}.st{color:#a5d6ff}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:16px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+/* SVG list */
+.list-svg-wrap{flex-shrink:0;overflow-x:auto}
+svg.ll{display:block}
+.node-rect{rx:8;ry:8;stroke-width:2;transition:all .2s}
+.node-text{font-family:'SF Mono','Fira Code',monospace;font-size:14px;font-weight:700;pointer-events:none}
+.node-label{font-family:-apple-system,sans-serif;font-size:10px;fill:#8b949e;pointer-events:none}
+.arrow-path{stroke-width:2;fill:none;marker-end:url(#arr)}
+/* Pointer badges */
+.ptr-badges{display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.ptr-badge{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;border:1px solid;font-size:12px;font-weight:600;font-family:monospace}
+/* State */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:55px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Reverse Linked List &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #206 · Day 10 — Linked List</span></h1>
+    <p>3-pointer iterative: prev←curr←next_node. At each step, reverse the link, advance all 3 pointers.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [1,2,3,4,5]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [1,2,3]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [1,2]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code (iterative)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">Linked list — orange=curr · green=prev · purple=next_node</div>
+      <div class="list-svg-wrap">
+        <svg class="ll" id="list-svg" height="110"></svg>
+      </div>
+    </div>
+    <div>
+      <div class="panel-label">Reversed portion (growing ←)</div>
+      <div class="list-svg-wrap">
+        <svg class="ll" id="rev-svg" height="80"></svg>
+      </div>
+    </div>
+    <div class="ptr-badges" id="ptr-badges"></div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[[1,2,3,4,5],[1,2,3],[1,2]];
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">reverse_list</span>(head):`,phases:[]},
+  {h:`    prev = <span class="bi">None</span>`,phases:['init']},
+  {h:`    curr = head`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">while</span> curr:`,phases:['loop']},
+  {h:`        next_node = curr.next  <span class="cm"># save</span>`,phases:['save_next']},
+  {h:`        curr.next = prev       <span class="cm"># reverse</span>`,phases:['reverse']},
+  {h:`        prev = curr            <span class="cm"># advance prev</span>`,phases:['advance']},
+  {h:`        curr = next_node       <span class="cm"># advance curr</span>`,phases:['advance']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> prev`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',loop:'hl-orange',save_next:'hl-orange',reverse:'hl-orange',advance:'hl-green',done:'hl-green'};
+
+function simulate(arr){
+  const steps=[];
+  const n=arr.length;
+  steps.push({phase:'init',prev:-1,curr:0,next_node:null,reversedPtrs:[],log:`Init: prev=None, curr=head(${arr[0]})`});
+  let prev=-1,curr=0,reversedPtrs=[];// -1 = None
+  while(curr<n){
+    steps.push({phase:'loop',prev,curr,next_node:null,reversedPtrs:[...reversedPtrs],log:`curr=${curr}(val=${arr[curr]}) is not None. Enter loop.`});
+    const next_node=curr+1<n?curr+1:-1;
+    steps.push({phase:'save_next',prev,curr,next_node,reversedPtrs:[...reversedPtrs],log:`next_node = curr.next = ${next_node===-1?'None':arr[next_node]}`});
+    steps.push({phase:'reverse',prev,curr,next_node,reversedPtrs:[...reversedPtrs],reversing:curr,log:`curr.next = prev → node[${arr[curr]}].next now points to ${prev===-1?'None':arr[prev]}`});
+    const newRevPtrs=[...reversedPtrs,curr];
+    steps.push({phase:'advance',prev:curr,curr:next_node,next_node,reversedPtrs:newRevPtrs,log:`prev=${arr[curr]}, curr=${next_node===-1?'None':arr[next_node]}`});
+    reversedPtrs=newRevPtrs;
+    prev=curr;curr=next_node;
+  }
+  steps.push({phase:'done',prev,curr:-1,next_node:null,reversedPtrs:[...reversedPtrs],result:[...arr].reverse(),log:`Return prev = [${[...arr].reverse()}]`});
+  return steps;
+}
+
+const NODE_W=54,NODE_H=44,GAP=40,Y0=30,REV_Y=10;
+
+function drawList(svgId,arr,step,reversed){
+  const svg=document.getElementById(svgId);
+  const n=arr.length;
+  if(n===0){svg.innerHTML='<text x="10" y="24" font-size="12" fill="#484f58" font-family="monospace">empty</text>';svg.setAttribute('width',80);return;}
+  const W=n*(NODE_W+GAP)+GAP;
+  svg.setAttribute('width',W);
+  let html=`<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#30363d"/></marker>
+<marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3fb950"/></marker>
+<marker id="arr-o" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#d29922"/></marker>
+<marker id="arr-p" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#bc8cff"/></marker></defs>`;
+  const phase=step?step.phase:'';
+  const curr=step?step.curr:-1;
+  const prev=step?step.prev:-1;
+  const nextN=step?step.next_node:-1;
+  const revPtrs=step?new Set(step.reversedPtrs||[]):new Set();
+  if(!reversed){
+    // Original list with pointers
+    for(let i=0;i<n;i++){
+      const x=GAP+i*(NODE_W+GAP);
+      let fill='#21262d',stroke='#30363d';
+      if(i===curr){fill='#1a1200';stroke='#d29922';}
+      else if(i===prev&&prev!==-1){fill='#0d2a16';stroke='#3fb950';}
+      else if(i===nextN&&nextN!==-1){fill='#2d1f69';stroke='#bc8cff';}
+      html+=`<rect x="${x}" y="${Y0}" width="${NODE_W}" height="${NODE_H}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+      html+=`<text x="${x+NODE_W/2}" y="${Y0+26}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="15" font-weight="700" fill="${i===curr?'#d29922':i===prev&&prev!==-1?'#3fb950':i===nextN&&nextN!==-1?'#bc8cff':'#c9d1d9'}">${arr[i]}</text>`;
+      // Arrow to next
+      if(i<n-1){const ax=x+NODE_W,ay=Y0+NODE_H/2;html+=`<path d="M${ax},${ay} L${ax+GAP-10},${ay}" stroke="#30363d" stroke-width="2" fill="none" marker-end="url(#arr)"/>`;} 
+      else {html+=`<text x="${x+NODE_W+6}" y="${Y0+26}" font-family="monospace" font-size="11" fill="#484f58">null</text>`;}
+      // Pointer labels
+      const labels=[];
+      if(i===curr) labels.push({t:'curr',c:'#d29922'});
+      if(i===prev&&prev!==-1) labels.push({t:'prev',c:'#3fb950'});
+      if(i===nextN&&nextN!==-1) labels.push({t:'next',c:'#bc8cff'});
+      labels.forEach((l,li)=>html+=`<text x="${x+NODE_W/2}" y="${Y0-6-li*13}" text-anchor="middle" font-family="monospace" font-size="9" fill="${l.c}" font-weight="600">${l.t}</text>`);
+    }
+    svg.setAttribute('height',Y0+NODE_H+20);
+  } else {
+    // Reversed portion
+    const revArr=step?[...step.reversedPtrs].map(i=>arr[i]).reverse():[];
+    if(revArr.length===0){svg.innerHTML='<text x="10" y="24" font-size="11" fill="#484f58" font-style="italic" font-family="sans-serif">building...</text>';svg.setAttribute('width',100);svg.setAttribute('height',40);return;}
+    const rW=revArr.length*(NODE_W+GAP)+GAP;
+    svg.setAttribute('width',rW);svg.setAttribute('height',60);
+    for(let i=0;i<revArr.length;i++){
+      const x=GAP+i*(NODE_W+GAP);
+      html+=`<rect x="${x}" y="${REV_Y}" width="${NODE_W}" height="${NODE_H}" rx="8" fill="#0d2a16" stroke="#3fb950" stroke-width="2"/>`;
+      html+=`<text x="${x+NODE_W/2}" y="${REV_Y+26}" text-anchor="middle" font-family="'SF Mono',monospace" font-size="15" font-weight="700" fill="#3fb950">${revArr[i]}</text>`;
+      if(i<revArr.length-1){const ax=x+NODE_W,ay=REV_Y+NODE_H/2;html+=`<path d="M${ax},${ay} L${ax+GAP-10},${ay}" stroke="#3fb950" stroke-width="2" fill="none" marker-end="url(#arr-g)"/>`;} 
+      else html+=`<text x="${x+NODE_W+6}" y="${REV_Y+26}" font-family="monospace" font-size="11" fill="#484f58">null</text>`;
+    }
+    if(i===0) html+=`<text x="${GAP+NODE_W/2}" y="${REV_Y-4}" text-anchor="middle" font-family="monospace" font-size="9" fill="#3fb950" font-weight="600">new head</text>`;
+  }
+  svg.innerHTML=html;
+}
+
+function renderVars(arr,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=[['prev',step.prev===-1?'None':arr[step.prev]],['curr',step.curr===-1?'None':arr[step.curr]],['next',step.next_node===-1||step.next_node===null?'None':arr[step.next_node]]];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${v}</span></div>`).join('');
+}
+
+function renderCode(arr,step){
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">head</span><span class="io-sep">=</span><span class="io-v">[${arr}]</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">[${step.result}]</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const arr=EX[exIdx];
+  drawList('list-svg',arr,step,false);
+  drawList('rev-svg',arr,step,true);
+  renderVars(arr,step);renderCode(arr,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result){rt.className='result-tag show';rt.textContent='→ ['+step.result+']';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},700)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>
