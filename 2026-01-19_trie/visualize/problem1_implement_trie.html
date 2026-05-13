@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #208 Implement Trie — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.1);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:10px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+svg text{dominant-baseline:middle;text-anchor:middle;font-family:'SF Mono','Fira Code',monospace;font-size:12px;font-weight:700}
+.state-panel{width:230px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:65px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;border:1px solid}
+.result-tag.ok{background:#0d2a16;border-color:var(--green);color:var(--green)}
+.result-tag.fail{background:#2a0d0d;border-color:var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Implement Trie &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #208 · Day 19 Problem 1</span></h1>
+    <p>Trie tree: insert/search/startsWith using children dict + isEnd flag per node.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① apple + search</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② multi-insert</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ prefix-only</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python</div>
+    <div class="io-bar input" id="code-input"><span class="io-lbl">IN</span><span class="io-na">operations sequence</span></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div style="flex:1;min-height:0">
+      <div class="panel-label">Trie tree — orange=current path · green=end node · blue=new node</div>
+      <svg id="main-svg" width="100%" height="320" style="display:block"></svg>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {ops:[['insert','apple'],['search','apple'],['search','app'],['startsWith','app'],['insert','app'],['search','app']]},
+  {ops:[['insert','cat'],['insert','car'],['insert','card'],['search','car'],['search','care'],['startsWith','ca']]},
+  {ops:[['insert','hello'],['insert','help'],['startsWith','hel'],['startsWith','he'],['search','hel'],['startsWith','world']]},
+];
+
+function buildTrie(ops,upTo){
+  // returns trie root after inserting all insert ops up to opIdx
+  const root={ch:{},end:false};
+  for(let i=0;i<=upTo&&i<ops.length;i++){
+    const[op,word]=ops[i];
+    if(op==='insert'){
+      let cur=root;
+      for(const c of word){
+        if(!cur.ch[c]) cur.ch[c]={ch:{},end:false};
+        cur=cur.ch[c];
+      }
+      cur.end=true;
+    }
+  }
+  return root;
+}
+
+function simulate(ex){
+  const{ops}=ex;const steps=[];
+  steps.push({root:buildTrie(ops,-1),highlightPath:[],result:null,op:null,word:null,phase:'start',log:'Empty trie initialized'});
+  for(let i=0;i<ops.length;i++){
+    const[op,word]=ops[i];
+    const rootBefore=buildTrie(ops,i-1);
+    if(op==='insert'){
+      // step through each char
+      let path=[];
+      let cur=rootBefore;
+      for(let j=0;j<word.length;j++){
+        const c=word[j];
+        const isNew=!cur.ch[c];
+        path.push(word.slice(0,j+1));
+        const rootMid=buildTrie(ops,i-1);// insert up to current j
+        let cm=rootMid;
+        for(let k=0;k<=j;k++){if(!cm.ch[word[k]]) cm.ch[word[k]]={ch:{},end:false};cm=cm.ch[word[k]];}
+        steps.push({root:JSON.parse(JSON.stringify(rootMid)),highlightPath:[...path],result:null,op,word,phase:'insert',isNew,char:c,log:`insert "${word}": add node '${c}'${isNew?' (new)':' (exists)'}`});
+      }
+      const rootAfter=buildTrie(ops,i);
+      steps.push({root:JSON.parse(JSON.stringify(rootAfter)),highlightPath:[word],result:null,op,word,phase:'insert_done',log:`insert "${word}": mark end=True`});
+    } else {
+      // search or startsWith
+      const root=buildTrie(ops,i-1);// trie doesn't change for search ops
+      let cur=root;let path=[];let found=true;
+      for(const c of word){
+        path.push(path.length?path[path.length-1]+c:c);
+        if(!cur.ch[c]){found=false;break;}
+        cur=cur.ch[c];
+      }
+      const result=op==='search'?(found&&cur.end):found;
+      steps.push({root:JSON.parse(JSON.stringify(root)),highlightPath:found?[word]:[...path.slice(0,-1)],result,op,word,phase:'query',log:`${op}("${word}") → ${result}`});
+    }
+  }
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">class</span> <span class="fn">TrieNode</span>:`,
+  `    children = {}; is_end = <span class="kw">False</span>`,
+  `<span class="kw">class</span> <span class="fn">Trie</span>:`,
+  `    <span class="kw">def</span> <span class="fn">insert</span>(self, word):`,
+  `        cur = self.root`,
+  `        <span class="kw">for</span> c <span class="kw">in</span> word:`,
+  `            <span class="kw">if</span> c <span class="kw">not in</span> cur.children:`,
+  `                cur.children[c] = TrieNode()`,
+  `            cur = cur.children[c]`,
+  `        cur.is_end = <span class="kw">True</span>`,
+  `    <span class="kw">def</span> <span class="fn">search</span>(self, word):`,
+  `        cur = self.root`,
+  `        <span class="kw">for</span> c <span class="kw">in</span> word:`,
+  `            <span class="kw">if</span> c <span class="kw">not in</span> cur.children: <span class="kw">return False</span>`,
+  `            cur = cur.children[c]`,
+  `        <span class="kw">return</span> cur.is_end`,
+];
+function phaseHL(ph,op){
+  if(ph==='insert') return{5:'hl-orange',6:'hl-orange',7:'hl-orange',8:'hl-orange'};
+  if(ph==='insert_done') return{9:'hl-green'};
+  if(ph==='query'&&op==='search') return{12:'hl-orange',13:'hl-orange',15:'hl-green'};
+  if(ph==='query'&&op==='startsWith') return{12:'hl-orange',13:'hl-orange'};
+  return{};
+}
+
+// Draw trie as tree SVG
+function layoutTrie(root){
+  const nodes=[];const edges=[];
+  let xCounter=0;
+  function dfs(node,depth,prefix){
+    const children=Object.entries(node.ch);
+    const childX=[];
+    for(const[c,child] of children){
+      const cid=dfs(child,depth+1,prefix+c);
+      childX.push(nodes[cid].x);
+      edges.push({from:prefix||'ROOT',to:prefix+c});
+    }
+    const x=childX.length?(childX[0]+childX[childX.length-1])/2:xCounter++*50;
+    const id=nodes.length;
+    nodes.push({id,label:prefix?prefix[prefix.length-1]:'*',prefix:prefix||'',depth,x,y:depth*60+30,end:node.end});
+    return id;
+  }
+  dfs(root,0,'');
+  // normalize x
+  const maxX=Math.max(...nodes.map(n=>n.x),0);
+  const minX=Math.min(...nodes.map(n=>n.x),0);
+  const scale=Math.min(1,(500/(maxX-minX+50)));
+  const offX=30-minX*scale;
+  nodes.forEach(n=>{n.px=n.x*scale+offX;n.py=n.y+20;});
+  return{nodes,edges};
+}
+
+function drawTrie(step){
+  const svg=document.getElementById('main-svg');
+  if(!step){svg.innerHTML='';return;}
+  const{root,highlightPath,phase,op,result}=step;
+  const{nodes,edges}=layoutTrie(root);
+  const nodeMap={};nodes.forEach(n=>nodeMap[n.prefix]=n);
+  svg.innerHTML='';
+  // edges
+  for(const e of edges){
+    const a=nodeMap[e.from];const b=nodeMap[e.to];
+    if(!a||!b) continue;
+    const inPath=highlightPath.some(p=>b.prefix===p||b.prefix===p.slice(0,b.prefix.length));
+    svg.innerHTML+=`<line x1="${a.px}" y1="${a.py}" x2="${b.px}" y2="${b.py}" stroke="${inPath?'#d29922':'#30363d'}" stroke-width="${inPath?2:1.5}"/>`;
+  }
+  // nodes
+  for(const n of nodes){
+    const inPath=highlightPath.some(p=>n.prefix===p||n.prefix===p.slice(0,n.prefix.length));
+    const isEnd=n.end;
+    let fill='#21262d',stroke='#30363d',tc='#8b949e';
+    if(inPath&&phase==='insert'&&isEnd){fill='#0d2a16';stroke='#3fb950';tc='#3fb950';}
+    else if(inPath&&phase==='insert'){fill='#1c3458';stroke='#58a6ff';tc='#58a6ff';}
+    else if(inPath&&phase==='query'&&result===true){fill='#0d2a16';stroke='#3fb950';tc='#3fb950';}
+    else if(inPath&&phase==='query'&&result===false){fill='#2a0d0d';stroke='#f85149';tc='#f85149';}
+    else if(inPath){fill='#2d1f00';stroke='#d29922';tc='#d29922';}
+    else if(isEnd){fill='#0d2a16';stroke='#2d5a2d';tc='#3fb950';}
+    svg.innerHTML+=`<circle cx="${n.px}" cy="${n.py}" r="16" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+    svg.innerHTML+=`<text x="${n.px}" y="${n.py}" fill="${tc}">${n.label}</text>`;
+    if(isEnd) svg.innerHTML+=`<text x="${n.px+18}" y="${n.py}" fill="#3fb950" font-size="9" dominant-baseline="middle" text-anchor="start">$</text>`;
+  }
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const ex=EX[exIdx];const step=stepIdx>=0?steps[stepIdx]:null;
+  drawTrie(step);
+  const ph=step?step.phase:'';const op=step?step.op:'';
+  const hl=phaseHL(ph,op);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  const co=document.getElementById('code-output');
+  if(step&&step.phase==='query') co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:${step.result?'var(--green)':'var(--red)'}">${step.result}</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const vl=document.getElementById('var-list');
+  if(step) vl.innerHTML=`<div class="var-row"><span class="var-name">op</span><span class="var-eq">=</span><span class="var-val">${step.op||'—'}</span></div><div class="var-row"><span class="var-name">word</span><span class="var-eq">=</span><span class="var-val">${step.word||'—'}</span></div>`;
+  else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  const rt=document.getElementById('result-tag');
+  if(step&&step.phase==='query'){const ok=step.result;rt.className=`result-tag show ${ok?'ok':'fail'}`;rt.textContent=`${step.op}("${step.word}") = ${step.result}`;}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1)stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>

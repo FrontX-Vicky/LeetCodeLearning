@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #215 Kth Largest Element — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.arr-row{display:flex;gap:5px;flex-wrap:wrap}
+.arr-cell{width:42px;height:42px;border-radius:7px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:15px;font-weight:600;transition:all .2s}
+.arr-cell.cur{border-color:var(--purple);background:#2d1f69;color:#d2b8ff}
+.arr-cell.in-heap{border-color:var(--orange);background:#2a1800;color:var(--orange)}
+.arr-cell.popped{border-color:var(--red);background:#2d0f0f;color:var(--red)}
+.arr-cell.done-idx{border-color:#30363d;color:#484f58}
+.heap-display{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.heap-cell{padding:4px 12px;border-radius:6px;font-family:monospace;font-size:13px;font-weight:600;transition:all .2s}
+.heap-cell.top{border:2px solid var(--green);background:#0d2a16;color:var(--green)}
+.heap-cell.normal{border:1px solid var(--orange);background:#2a1800;color:var(--orange)}
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:70px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Kth Largest Element in Array &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #215 · Day 17 Problem 1</span></h1>
+    <p>Min-heap of size k: keeps k largest elements seen so far. heap[0] = kth largest.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [3,2,1,5,6,4] k=2</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [3,2,3,1,2,4,5,5,6] k=4</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [7,6,5,4,3,2,1] k=3</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python (Min Heap)</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">Input array — purple=current · orange=in heap · red=popped · gray=skipped</div>
+      <div class="arr-row" id="arr-row"></div>
+    </div>
+    <div>
+      <div class="panel-label">Min Heap (size ≤ k) — green=min/kth largest</div>
+      <div class="heap-display" id="heap-display"></div>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {nums:[3,2,1,5,6,4],k:2},
+  {nums:[3,2,3,1,2,4,5,5,6],k:4},
+  {nums:[7,6,5,4,3,2,1],k:3},
+];
+
+function heapPush(h,v){h.push(v);let i=h.length-1;while(i>0){const p=(i-1)>>1;if(h[p]<=h[i]) break;[h[p],h[i]]=[h[i],h[p]];i=p;}}
+function heapPop(h){const top=h[0];const last=h.pop();if(!h.length) return top;h[0]=last;let i=0;while(true){let s=i;const l=2*i+1,r=2*i+2;if(l<h.length&&h[l]<h[s]) s=l;if(r<h.length&&h[r]<h[s]) s=r;if(s===i) break;[h[i],h[s]]=[h[s],h[i]];i=s;}return top;}
+
+function simulate(ex){
+  const {nums,k}=ex;const steps=[];
+  const heap=[];const inHeapIdx=new Set();const poppedIdx=new Set();const processedIdx=new Set();
+  // Build initial heap from first k
+  steps.push({heap:[],cur:-1,inHeapIdx:new Set(),poppedIdx:new Set(),phase:'start',log:`Build initial heap from first ${k} elements`});
+  for(let i=0;i<Math.min(k,nums.length);i++){
+    heapPush(heap,nums[i]);inHeapIdx.add(i);processedIdx.add(i);
+    steps.push({heap:[...heap],cur:i,inHeapIdx:new Set(inHeapIdx),poppedIdx:new Set(poppedIdx),phase:'push',log:`Push ${nums[i]} into heap. Heap: [${heap.join(',')}]`});
+  }
+  for(let i=k;i<nums.length;i++){
+    processedIdx.add(i);
+    if(nums[i]>heap[0]){
+      const popped=heap[0];
+      heapPop(heap);
+      heapPush(heap,nums[i]);
+      inHeapIdx.add(i);
+      // find which element left the heap
+      steps.push({heap:[...heap],cur:i,inHeapIdx:new Set(inHeapIdx),poppedIdx:new Set(poppedIdx),phase:'replace',log:`${nums[i]} > heap min ${popped} → replace. Heap: [${heap.join(',')}]`});
+    } else {
+      steps.push({heap:[...heap],cur:i,inHeapIdx:new Set(inHeapIdx),poppedIdx:new Set(poppedIdx),phase:'skip',log:`${nums[i]} ≤ heap min ${heap[0]} → skip`});
+    }
+  }
+  steps.push({heap:[...heap],cur:-1,inHeapIdx:new Set(inHeapIdx),poppedIdx:new Set(poppedIdx),phase:'done',result:heap[0],log:`Done! heap[0] = ${heap[0]} = ${k}th largest`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">find_kth_largest</span>(nums, k):`,
+  `    heap = nums[:k]`,
+  `    heapq.heapify(heap)`,
+  `    <span class="kw">for</span> num <span class="kw">in</span> nums[k:]:`,
+  `        <span class="kw">if</span> num > heap[<span class="nm">0</span>]:`,
+  `            heapq.heapreplace(heap, num)`,
+  `    <span class="kw">return</span> heap[<span class="nm">0</span>]  <span class="cm"># kth largest</span>`,
+];
+function phaseHL(ph){
+  if(ph==='push') return{1:'hl-orange',2:'hl-orange'};
+  if(ph==='replace') return{4:'hl-orange',5:'hl-green'};
+  if(ph==='skip') return{4:'hl-red'};
+  if(ph==='done') return{6:'hl-green'};
+  return{};
+}
+
+function renderArr(ex,step){
+  const ar=document.getElementById('arr-row');
+  const ih=step?step.inHeapIdx:new Set();const cur=step?step.cur:-1;const ph=step?step.phase:'';
+  ar.innerHTML=ex.nums.map((v,i)=>{
+    let cls='arr-cell';
+    if(i===cur) cls+=' cur';
+    else if(ih.has(i)) cls+=' in-heap';
+    return `<div class="${cls}">${v}</div>`;
+  }).join('');
+}
+
+function renderHeap(step){
+  const hd=document.getElementById('heap-display');
+  if(!step||!step.heap.length){hd.innerHTML='<span style="color:#484f58;font-style:italic;font-size:11px">empty</span>';return;}
+  hd.innerHTML=step.heap.map((v,i)=>`<div class="heap-cell ${i===0?'top':'normal'}">${v}${i===0?'&nbsp;<span style="font-size:9px;font-weight:400">(min)</span>':''}</div>`).join('');
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;const ex=EX[exIdx];
+  renderArr(ex,step);renderHeap(step);
+  const ph=step?step.phase:'';const hl=phaseHL(ph);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-key">nums</span><span class="io-sep">=</span><span class="io-v">[${ex.nums.join(',')}]</span>&nbsp;<span class="io-key">k</span><span class="io-sep">=</span><span class="io-v">${ex.k}</span>`;
+  const co=document.getElementById('code-output');
+  if(step&&step.result!==undefined) co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">${step.result}</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const vl=document.getElementById('var-list');
+  if(step){const num=step.cur>=0?ex.nums[step.cur]:'—';vl.innerHTML=`<div class="var-row"><span class="var-name">num</span><span class="var-eq">=</span><span class="var-val">${num}</span></div><div class="var-row"><span class="var-name">heap[0]</span><span class="var-eq">=</span><span class="var-val">${step.heap.length?step.heap[0]:'—'}</span></div><div class="var-row"><span class="var-name">heap sz</span><span class="var-eq">=</span><span class="var-val">${step.heap.length}</span></div>`;}else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className='result-tag show';rt.textContent=`${ex.k}th Largest = ${step.result}`;}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1) stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>
