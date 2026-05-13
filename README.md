@@ -809,6 +809,41 @@
 
 ---
 
+### **Day 21: Topological Sort** 📅 *2026-01-21* ✅ **COMPLETED**
+
+**Problems Solved** (5 topological sort problems):
+1. **Course Schedule** - Kahn's cycle detection (LeetCode #207)
+2. **Course Schedule II** - Kahn's with order collection (LeetCode #210)
+3. **Alien Dictionary** - Topo sort on character precedence graph (LeetCode #269)
+4. **Minimum Height Trees** - Leaf-trimming BFS to find centroids (LeetCode #310)
+5. **Parallel Courses** - Layered BFS for minimum semesters (LeetCode #1136)
+
+**Topics Covered**:
+- Kahn's algorithm (BFS + indegree queue)
+- Cycle detection via `processed == n` check
+- Building character precedence graphs from word pairs
+- Leaf trimming on undirected trees (MHT centroid finding)
+- Layered BFS for parallel scheduling
+
+**Key Concepts Learned**:
+- Kahn's algorithm handles cycle detection for free: if `processed < n` after draining the queue, a cycle blocked remaining nodes
+- Alien Dictionary: build directed graph between chars from adjacent word pairs; catch invalid prefix case (`["abc", "ab"]`)
+- MHT: no directed graph needed — peel leaves inward until ≤ 2 nodes remain (always the centroids)
+- Parallel Courses: process entire queue per semester, increment semester counter each BFS level
+
+**Mistakes Made**:
+- None — all 5 problems solved correctly on first attempt
+
+**Patterns Locked In**:
+- `processed == n` → no cycle (Kahn's)
+- `len(order) == numCourses` → valid topo order
+- `remaining -= layer_size` then `while remaining > 2` → MHT leaf trimming
+- `semester += 1` per BFS layer → min time / parallel scheduling
+
+**Test Results**: 25/25 tests passed ✅
+
+---
+
 ## Master Concepts Index
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
@@ -863,7 +898,10 @@
 - **Graph Cloning**: Day 18
 - **Multi-Source BFS**: Day 18
 - **Reverse DFS**: Day 18
-- **Topological Sort**: Day 18
+- **Topological Sort**: Day 18, Day 21
+- **Kahn's Algorithm**: Day 21
+- **Cycle Detection (Topo)**: Day 21
+- **Layered BFS**: Day 21
 - **Trie (Prefix Tree)**: Day 19
 - **Prefix Matching**: Day 19
 - **Wildcard DFS on Trie**: Day 19
@@ -913,8 +951,8 @@
 
 ### **Phase 5: Graph Algorithms** (Days 21-24) 🔄 **IN PROGRESS**
 **Focus**: Advanced graph traversal and optimization
-- Day 21: Topological Sort 🎯 **NEXT**
-- Day 22: Dijkstra's Shortest Path
+- Day 21: Topological Sort ✅
+- Day 22: Dijkstra's Shortest Path 🎯 **NEXT**
 - Day 23: Minimum Spanning Tree (Kruskal/Prim)
 - Day 24: Advanced Graph Problems
 
@@ -953,11 +991,11 @@
 | Phase 2: Advanced Patterns | 9-12 | ✅ Complete | 4/4 (100%) |
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
-| Phase 5: Graph Algorithms | 21-24 | 🔄 In Progress | 0/4 (0%) |
+| Phase 5: Graph Algorithms | 21-24 | 🔄 In Progress | 1/4 (25%) |
 | Phase 6: Dynamic Programming | 25-32 | 📋 Planned | 0/8 (0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 20/40 days complete (50.0%)
+**Overall Progress**: 21/40 days complete (52.5%)
 
 ---
