@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #11 Container With Most Water — Two Pointers Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);transition:background .15s;z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:0;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;flex-shrink:0}
+/* Bar chart */
+.chart-area{flex:1;min-height:0;position:relative;display:flex;align-items:flex-end;gap:4px;padding-bottom:24px;padding-top:8px}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:0;position:relative;flex:1;min-width:0;height:100%}
+.bar-spacer{flex:1}
+.bar-body{width:100%;border-radius:4px 4px 0 0;transition:all .25s;position:relative;min-width:20px}
+.bar-body.normal{background:#21262d;border:2px solid #30363d}
+.bar-body.left-ptr{background:#3d2b00;border:2px solid var(--orange)}
+.bar-body.right-ptr{background:#2d1f69;border:2px solid var(--purple)}
+.bar-body.best-left{background:#0d2a16;border:2px solid var(--green)}
+.bar-body.best-right{background:#0d2a16;border:2px solid var(--green)}
+.bar-val{font-size:10px;font-weight:700;font-family:monospace;position:absolute;top:-16px;left:50%;transform:translateX(-50%);white-space:nowrap}
+.bar-idx{font-size:9px;color:var(--muted);font-family:monospace;position:absolute;bottom:-18px;left:50%;transform:translateX(-50%)}
+.bar-ptr-label{font-size:9px;font-weight:700;position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);font-family:monospace;white-space:nowrap}
+/* Water fill */
+.water-fill{position:absolute;bottom:24px;left:0;right:0;background:rgba(88,166,255,.15);border:1px dashed rgba(88,166,255,.4);border-radius:2px;transition:all .25s;pointer-events:none}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:70px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+.max-display{font-size:28px;font-weight:700;font-family:monospace;color:var(--green);text-align:center;padding:4px 0}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Container With Most Water &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #11 · Day 5 — Two Pointers</span></h1>
+    <p>Start with widest container (L=0, R=end). Area = width × min(h[L],h[R]). Move the shorter pointer inward each step.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [1,8,6,2,5,4,8,3,7] → 49</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [1,1] → 1</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [4,3,2,1,4] → 16</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="panel-label">Heights — orange=left pointer · purple=right pointer · green=best container so far · blue=water fill</div>
+    <div class="chart-area" id="chart-area"></div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card" style="text-align:center">
+      <div class="card-title">Max Area (best)</div>
+      <div class="max-display" id="max-display">0</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  [1,8,6,2,5,4,8,3,7],
+  [1,1],
+  [4,3,2,1,4],
+];
+
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">max_area</span>(height):`,phases:[]},
+  {h:`    left, right = <span class="nm">0</span>, <span class="bi">len</span>(height) <span class="op">-</span> <span class="nm">1</span>`,phases:['init']},
+  {h:`    max_water = <span class="nm">0</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">while</span> left < right:`,phases:['loop']},
+  {h:`        width = right <span class="op">-</span> left`,phases:['calc']},
+  {h:`        h = <span class="bi">min</span>(height[left], height[right])`,phases:['calc']},
+  {h:`        water = width <span class="op">*</span> h`,phases:['calc']},
+  {h:`        max_water = <span class="bi">max</span>(max_water, water)`,phases:['update','best_update']},
+  {h:``,phases:[]},
+  {h:`        <span class="kw">if</span> height[left] < height[right]:`,phases:['move']},
+  {h:`            left <span class="op">+=</span> <span class="nm">1</span>   <span class="cm"># move shorter side</span>`,phases:['move_left']},
+  {h:`        <span class="kw">else</span>:`,phases:['move']},
+  {h:`            right <span class="op">-=</span> <span class="nm">1</span>`,phases:['move_right']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> max_water`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',loop:'hl-orange',calc:'hl-orange',update:'hl-orange',best_update:'hl-green',move:'hl-orange',move_left:'hl-red',move_right:'hl-red',done:'hl-green'};
+
+function simulate(heights){
+  const steps=[];
+  let left=0,right=heights.length-1,maxW=0,bestL=null,bestR=null;
+  steps.push({phase:'init',left,right,maxW,bestL,bestR,water:null,log:'Init left=0, right=len-1, max_water=0.'});
+  while(left<right){
+    steps.push({phase:'loop',left,right,maxW,bestL,bestR,water:null,log:`Loop: left=${left}, right=${right}`});
+    const width=right-left;
+    const h=Math.min(heights[left],heights[right]);
+    const water=width*h;
+    steps.push({phase:'calc',left,right,maxW,bestL,bestR,water,width,h,log:`width=${width}, h=min(${heights[left]},${heights[right]})=${h}, water=${water}`});
+    const newMax=Math.max(maxW,water);
+    if(newMax>maxW){
+      maxW=newMax;bestL=left;bestR=right;
+      steps.push({phase:'best_update',left,right,maxW,bestL,bestR,water,width,h,log:`New best! water=${water} > prev max → max_water=${maxW}, window=[${bestL},${bestR}]`});
+    } else {
+      steps.push({phase:'update',left,right,maxW,bestL,bestR,water,width,h,log:`max_water = max(${maxW}, ${water}) = ${maxW} (no change)`});
+    }
+    if(heights[left]<heights[right]){
+      steps.push({phase:'move_left',left,right,maxW,bestL,bestR,water,width,h,log:`h[left]=${heights[left]} < h[right]=${heights[right]} → move left pointer: left=${left+1}`});
+      left++;
+    } else {
+      steps.push({phase:'move_right',left,right,maxW,bestL,bestR,water,width,h,log:`h[left]=${heights[left]} >= h[right]=${heights[right]} → move right pointer: right=${right-1}`});
+      right--;
+    }
+  }
+  steps.push({phase:'done',left,right,maxW,bestL,bestR,water:null,result:maxW,log:`Return max_water = ${maxW}`});
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderChart(heights,step){
+  const chartArea=document.getElementById('chart-area');
+  const maxH=Math.max(...heights,1);
+  const left=step?step.left:0;
+  const right=step?step.right:heights.length-1;
+  const bestL=step?step.bestL:null;
+  const bestR=step?step.bestR:null;
+  const isActive=step&&step.left<=step.right;
+  chartArea.innerHTML='';
+  // Build columns
+  const cols=heights.map((h,i)=>{
+    let cls='normal';
+    if(step){
+      if(i===left&&left<=right) cls='left-ptr';
+      else if(i===right&&left<=right) cls='right-ptr';
+      else if(bestL!==null&&i===bestL&&!(i===left||i===right)) cls='best-left';
+      else if(bestR!==null&&i===bestR&&!(i===left||i===right)) cls='best-right';
+    }
+    const pct=h/maxH*100;
+    const valColor=cls==='left-ptr'?'var(--orange)':cls==='right-ptr'?'var(--purple)':cls==='best-left'||cls==='best-right'?'var(--green)':'var(--muted)';
+    const ptrLbl=cls==='left-ptr'?'L':cls==='right-ptr'?'R':'';
+    const ptrColor=cls==='left-ptr'?'var(--orange)':'var(--purple)';
+    const col=document.createElement('div');
+    col.className='bar-col';
+    col.dataset.idx=i;
+    col.innerHTML=`<div class="bar-spacer"></div>
+      <div class="bar-body ${cls}" style="height:${pct}%">
+        <span class="bar-val" style="color:${valColor}">${h}</span>
+      </div>
+      <div class="bar-idx">[${i}]</div>
+      ${ptrLbl?`<div class="bar-ptr-label" style="color:${ptrColor}">${ptrLbl}</div>`:''}`;
+    return col;
+  });
+  cols.forEach(c=>chartArea.appendChild(c));
+  // Water overlay
+  if(step&&step.water!==null&&isActive){
+    const water=document.createElement('div');
+    water.className='water-fill';
+    // We'll use a simple overlay approach - position based on left/right columns
+    // Need to calculate positions after DOM is updated
+    requestAnimationFrame(()=>{
+      const lCol=cols[left],rCol=cols[right];
+      if(!lCol||!rCol) return;
+      const chartRect=chartArea.getBoundingClientRect();
+      const lRect=lCol.getBoundingClientRect();
+      const rRect=rCol.getBoundingClientRect();
+      const waterH=step.h/maxH*(chartArea.offsetHeight-24);
+      water.style.left=(lRect.left-chartRect.left)+'px';
+      water.style.width=(rRect.right-lRect.left)+'px';
+      water.style.height=waterH+'px';
+    });
+    chartArea.appendChild(water);
+  }
+}
+
+function renderVars(heights,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';document.getElementById('max-display').textContent='0';return;}
+  const rows=[
+    ['left',step.left],
+    ['right',step.right],
+    ['h[L]',heights[step.left]??'—'],
+    ['h[R]',heights[step.right]??'—'],
+    ['water',step.water!==null?step.water:'—'],
+    ['max_water',step.maxW],
+  ];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${esc(String(v))}</span></div>`).join('');
+  const md=document.getElementById('max-display');
+  md.textContent=step.maxW||0;
+  md.style.color=step.maxW>0?'var(--green)':'#484f58';
+}
+
+function renderCode(heights,step){
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">height</span><span class="io-sep">=</span><span class="io-v">${esc(JSON.stringify(heights))}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">${step.result}</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const heights=EX[exIdx];
+  renderChart(heights,step);renderVars(heights,step);renderCode(heights,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className='result-tag show pos';rt.textContent='Max Area: '+step.result}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},800)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1 Two Sum — Hash Map Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+/* Code panel */
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}.st{color:#a5d6ff}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+/* Visual panel */
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:16px 20px;gap:16px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+/* Array row */
+.array-section{flex-shrink:0}
+.array-row{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.arr-cell{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.arr-box{width:52px;height:52px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:2px solid;font-size:20px;font-weight:700;font-family:monospace;transition:all .2s;position:relative}
+.arr-idx{font-size:10px;color:var(--muted);font-family:monospace}
+.arr-box.normal{background:#21262d;border-color:#30363d;color:var(--text)}
+.arr-box.current{background:#2d1f69;border-color:var(--purple);color:#d2b8ff;box-shadow:0 0 0 3px rgba(188,140,255,.2);transform:translateY(-3px)}
+.arr-box.complement{background:#3d2b00;border-color:var(--orange);color:#e3b341;box-shadow:0 0 0 3px rgba(210,153,34,.2)}
+.arr-box.found-a{background:#0d2a16;border-color:var(--green);color:var(--green);box-shadow:0 0 0 3px rgba(63,185,80,.25);transform:translateY(-3px)}
+.arr-box.found-b{background:#0d2a16;border-color:var(--green);color:var(--green);box-shadow:0 0 0 3px rgba(63,185,80,.25);transform:translateY(-3px)}
+.arr-box.seen-past{background:#161b22;border-color:#21262d;color:#484f58}
+.arr-pointer{font-size:10px;font-weight:700;min-height:14px;text-align:center;font-family:monospace;transition:color .2s}
+/* Hash map */
+.hashmap-section{flex:1;min-height:0;display:flex;flex-direction:column}
+.hashmap-grid{display:flex;flex-wrap:wrap;gap:6px;overflow-y:auto;padding-bottom:4px}
+.hashmap-grid::-webkit-scrollbar{height:3px}.hashmap-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.hm-entry{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
+.hm-pair{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:11.5px;overflow:hidden;transition:all .2s}
+.hm-key{padding:5px 8px;color:var(--orange);border-right:1px solid var(--border);background:#1a1200}
+.hm-val{padding:5px 8px;color:var(--blue)}
+.hm-pair.new{border-color:var(--orange);background:#1a1200;animation:popIn .25s ease}
+.hm-pair.hit{border-color:var(--green);background:#0d2a16;box-shadow:0 0 0 2px rgba(63,185,80,.3)}
+.hm-pair.found{border-color:var(--green);animation:popIn .25s ease}
+.hm-lbl{font-size:9px;color:#484f58;font-family:monospace}
+/* Complement box */
+.comp-section{flex-shrink:0;display:flex;gap:12px;align-items:stretch}
+.comp-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 14px;flex:1}
+.comp-card-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px}
+.comp-val{font-size:20px;font-weight:700;font-family:monospace;color:var(--text);transition:color .2s}
+.comp-val.active-comp{color:var(--orange)}
+.comp-val.found{color:var(--green)}
+/* State panel */
+.state-panel{width:240px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:6px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:80px}
+.var-eq{color:#484f58}
+.var-val{color:var(--text);flex:1;transition:color .2s}
+.var-val.changed{color:var(--green)}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+/* Bottom */
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.result-tag.neg{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+/* Approach tabs */
+.approach-tabs{display:flex;gap:6px;flex-shrink:0}
+.tab-btn{padding:4px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.tab-btn:hover{border-color:var(--blue);color:var(--blue)}.tab-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.7)}65%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+.log-entry.active{animation:fadeUp .2s ease both}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Two Sum &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1 · Day 1 — Arrays & Hash Maps</span></h1>
+    <p>Hash Map approach: one pass · for each num store it, check if complement already seen · O(n) time O(n) space</p>
+  </div>
+  <div class="approach-tabs">
+    <button class="tab-btn active" id="tab-hashmap" onclick="setApproach('hashmap')">Hash Map O(n)</button>
+    <button class="tab-btn"        id="tab-brute"   onclick="setApproach('brute')">Brute Force O(n²)</button>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [2,7,11,15] t=9 → [0,1]</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [3,2,4] t=6 → [1,2]</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [3,3] t=6 → [0,1]</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code — executing line highlighted</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="array-section">
+      <div class="panel-label">Array — purple = current element · orange = complement value · green = answer pair found</div>
+      <div class="array-row" id="array-row"></div>
+    </div>
+    <div class="comp-section" id="comp-section">
+      <div class="comp-card" id="card-i"><div class="comp-card-title">Current index i</div><div class="comp-val" id="cv-i">—</div></div>
+      <div class="comp-card" id="card-num"><div class="comp-card-title">nums[i]</div><div class="comp-val" id="cv-num">—</div></div>
+      <div class="comp-card" id="card-comp"><div class="comp-card-title">complement = target − nums[i]</div><div class="comp-val" id="cv-comp">—</div></div>
+      <div class="comp-card" id="card-in-seen"><div class="comp-card-title">complement in seen?</div><div class="comp-val" id="cv-in-seen">—</div></div>
+    </div>
+    <div class="hashmap-section" id="hm-section">
+      <div class="panel-label">seen = { number → index } &nbsp;<span id="hm-size-badge" style="color:#484f58;font-size:9px;font-weight:400">empty</span></div>
+      <div class="hashmap-grid" id="hashmap-grid"></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+// Resizer
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {nums:[2,7,11,15],target:9},
+  {nums:[3,2,4],target:6},
+  {nums:[3,3],target:6},
+];
+
+// ── Code definitions
+const HASHMAP_CODE=[
+  {h:`<span class="kw">def</span> <span class="fn">two_sum</span>(nums, target):`,phases:[]},
+  {h:`    seen = {}  <span class="cm"># number → index</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> i, num <span class="kw">in</span> <span class="bi">enumerate</span>(nums):`,phases:['loop']},
+  {h:`        complement = target <span class="op">-</span> num`,phases:['comp']},
+  {h:`        <span class="kw">if</span> complement <span class="kw">in</span> seen:`,phases:['check','found']},
+  {h:`            <span class="kw">return</span> [seen[complement], i]`,phases:['found']},
+  {h:`        seen[num] = i`,phases:['store']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> []  <span class="cm"># not found</span>`,phases:['done_none']},
+];
+const BRUTE_CODE=[
+  {h:`<span class="kw">def</span> <span class="fn">two_sum_brute</span>(nums, target):`,phases:[]},
+  {h:`    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(<span class="bi">len</span>(nums)):`,phases:['outer']},
+  {h:`        <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(i <span class="op">+</span> <span class="nm">1</span>, <span class="bi">len</span>(nums)):`,phases:['inner']},
+  {h:`            <span class="kw">if</span> nums[i] <span class="op">+</span> nums[j] == target:`,phases:['check','found']},
+  {h:`                <span class="kw">return</span> [i, j]`,phases:['found']},
+  {h:`    <span class="kw">return</span> []`,phases:['done_none']},
+];
+const PHASE_HL={init:'hl-orange',loop:'hl-orange',comp:'hl-orange',check:'hl-orange',found:'hl-green',store:'hl-orange',done_none:'hl-red',outer:'hl-orange',inner:'hl-orange'};
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ── Simulate Hash Map approach
+function simHashmap(ex){
+  const{nums,target}=ex;
+  const steps=[];
+  steps.push({phase:'init',i:-1,num:null,comp:null,seen:{},log:'Initialize seen = {} (empty hash map).'});
+  for(let i=0;i<nums.length;i++){
+    const num=nums[i];
+    const comp=target-num;
+    const inSeen=comp in Object.fromEntries(Object.entries(steps[steps.length-1].seen||{}));
+    // copy seen from previous step
+    const prevSeen={...steps[steps.length-1].seen};
+    steps.push({phase:'loop',i,num,comp,seen:{...prevSeen},log:`i=${i}: num=${num}. Entered loop.`});
+    steps.push({phase:'comp',i,num,comp,seen:{...prevSeen},log:`complement = target(${target}) − num(${num}) = ${comp}`});
+    const hit=prevSeen.hasOwnProperty(comp);
+    steps.push({phase:hit?'found':'check',i,num,comp,seen:{...prevSeen},inSeen:hit,foundA:hit?prevSeen[comp]:null,foundB:hit?i:null,
+      log:hit?`✅ complement ${comp} IS in seen! → return [${prevSeen[comp]}, ${i}]`:`${comp} not in seen yet.`});
+    if(hit){
+      steps.push({phase:'found',i,num,comp,seen:{...prevSeen},inSeen:true,foundA:prevSeen[comp],foundB:i,result:[prevSeen[comp],i],
+        log:`Return [${prevSeen[comp]}, ${i}] ✓`});
+      return steps;
+    }
+    const newSeen={...prevSeen,[num]:i};
+    steps.push({phase:'store',i,num,comp,seen:newSeen,inSeen:false,log:`seen[${num}] = ${i} → stored.`});
+  }
+  steps.push({phase:'done_none',i:-1,seen:{...steps[steps.length-1].seen},log:'No pair found.'});
+  return steps;
+}
+
+// ── Simulate Brute Force
+function simBrute(ex){
+  const{nums,target}=ex;
+  const steps=[];
+  for(let i=0;i<nums.length;i++){
+    steps.push({phase:'outer',i,j:-1,log:`Outer i=${i}: nums[${i}]=${nums[i]}`});
+    for(let j=i+1;j<nums.length;j++){
+      const sum=nums[i]+nums[j];
+      const hit=sum===target;
+      steps.push({phase:hit?'found':'inner',i,j,sum,log:`i=${i},j=${j}: ${nums[i]}+${nums[j]}=${sum} ${hit?'== target → found!':'≠ target'}`});
+      if(hit){
+        steps.push({phase:'found',i,j,sum,result:[i,j],log:`Return [${i}, ${j}] ✓`});
+        return steps;
+      }
+    }
+  }
+  steps.push({phase:'done_none',log:'No pair found.'});
+  return steps;
+}
+
+let approach='hashmap';
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function setApproach(a){
+  approach=a;
+  document.getElementById('tab-hashmap').classList.toggle('active',a==='hashmap');
+  document.getElementById('tab-brute').classList.toggle('active',a==='brute');
+  document.getElementById('hm-section').style.display=a==='hashmap'?'':'none';
+  document.getElementById('comp-section').style.display=a==='hashmap'?'':'none';
+  steps=a==='hashmap'?simHashmap(EX[exIdx]):simBrute(EX[exIdx]);
+  stepIdx=-1;
+  render();
+}
+
+function renderArray(ex,step){
+  const{nums}=ex;
+  let html='';
+  for(let k=0;k<nums.length;k++){
+    let cls='normal';
+    if(step){
+      if(approach==='hashmap'){
+        if(step.result&&(k===step.result[0]||k===step.result[1])) cls='found-a';
+        else if(k===step.i) cls='current';
+        else if(step.inSeen&&step.seen&&step.seen.hasOwnProperty(nums[k])&&step.seen[nums[k]]===k&&k!==step.i) cls='complement';
+        else if(step.seen&&step.seen.hasOwnProperty(nums[k])&&step.seen[nums[k]]===k) cls='seen-past';
+      } else {
+        if(step.result&&(k===step.result[0]||k===step.result[1])) cls='found-a';
+        else if(k===step.i) cls='current';
+        else if(k===step.j) cls='complement';
+      }
+    }
+    const lbl=approach==='hashmap'?(k===step?.i?'i→':''):(k===step?.i?'i→':k===step?.j?'j→':'');
+    html+=`<div class="arr-cell">
+      <div class="arr-pointer" style="color:${cls==='current'?'var(--purple)':cls==='complement'?'var(--orange)':cls==='found-a'?'var(--green)':'transparent'}">${lbl||'&nbsp;'}</div>
+      <div class="arr-box ${cls}">${esc(String(nums[k]))}</div>
+      <div class="arr-idx">[${k}]</div>
+    </div>`;
+  }
+  document.getElementById('array-row').innerHTML=html;
+}
+
+function renderHashmap(step){
+  const seen=step?.seen||{};
+  const entries=Object.entries(seen);
+  const grid=document.getElementById('hashmap-grid');
+  const badge=document.getElementById('hm-size-badge');
+  if(entries.length===0){grid.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">empty</span>';badge.textContent='empty';return;}
+  badge.textContent=`${entries.length} entr${entries.length===1?'y':'ies'}`;
+  grid.innerHTML=entries.map(([k,v])=>{
+    const isNew=step?.phase==='store'&&Number(k)===step?.num;
+    const isHit=step?.inSeen&&Number(k)===step?.comp;
+    return `<div class="hm-entry">
+      <div class="hm-pair ${isNew?'new':isHit?'hit':''}">
+        <span class="hm-key">${esc(k)}</span>
+        <span class="hm-val">${v}</span>
+      </div>
+      <div class="hm-lbl">val→idx</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCompCards(step){
+  const cv=(id,val,cls='')=>{document.getElementById(id).textContent=val;document.getElementById(id).className='comp-val '+(cls||'');};
+  if(!step||step.i<0){cv('cv-i','—');cv('cv-num','—');cv('cv-comp','—');cv('cv-in-seen','—');return;}
+  cv('cv-i',step.i,'');
+  cv('cv-num',step.num!==null&&step.num!==undefined?step.num:'—','');
+  cv('cv-comp',step.comp!==null&&step.comp!==undefined?step.comp:'—',step.inSeen?'found':'active-comp');
+  if(step.inSeen!==undefined) cv('cv-in-seen',step.inSeen?'YES ✅':'NO ❌',step.inSeen?'found':'');
+  else cv('cv-in-seen','—','');
+}
+
+function renderVars(ex,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=approach==='hashmap'?[
+    ['target',ex.target],
+    ['i',step.i>=0?step.i:'—'],
+    ['num',step.num!==null&&step.num!==undefined?step.num:'—'],
+    ['complement',step.comp!==null&&step.comp!==undefined?step.comp:'—'],
+    ['len(seen)',Object.keys(step.seen||{}).length],
+  ]:[
+    ['target',ex.target],
+    ['i',step.i!==undefined&&step.i>=0?step.i:'—'],
+    ['j',step.j!==undefined&&step.j>=0?step.j:'—'],
+    ['sum',step.sum!==undefined?step.sum:'—'],
+  ];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${esc(String(v))}</span></div>`).join('');
+}
+
+function renderCode(ex,step){
+  const cb=document.getElementById('code-block');
+  const code=approach==='hashmap'?HASHMAP_CODE:BRUTE_CODE;
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  cb.innerHTML=code.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">nums</span><span class="io-sep">=</span><span class="io-v">${esc(JSON.stringify(ex.nums))}</span></span><span class="io-kv"><span class="io-key">target</span><span class="io-sep">=</span><span class="io-v">${ex.target}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">[${step.result}]</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  renderArray(ex,step);
+  if(approach==='hashmap'){renderHashmap(step);renderCompCards(step);}
+  renderVars(ex,step);
+  renderCode(ex,step);
+  // Log
+  const ll=document.getElementById('log-list');
+  if(step){
+    const idx=steps.indexOf(step);
+    ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');
+    ll.lastElementChild?.scrollIntoView({block:'nearest'});
+  } else ll.innerHTML='';
+  // Result
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result){rt.className='result-tag show pos';rt.textContent=`Answer: [${step.result}]`}
+  else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;
+  steps=approach==='hashmap'?simHashmap(EX[i]):simBrute(EX[i]);
+  stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},900)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT'||e.target.tagName==='BUTTON'&&e.target.classList.contains('tab-btn'))return;if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

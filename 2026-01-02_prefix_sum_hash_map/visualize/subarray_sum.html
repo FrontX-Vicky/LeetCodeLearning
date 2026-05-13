@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #560 Subarray Sum Equals K — Prefix Sum + Hash Map Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);transition:background .15s;z-index:10;position:relative}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+/* Visual panel */
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;flex-shrink:0}
+/* Array */
+.array-section{flex-shrink:0}
+.array-row{display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap}
+.arr-cell{display:flex;flex-direction:column;align-items:center;gap:3px}
+.arr-box{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:7px;border:2px solid;font-size:18px;font-weight:700;font-family:monospace;transition:all .2s}
+.arr-box.normal{background:#21262d;border-color:#30363d;color:var(--text)}
+.arr-box.current{background:#2d1f69;border-color:var(--purple);color:#d2b8ff;box-shadow:0 0 0 3px rgba(188,140,255,.2);transform:translateY(-3px)}
+.arr-box.in-subarray{background:#1c3458;border-color:var(--blue);color:var(--blue)}
+.arr-box.past{background:#161b22;border-color:#21262d;color:#484f58}
+.arr-idx{font-size:9px;color:var(--muted);font-family:monospace}
+.arr-prefix{font-size:9px;font-family:monospace;min-height:12px;text-align:center}
+.arr-pointer{font-size:10px;font-weight:700;min-height:14px;text-align:center;font-family:monospace}
+/* Subarray highlight strip */
+.subarray-strip{height:6px;background:var(--green);border-radius:3px;transition:all .3s;opacity:0;margin-top:2px}
+/* Prefix sum row */
+.prefix-row-wrap{flex-shrink:0}
+.prefix-cells{display:flex;gap:5px;flex-wrap:wrap}
+.prefix-cell{display:flex;flex-direction:column;align-items:center;gap:2px}
+.prefix-box{width:48px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;border:1px solid;font-size:12px;font-weight:700;font-family:monospace;transition:all .2s}
+.prefix-box.normal{background:#21262d;border-color:#30363d;color:var(--muted)}
+.prefix-box.current{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+.prefix-box.need{background:#2d1f69;border-color:var(--purple);color:var(--purple)}
+.prefix-lbl{font-size:9px;color:#484f58;font-family:monospace}
+/* Freq map */
+.freq-section{flex:1;min-height:0;display:flex;flex-direction:column}
+.freq-grid{display:flex;flex-wrap:wrap;gap:5px;overflow-y:auto}
+.freq-entry{display:flex;flex-direction:column;align-items:center;gap:2px}
+.freq-pair{display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:11px;overflow:hidden;transition:all .2s}
+.freq-key{padding:4px 7px;color:var(--orange);border-right:1px solid var(--border);background:#1a1200}
+.freq-val{padding:4px 7px;color:var(--blue)}
+.freq-pair.new{border-color:var(--orange);animation:popIn .25s ease}
+.freq-pair.hit{border-color:var(--green);background:#0d1f10;box-shadow:0 0 0 2px rgba(63,185,80,.3)}
+.freq-lbl{font-size:9px;color:#484f58;font-family:monospace}
+/* State panel */
+.state-panel{width:250px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:60px}
+.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38;animation:fadeUp .2s ease both}
+/* count badge */
+.count-badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;font-size:22px;font-weight:700;font-family:monospace;border:2px solid;transition:all .3s}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px;animation:fadeUp .28s ease both}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.7)}65%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Subarray Sum Equals K &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #560 · Day 2 — Prefix Sum + Hash Map</span></h1>
+    <p>Key insight: if prefix[j]−prefix[i]=k, then subarray [i+1..j] sums to k. Count how many times prefix−k appeared before.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① [1,1,1] k=2 → 2</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② [1,2,3] k=3 → 2</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ [3,4,7,2,-3,1,4,2] k=7 → 4</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python Code</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="array-section">
+      <div class="panel-label">Array — purple border = current element · blue = in current subarray window</div>
+      <div class="array-row" id="array-row"></div>
+    </div>
+    <div class="prefix-row-wrap">
+      <div class="panel-label">Running prefix sum — orange = current value · purple = need (prefix−k)</div>
+      <div class="prefix-cells" id="prefix-cells"></div>
+    </div>
+    <div class="freq-section">
+      <div class="panel-label">freq = { prefix_sum → count } &nbsp;<span id="freq-badge" style="color:#484f58;font-size:9px;font-weight:400">{ 0: 1 }</span></div>
+      <div class="freq-grid" id="freq-grid"></div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card" style="text-align:center">
+      <div class="card-title">Subarrays Found (count)</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:4px">
+        <div class="count-badge" id="count-badge" style="border-color:#30363d;color:#484f58">0</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {nums:[1,1,1],k:2},
+  {nums:[1,2,3],k:3},
+  {nums:[3,4,7,2,-3,1,4,2],k:7},
+];
+
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">subarray_sum</span>(nums, k):`,phases:[]},
+  {h:`    count = <span class="nm">0</span>`,phases:['init']},
+  {h:`    prefix = <span class="nm">0</span>`,phases:['init']},
+  {h:`    freq = {<span class="nm">0</span>: <span class="nm">1</span>}  <span class="cm"># empty prefix seen once</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> num <span class="kw">in</span> nums:`,phases:['loop']},
+  {h:`        prefix <span class="op">+=</span> num`,phases:['add']},
+  {h:`        need = prefix <span class="op">-</span> k`,phases:['need']},
+  {h:`        <span class="kw">if</span> need <span class="kw">in</span> freq:`,phases:['check','hit']},
+  {h:`            count <span class="op">+=</span> freq[need]  <span class="cm"># may be > 1</span>`,phases:['hit']},
+  {h:`        freq[prefix] = freq.get(prefix, <span class="nm">0</span>) <span class="op">+</span> <span class="nm">1</span>`,phases:['store']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> count`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',loop:'hl-orange',add:'hl-orange',need:'hl-orange',check:'hl-orange',hit:'hl-green',store:'hl-orange',done:'hl-green'};
+
+function simulate(ex){
+  const{nums,k}=ex;
+  const steps=[];
+  steps.push({phase:'init',idx:-1,prefix:0,need:null,freq:{'0':1},count:0,log:'Init count=0, prefix=0, freq={0:1} (empty subarray).'});
+  for(let i=0;i<nums.length;i++){
+    const prevFreq={...steps[steps.length-1].freq};
+    const prevPrefix=steps[steps.length-1].prefix;
+    const prevCount=steps[steps.length-1].count;
+    steps.push({phase:'loop',idx:i,prefix:prevPrefix,need:null,freq:{...prevFreq},count:prevCount,log:`i=${i}: num=${nums[i]}. Start loop iteration.`});
+    const newPrefix=prevPrefix+nums[i];
+    steps.push({phase:'add',idx:i,prefix:newPrefix,need:null,freq:{...prevFreq},count:prevCount,log:`prefix += ${nums[i]} → prefix = ${newPrefix}`});
+    const need=newPrefix-k;
+    steps.push({phase:'need',idx:i,prefix:newPrefix,need,freq:{...prevFreq},count:prevCount,log:`need = prefix(${newPrefix}) − k(${k}) = ${need}`});
+    const hit=prevFreq.hasOwnProperty(String(need));
+    const hitCount=hit?prevFreq[String(need)]:0;
+    steps.push({phase:hit?'hit':'check',idx:i,prefix:newPrefix,need,freq:{...prevFreq},count:prevCount,inFreq:hit,hitCount,
+      log:hit?`need(${need}) IS in freq with count ${hitCount}! count += ${hitCount} → ${prevCount+hitCount}`:`need(${need}) not in freq. No subarray ends here.`});
+    const newCount=prevCount+(hit?hitCount:0);
+    if(hit){
+      steps.push({phase:'hit',idx:i,prefix:newPrefix,need,freq:{...prevFreq},count:newCount,inFreq:true,hitCount,log:`count = ${newCount}`});
+    }
+    const newFreq={...prevFreq};
+    newFreq[String(newPrefix)]=(newFreq[String(newPrefix)]||0)+1;
+    steps.push({phase:'store',idx:i,prefix:newPrefix,need,freq:{...newFreq},count:newCount,log:`freq[${newPrefix}] = ${newFreq[String(newPrefix)]}`});
+  }
+  const finalCount=steps[steps.length-1].count;
+  steps.push({phase:'done',idx:-1,prefix:steps[steps.length-1].prefix,freq:{...steps[steps.length-1].freq},count:finalCount,result:finalCount,log:`Return count = ${finalCount}`});
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderArray(ex,step){
+  const{nums}=ex;
+  let html='';
+  for(let i=0;i<nums.length;i++){
+    const isCur=step&&step.idx===i;
+    const cls=isCur?'current':'normal';
+    html+=`<div class="arr-cell">
+      <div class="arr-pointer" style="color:${isCur?'var(--purple)':'transparent'}">${isCur?'▼':'▼'}</div>
+      <div class="arr-box ${cls}">${esc(String(nums[i]))}</div>
+      <div class="arr-idx">[${i}]</div>
+    </div>`;
+  }
+  document.getElementById('array-row').innerHTML=html;
+}
+
+function renderPrefixRow(ex,step){
+  const{nums}=ex;
+  if(!step||step.idx<0){document.getElementById('prefix-cells').innerHTML='';return;}
+  const prefixes=[];let r=0;
+  for(let i=0;i<=step.idx;i++){r+=nums[i];prefixes.push(r);}
+  const cur=step.prefix;
+  const need=step.need;
+  document.getElementById('prefix-cells').innerHTML=prefixes.map((p,i)=>{
+    const isCur=i===step.idx&&(step.phase!=='loop');
+    const isNeed=need!==null&&p===need;
+    const cls=isCur?'current':isNeed?'need':'normal';
+    return `<div class="prefix-cell">
+      <div class="prefix-box ${cls}">${esc(String(p))}</div>
+      <div class="prefix-lbl">p[${i}]</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFreq(step){
+  if(!step){document.getElementById('freq-grid').innerHTML='';return;}
+  const freq=step.freq||{'0':1};
+  const entries=Object.entries(freq);
+  document.getElementById('freq-badge').textContent=entries.length+' entries';
+  document.getElementById('freq-grid').innerHTML=entries.map(([k,v])=>{
+    const isNew=step.phase==='store'&&Number(k)===step.prefix;
+    const isHit=step.inFreq&&Number(k)===step.need;
+    return `<div class="freq-entry">
+      <div class="freq-pair ${isNew?'new':isHit?'hit':''}">
+        <span class="freq-key">${esc(k)}</span>
+        <span class="freq-val">${v}</span>
+      </div>
+      <div class="freq-lbl">prefix→cnt</div>
+    </div>`;
+  }).join('');
+}
+
+function renderVars(ex,step){
+  const vl=document.getElementById('var-list');
+  if(!step){vl.innerHTML='';return;}
+  const rows=[['k',ex.k],['prefix',step.prefix],['need',step.need!==null&&step.need!==undefined?step.need:'—'],['count',step.count]];
+  vl.innerHTML=rows.map(([n,v])=>`<div class="var-row"><span class="var-name">${n}</span><span class="var-eq">=</span><span class="var-val">${esc(String(v))}</span></div>`).join('');
+  const cb=document.getElementById('count-badge');
+  const cnt=step.count||0;
+  cb.textContent=cnt;
+  cb.style.borderColor=cnt>0?'var(--green)':'#30363d';
+  cb.style.color=cnt>0?'var(--green)':'#484f58';
+}
+
+function renderCode(ex,step){
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  document.getElementById('code-block').innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">nums</span><span class="io-sep">=</span><span class="io-v">${esc(JSON.stringify(ex.nums))}</span></span><span class="io-kv"><span class="io-key">k</span><span class="io-sep">=</span><span class="io-v">${ex.k}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">${step.result}</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  renderArray(ex,step);renderPrefixRow(ex,step);renderFreq(step);renderVars(ex,step);renderCode(ex,step);
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  else ll.innerHTML='';
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className='result-tag show pos';rt.textContent='count = '+step.result}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},850)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>
