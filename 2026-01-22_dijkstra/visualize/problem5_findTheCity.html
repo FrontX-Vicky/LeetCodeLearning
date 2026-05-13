@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1334 Find the City With the Smallest Number of Neighbors — Floyd-Warshall Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:220px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:27%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58;transition:border-color .1s}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-top:1px}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+/* ── Graph + Matrix panel */
+.graph-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:10px 14px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px;flex-shrink:0}
+.top-area{display:flex;gap:12px;flex:1;min-height:0}
+.svg-area{flex:1;min-width:0;display:flex;flex-direction:column}
+#g-svg{width:100%;max-height:200px}
+.matrix-area{flex:1;min-width:0;overflow-x:auto;overflow-y:auto}
+.matrix-area::-webkit-scrollbar{height:4px;width:4px}.matrix-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.dist-table{border-collapse:collapse;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px}
+.dist-table th,.dist-table td{width:36px;height:30px;text-align:center;border:1px solid var(--border);transition:background .15s,color .15s}
+.dist-table th{background:#21262d;color:var(--muted);font-size:9px;font-weight:600}
+.dist-table td{color:var(--text);background:var(--bg)}
+.dist-table td.cell-self{color:#484f58}
+.dist-table td.cell-active-k{background:#2d1f2d;color:var(--purple)}
+.dist-table td.cell-active-ij{background:#1c3458;color:var(--blue);font-weight:700;outline:2px solid var(--blue)}
+.dist-table td.cell-updated{background:#0d2a16;color:var(--green);font-weight:700;animation:flashGreen .4s ease}
+.dist-table td.cell-inf{color:#484f58}
+/* Reachability bar */
+.reach-grid{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;flex-shrink:0}
+.reach-city{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:default}
+.reach-node{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:monospace;border:2px solid;transition:all .2s}
+.reach-count{font-size:10px;font-weight:600;font-family:monospace}
+/* ── State panel */
+.state-panel{width:280px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+/* Loop indicator */
+.loop-box{display:flex;gap:8px;flex-wrap:wrap}
+.loop-item{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 10px;flex:1;min-width:52px}
+.loop-val{font-size:22px;font-weight:700;font-family:monospace;line-height:1;transition:color .3s}
+.loop-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;text-align:center}
+/* Relaxation */
+.relax-box{font-family:monospace;font-size:11px;padding:7px 9px;background:var(--bg);border-radius:6px;line-height:1.7}
+.relax-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:2px}
+.r-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;min-width:52px}
+.r-eq{color:var(--blue);font-weight:700}.r-cmp{color:var(--orange);font-weight:700;padding:0 2px}
+.r-yes{color:var(--green);font-weight:700}.r-no{color:var(--red);font-weight:700}
+/* Log */
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flashGreen{0%{background:#1a4a2e}50%{background:#0d3d21}100%{background:#0d2a16}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_networkDelayTime.html">P1 · networkDelayTime</option>
+    <option value="problem2_findCheapestPrice.html">P2 · findCheapestPrice</option>
+    <option value="problem3_minimumEffortPath.html">P3 · minimumEffortPath</option>
+    <option value="problem4_swimInWater.html">P4 · swimInWater</option>
+    <option value="problem5_findTheCity.html" selected>P5 · findTheCity</option>
+  </select>
+  <div class="header-left">
+    <h1>Find the City With Smallest Neighbors &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1334</span></h1>
+    <p>Floyd-Warshall all-pairs shortest paths · O(n³) · then count reachable cities ≤ distanceThreshold per city</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① n=4 threshold=4 → 3</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② n=3 threshold=3 → 2</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ n=4 threshold=2 → 3</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="graph-panel">
+    <div class="panel-label">Graph (undirected weighted) + Floyd-Warshall dist[][] matrix</div>
+    <div class="top-area">
+      <div class="svg-area">
+        <svg id="g-svg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="m-gray"   markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#484f58"/></marker>
+            <marker id="m-orange" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#d29922"/></marker>
+            <marker id="m-green"  markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#3fb950"/></marker>
+          </defs>
+          <g id="g-edges"></g>
+          <g id="g-nodes"></g>
+        </svg>
+        <div style="font-size:9.5px;color:#484f58;margin-top:4px;line-height:1.5">
+          ← Graph shows original edges. The matrix shows all-pairs shortest paths after Floyd-Warshall.
+        </div>
+        <!-- Reachability -->
+        <div class="panel-label" style="margin-top:10px">Reachability Count ≤ threshold (excluding self)</div>
+        <div class="reach-grid" id="reach-grid"></div>
+      </div>
+      <div class="matrix-area">
+        <div class="panel-label">dist[i][j] matrix — k=intermediate · i=from · j=to</div>
+        <table class="dist-table" id="dist-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Floyd-Warshall Loop k, i, j</div>
+      <div class="loop-box">
+        <div class="loop-item"><div class="loop-val" id="lv-k" style="color:var(--purple)">—</div><div class="loop-lbl">k (relay)</div></div>
+        <div class="loop-item"><div class="loop-val" id="lv-i" style="color:var(--orange)">—</div><div class="loop-lbl">i (from)</div></div>
+        <div class="loop-item"><div class="loop-val" id="lv-j" style="color:var(--blue)">—</div><div class="loop-lbl">j (to)</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Relaxation — i → k → j</div>
+      <div class="relax-box" id="relax-box"><span style="color:#484f58;font-style:italic;font-size:11px">— waiting —</span></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{
+    sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {label:'n=4 thr=4',n:4,edges:[[0,1,3],[1,2,1],[1,3,4],[2,3,1]],threshold:4,
+   pos:{0:{x:60,y:100},1:{x:150,y:40},2:{x:240,y:100},3:{x:150,y:165}}},
+  {label:'n=3 thr=3',n:3,edges:[[0,1,2],[1,2,3]],threshold:3,
+   pos:{0:{x:60,y:100},1:{x:150,y:50},2:{x:240,y:100}}},
+  {label:'n=4 thr=2',n:4,edges:[[0,1,1],[1,2,1],[2,3,1]],threshold:2,
+   pos:{0:{x:50,y:100},1:{x:140,y:50},2:{x:230,y:100},3:{x:140,y:160}}},
+];
+
+const V=(name,label)=>`<span class="vt" data-var="${name}">${label||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">findTheCity</span>(${V('n')}, ${V('edges')}, ${V('dt','distanceThreshold')}):`,phases:[]},
+  {h:`    INF = <span class="bi">float</span>(<span class="nm">'inf'</span>)`,phases:['init']},
+  {h:`    ${V('dist')} = [[INF] <span class="op">*</span> n <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(n)]`,phases:['init']},
+  {h:`    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n): dist[i][i] = <span class="nm">0</span>`,phases:['init']},
+  {h:`    <span class="kw">for</span> u, v, w <span class="kw">in</span> edges:`,phases:['init']},
+  {h:`        dist[u][v] = dist[v][u] = w  <span class="cm"># undirected</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> ${V('k')} <span class="kw">in</span> <span class="bi">range</span>(n):  <span class="cm"># relay node</span>`,phases:['loop_k']},
+  {h:`        <span class="kw">for</span> ${V('i')} <span class="kw">in</span> <span class="bi">range</span>(n):  <span class="cm"># source</span>`,phases:['loop_i','loop_j']},
+  {h:`            <span class="kw">for</span> ${V('j')} <span class="kw">in</span> <span class="bi">range</span>(n):  <span class="cm"># destination</span>`,phases:['loop_j']},
+  {h:`                via = dist[i][k] + dist[k][j]`,phases:['loop_j']},
+  {h:`                <span class="kw">if</span> via <span class="op">&lt;</span> dist[i][j]:`,phases:['loop_j','update']},
+  {h:`                    dist[i][j] = dist[j][i] = via`,phases:['update']},
+  {h:``,phases:[]},
+  {h:`    res, minCnt = <span class="op">-</span><span class="nm">1</span>, n`,phases:['count']},
+  {h:`    <span class="kw">for</span> i <span class="kw">in</span> <span class="bi">range</span>(n):`,phases:['count']},
+  {h:`        cnt = <span class="bi">sum</span>(<span class="nm">1</span> <span class="kw">for</span> j <span class="kw">in</span> <span class="bi">range</span>(n) <span class="kw">if</span> i <span class="op">!=</span> j <span class="kw">and</span> dist[i][j] <span class="op">&lt;=</span> dt)`,phases:['count']},
+  {h:`        <span class="kw">if</span> cnt <span class="op">&lt;=</span> minCnt: res, minCnt = i, cnt  <span class="cm"># ties → largest city</span>`,phases:['count']},
+  {h:`    <span class="kw">return</span> res`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',loop_k:'hl-orange',loop_i:'hl-orange',loop_j:'hl-orange',update:'hl-green',count:'hl-orange',done:'hl-green'};
+
+function simulate(ex){
+  const{n,edges,threshold}=ex;
+  const INF=Infinity;
+  const steps=[];
+  const dist=Array.from({length:n},()=>new Array(n).fill(INF));
+  for(let i=0;i<n;i++) dist[i][i]=0;
+  for(const[u,v,w]of edges){dist[u][v]=w;dist[v][u]=w;}
+
+  const snap=(phase,extra={})=>({phase,dist:dist.map(r=>[...r]),...extra});
+
+  steps.push({...snap('init'),kij:{k:-1,i:-1,j:-1},log:`Init dist[][]: diagonal=0, edges filled, rest=∞.`});
+
+  for(let k=0;k<n;k++){
+    steps.push({...snap('loop_k'),kij:{k,i:-1,j:-1},log:`Outer loop k=${k}: try using city ${k} as relay.`});
+    for(let i=0;i<n;i++){
+      steps.push({...snap('loop_i'),kij:{k,i,j:-1},log:`  i=${i}: checking all paths from ${i} via relay ${k}.`});
+      for(let j=0;j<n;j++){
+        if(i===j){continue;}
+        const via=dist[i][k]===INF||dist[k][j]===INF?INF:dist[i][k]+dist[k][j];
+        const old=dist[i][j];
+        const better=via<old;
+        const logMsg=`  k=${k},i=${i},j=${j}: dist[${i}][${k}]=${old===INF?'∞':dist[i][k]}+dist[${k}][${j}]=${dist[k][j]===INF?'∞':dist[k][j]}=${via===INF?'∞':via} ${better?'<':'≥'} dist[${i}][${j}]=${old===INF?'∞':old} → ${better?'UPDATE':'skip'}`;
+        steps.push({...snap(better?'update':'loop_j'),kij:{k,i,j},relaxing:{k,i,j,via,old,ik:dist[i][k],kj:dist[k][j]},log:logMsg});
+        if(better){
+          dist[i][j]=via;dist[j][i]=via;
+        }
+      }
+    }
+  }
+
+  // Count phase
+  steps.push({...snap('count'),kij:{k:-1,i:-1,j:-1},log:`FW done. Now count reachable cities ≤ threshold=${threshold} for each city.`});
+  const counts=[];
+  let res=-1,minCnt=n;
+  for(let i=0;i<n;i++){
+    const cnt=dist[i].filter((d,j)=>j!==i&&d<=threshold).length;
+    counts.push(cnt);
+    if(cnt<=minCnt){res=i;minCnt=cnt;}
+    steps.push({...snap('count'),kij:{k:-1,i,j:-1},counts:[...counts],log:`City ${i}: ${cnt} reachable city${cnt===1?'':'ies'} within threshold=${threshold}.`});
+  }
+  steps.push({...snap('done'),kij:{k:-1,i:-1,j:-1},counts:[...counts],result:res,
+    log:`Answer: city ${res} has fewest reachable cities (${minCnt}). (ties → largest city index)`});
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtD(v){return v===Infinity||v===1e18?'∞':v}
+
+function renderGraph(ex,step){
+  const{n,edges,pos}=ex;
+  const eg=document.getElementById('g-edges'),ng=document.getElementById('g-nodes');
+  eg.innerHTML='';ng.innerHTML='';
+
+  const kij=step?.kij||{k:-1,i:-1,j:-1};
+
+  for(const[u,v,w]of edges){
+    const p1=pos[u],p2=pos[v];
+    const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.sqrt(dx*dx+dy*dy);
+    const col='#484f58';
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',p1.x);line.setAttribute('y1',p1.y);line.setAttribute('x2',p2.x);line.setAttribute('y2',p2.y);
+    line.setAttribute('stroke',col);line.setAttribute('stroke-width',1.5);
+    eg.appendChild(line);
+    const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    const nx=-dy/len*12,ny=dx/len*12;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',mx+nx);t.setAttribute('y',my+ny);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','10');t.setAttribute('font-weight','600');t.setAttribute('fill',col);
+    t.setAttribute('font-family','SF Mono,Fira Code,Consolas,monospace');t.textContent=w;eg.appendChild(t);
+  }
+
+  for(let id=0;id<n;id++){
+    const p=pos[id];
+    const isK=kij.k===id,isI=kij.i===id,isJ=kij.j===id;
+    const fill=isK?'#2d1f69':isI?'#3d2b00':isJ?'#1c3458':'#21262d';
+    const stroke=isK?'#bc8cff':isI?'#d29922':isJ?'#58a6ff':'#30363d';
+    const textCol=isK?'#bc8cff':isI?'#d29922':isJ?'#58a6ff':'#8b949e';
+    const R=18;
+    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',p.x);circ.setAttribute('cy',p.y);circ.setAttribute('r',R);
+    circ.setAttribute('fill',fill);circ.setAttribute('stroke',stroke);circ.setAttribute('stroke-width',2.5);
+    ng.appendChild(circ);
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',p.x);lbl.setAttribute('y',p.y+1);lbl.setAttribute('text-anchor','middle');lbl.setAttribute('dominant-baseline','middle');
+    lbl.setAttribute('font-size','13');lbl.setAttribute('font-weight','700');lbl.setAttribute('fill',textCol);
+    lbl.setAttribute('font-family','SF Mono,Fira Code,Consolas,monospace');lbl.textContent=id;ng.appendChild(lbl);
+  }
+}
+
+function renderMatrix(ex,step){
+  const{n}=ex;
+  const dist=step?step.dist:Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>i===j?0:Infinity));
+  const kij=step?.kij||{k:-1,i:-1,j:-1};
+
+  let html=`<tr><th></th>`;
+  for(let j=0;j<n;j++) html+=`<th>${j}</th>`;
+  html+='</tr>';
+  for(let i=0;i<n;i++){
+    const isI=kij.i===i;
+    html+=`<tr><th style="${isI?'color:var(--orange)':''}">${i}</th>`;
+    for(let j=0;j<n;j++){
+      const isK_col=kij.k===j,isK_row=kij.k===i;
+      const isActive=kij.i===i&&kij.j===j&&kij.j>=0;
+      const isSelf=i===j;
+      const wasUpdated=step&&step.relaxing&&step.phase==='update'&&((step.relaxing.i===i&&step.relaxing.j===j)||(step.relaxing.i===j&&step.relaxing.j===i));
+      let cls=isSelf?'cell-self':wasUpdated?'cell-updated':isActive?'cell-active-ij':(isK_col||isK_row)&&kij.k>=0?'cell-active-k':'';
+      const v=dist[i][j];
+      html+=`<td class="${cls} ${v===Infinity?'cell-inf':''}">${fmtD(v)}</td>`;
+    }
+    html+='</tr>';
+  }
+  document.getElementById('dist-table').innerHTML=html;
+}
+
+function renderReach(ex,step){
+  const{n,threshold}=ex;
+  const counts=step?.counts||[];
+  const result=step?.result;
+  let html='';
+  for(let i=0;i<n;i++){
+    const cnt=counts[i]!==undefined?counts[i]:'—';
+    const isResult=result===i;
+    const known=counts[i]!==undefined;
+    const fill=isResult?'#0d2a16':known?'#1c3458':'#21262d';
+    const bdr=isResult?'#3fb950':known?'#58a6ff':'#30363d';
+    const tc=isResult?'#3fb950':known?'#58a6ff':'#484f58';
+    html+=`<div class="reach-city">
+      <div class="reach-node" style="background:${fill};border-color:${bdr};color:${tc}">${i}</div>
+      <div class="reach-count" style="color:${tc}">${cnt}${known&&typeof cnt==='number'?` ≤${threshold}`:'&nbsp;'}</div>
+    </div>`;
+  }
+  document.getElementById('reach-grid').innerHTML=html;
+}
+
+function renderState(ex,step){
+  if(!step) return;
+  const kij=step.kij||{k:-1,i:-1,j:-1};
+  document.getElementById('lv-k').textContent=kij.k>=0?kij.k:'—';
+  document.getElementById('lv-i').textContent=kij.i>=0?kij.i:'—';
+  document.getElementById('lv-j').textContent=kij.j>=0?kij.j:'—';
+
+  const rb=document.getElementById('relax-box');
+  if(step.relaxing){
+    const{k,i,j,via,old,ik,kj}=step.relaxing;
+    const better=via<old;
+    rb.innerHTML=`
+      <div class="relax-row"><span class="r-lbl">via k=${k}</span><span>dist[${i}][${k}]=${fmtD(ik)} + dist[${k}][${j}]=${fmtD(kj)}</span></div>
+      <div class="relax-row"><span class="r-lbl">result</span><span class="r-eq"> = ${fmtD(via)}</span></div>
+      <div class="relax-row"><span class="r-eq">${fmtD(via)}</span><span class="r-cmp">${better?'<':'≥'}</span><span>dist[${i}][${j}] = ${fmtD(old)}</span><span class="${better?'r-yes':'r-no'}">&nbsp;${better?'→ UPDATE ✓':'→ no change'}</span></div>
+      ${better?`<div style="font-size:10px;color:#484f58;margin-top:2px">Shorter path: ${i} → ${k} → ${j}</div>`:''}
+    `;
+  } else if(['loop_k','loop_i','count','done'].includes(step.phase)){
+    rb.innerHTML='<span style="color:#484f58;font-style:italic;font-size:11px">— no update this step —</span>';
+  } else {
+    rb.innerHTML='<span style="color:#484f58;font-style:italic;font-size:11px">— waiting —</span>';
+  }
+
+  const ll=document.getElementById('log-list');
+  const idx=steps.indexOf(step);
+  ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');
+  ll.lastElementChild?.scrollIntoView({block:'nearest'});
+}
+
+function renderCode(ex,step){
+  const cb=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  cb.innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span>
+    <span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${ex.n}</span></span>
+    <span class="io-kv"><span class="io-key">threshold</span><span class="io-sep">=</span><span class="io-v">${ex.threshold}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">City ${step.result}</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  renderGraph(ex,step);renderMatrix(ex,step);renderReach(ex,step);renderState(ex,step);renderCode(ex,step);
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className='result-tag show pos';rt.textContent='Answer: City '+step.result}
+  else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},700)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>

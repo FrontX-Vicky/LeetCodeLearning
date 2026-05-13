@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1631 Path With Minimum Effort — Grid Dijkstra Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:220px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58;transition:border-color .1s}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-top:1px}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+/* ── Grid panel */
+.grid-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.grid-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.grid{display:inline-grid;gap:4px}
+.cell{width:74px;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;border:2px solid;font-family:'SF Mono','Fira Code','Consolas',monospace;position:relative;transition:background .2s,border-color .2s,box-shadow .2s;cursor:default}
+.cell-h{font-size:18px;font-weight:700;line-height:1}
+.cell-d{font-size:10px;font-weight:600;margin-top:3px;opacity:.85}
+.cell-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;position:absolute;top:3px;left:4px;opacity:.7}
+.cell-rc{font-size:8px;position:absolute;bottom:3px;right:4px;opacity:.5}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:3px;border:2px solid;flex-shrink:0}
+/* ── State panel */
+.state-panel{width:290px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+/* Heap */
+.heap-list{display:flex;flex-direction:column;gap:3px;max-height:90px;overflow-y:auto}
+.heap-list::-webkit-scrollbar{width:3px}.heap-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.heap-entry{display:flex;align-items:center;justify-content:space-between;padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11px;transition:all .15s}
+.heap-entry.top{background:#1c3458;border:1px solid var(--blue);color:var(--blue)}
+.heap-entry.normal{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+.heap-entry.stale{background:#2d1215;border:1px solid #5a1e1e;color:var(--red);opacity:.55;text-decoration:line-through}
+.heap-tag{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;background:#1c3458;color:var(--blue);font-weight:700}
+/* Relaxation */
+.relax-box{font-family:monospace;font-size:11px;padding:7px 9px;background:var(--bg);border-radius:6px;line-height:1.7}
+.relax-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:2px}
+.r-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;min-width:52px}
+.r-eq{color:var(--blue);font-weight:700}.r-cmp{color:var(--orange);font-weight:700;padding:0 2px}
+.r-yes{color:var(--green);font-weight:700}.r-no{color:var(--red);font-weight:700}
+/* Log */
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_networkDelayTime.html">P1 · networkDelayTime</option>
+    <option value="problem2_findCheapestPrice.html">P2 · findCheapestPrice</option>
+    <option value="problem3_minimumEffortPath.html" selected>P3 · minimumEffortPath</option>
+    <option value="problem4_swimInWater.html">P4 · swimInWater</option>
+    <option value="problem5_findTheCity.html">P5 · findTheCity</option>
+  </select>
+  <div class="header-left">
+    <h1>Path With Minimum Effort &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1631</span></h1>
+    <p>Dijkstra on grid — edge weight = |heights[a]−heights[b]| · dist = minimax effort to reach each cell</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① 3×3 → 2</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② 3×3 → 1</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ 2×3 → 0</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="grid-panel">
+    <div class="panel-label">Grid — top-left → bottom-right · cell = height · badge = min effort to reach · color = state</div>
+    <div class="grid-wrap"><div class="grid" id="grid"></div></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#30363d"></div>Unreached (∞)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3d2b00;border-color:#d29922"></div>In Heap</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2d1f69;border-color:#bc8cff"></div>Processing</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d1f38;border-color:#58a6ff"></div>Finalized</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>Destination ✓</div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Min-Heap &nbsp;<span style="color:#484f58;font-weight:400;text-transform:none;letter-spacing:0;font-size:9px">(effort, row, col)</span></div>
+      <div class="heap-list" id="heap-list"><span style="font-size:11px;color:#484f58;font-style:italic">empty</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Edge Relaxation — minimax effort</div>
+      <div class="relax-box" id="relax-box"><span style="color:#484f58;font-style:italic;font-size:11px">— waiting —</span></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{
+    sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {label:'3×3 →2', heights:[[1,2,2],[3,8,2],[5,3,5]]},
+  {label:'3×3 →1', heights:[[1,2,3],[3,8,4],[5,3,5]]},
+  {label:'2×3 →0', heights:[[1,2,1],[1,2,1]]},
+];
+
+const V=(name,label)=>`<span class="vt" data-var="${name}">${label||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">minimumEffortPath</span>(${V('heights')}):`,phases:[]},
+  {h:`    rows, cols = <span class="bi">len</span>(heights), <span class="bi">len</span>(heights[<span class="nm">0</span>])`,phases:['init']},
+  {h:`    ${V('dist')} = [[<span class="bi">float</span>(<span class="nm">'inf'</span>)] <span class="op">*</span> cols <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(rows)]`,phases:['init']},
+  {h:`    dist[<span class="nm">0</span>][<span class="nm">0</span>] = <span class="nm">0</span>`,phases:['init']},
+  {h:`    ${V('heap')} = [(<span class="nm">0</span>, <span class="nm">0</span>, <span class="nm">0</span>)]  <span class="cm"># (effort, row, col)</span>`,phases:['init']},
+  {h:`    DIRS = [(<span class="nm">0</span>,<span class="nm">1</span>),(<span class="nm">0</span>,<span class="op">-</span><span class="nm">1</span>),(<span class="nm">1</span>,<span class="nm">0</span>),(<span class="op">-</span><span class="nm">1</span>,<span class="nm">0</span>)]`,phases:[]},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">while</span> heap:`,phases:['pop','stale','relax','update']},
+  {h:`        ${V('effort')}, ${V('r')}, ${V('c')} = heapq.heappop(heap)`,phases:['pop','stale']},
+  {h:`        <span class="kw">if</span> effort > dist[r][c]:  <span class="cm"># stale</span>`,phases:['stale']},
+  {h:`            <span class="kw">continue</span>`,phases:['stale']},
+  {h:`        <span class="kw">if</span> r == rows<span class="op">-</span><span class="nm">1</span> <span class="kw">and</span> c == cols<span class="op">-</span><span class="nm">1</span>:`,phases:['done_early']},
+  {h:`            <span class="kw">return</span> effort`,phases:['done_early']},
+  {h:`        <span class="kw">for</span> dr, dc <span class="kw">in</span> DIRS:`,phases:['relax','update']},
+  {h:`            nr, nc = r<span class="op">+</span>dr, c<span class="op">+</span>dc`,phases:['relax','update']},
+  {h:`            <span class="kw">if</span> <span class="nm">0</span> <span class="op">&lt;=</span> nr <span class="op">&lt;</span> rows <span class="kw">and</span> <span class="nm">0</span> <span class="op">&lt;=</span> nc <span class="op">&lt;</span> cols:`,phases:['relax','update']},
+  {h:`                ${V('new_e')} = <span class="bi">max</span>(effort, <span class="bi">abs</span>(heights[r][c] <span class="op">-</span> heights[nr][nc]))`,phases:['relax','update']},
+  {h:`                <span class="kw">if</span> new_e <span class="op">&lt;</span> dist[nr][nc]:`,phases:['relax','update']},
+  {h:`                    dist[nr][nc] = new_e`,phases:['update']},
+  {h:`                    heapq.heappush(heap, (new_e, nr, nc))`,phases:['update']},
+];
+const PHASE_HL={init:'hl-orange',pop:'hl-orange',stale:'hl-red',relax:'hl-orange',update:'hl-green',done_early:'hl-green'};
+
+function simulate(ex){
+  const{heights}=ex;
+  const rows=heights.length,cols=heights[0].length;
+  const steps=[];
+  const INF=Infinity;
+  const dist=Array.from({length:rows},()=>new Array(cols).fill(INF));
+  dist[0][0]=0;
+  let heap=[{effort:0,r:0,c:0,stale:false}];
+  const finalized=new Set();
+  const key=(r,c)=>`${r},${c}`;
+
+  const snap=(phase,extra={})=>({
+    phase,
+    dist:dist.map(row=>[...row]),
+    heap:heap.map(e=>({...e})),
+    finalized:new Set(finalized),
+    ...extra
+  });
+
+  steps.push({...snap('init'),log:`Init dist[0][0]=0, all others ∞. Push (effort=0, 0, 0) to heap.`});
+
+  let safety=0;
+  while(heap.length>0&&safety++<500){
+    heap.sort((a,b)=>a.effort-b.effort);
+    const{effort,r,c}=heap.shift();
+    const k=key(r,c);
+
+    if(finalized.has(k)||effort>dist[r][c]){
+      heap.forEach(e=>{if(finalized.has(key(e.r,e.c)))e.stale=true});
+      steps.push({...snap('stale',{current:{r,c},popEffort:effort}),log:`Pop (effort=${effort}, [${r},${c}]) — STALE, already finalized at ${dist[r][c]}. Skip.`});
+      continue;
+    }
+
+    finalized.add(k);
+    heap.forEach(e=>{if(finalized.has(key(e.r,e.c)))e.stale=true});
+
+    if(r===rows-1&&c===cols-1){
+      steps.push({...snap('done_early',{current:{r,c},popEffort:effort}),result:effort,log:`Pop destination (${r},${c}) with effort=${effort}. Return immediately!`});
+      return steps;
+    }
+
+    steps.push({...snap('pop',{current:{r,c},popEffort:effort}),log:`Pop (effort=${effort}, [${r},${c}]) — valid. Explore neighbors.`});
+
+    const DIRS=[[0,1],[0,-1],[1,0],[-1,0]];
+    for(const[dr,dc]of DIRS){
+      const nr=r+dr,nc=c+dc;
+      if(nr<0||nr>=rows||nc<0||nc>=cols) continue;
+      const newE=Math.max(effort,Math.abs(heights[r][c]-heights[nr][nc]));
+      const oldD=dist[nr][nc];
+      const better=newE<oldD;
+
+      steps.push({...snap('relax',{current:{r,c},relaxing:{r,c,nr,nc,newE,oldD,effortSoFar:effort,diff:Math.abs(heights[r][c]-heights[nr][nc])},popEffort:effort}),
+        log:`  Neighbor [${nr},${nc}] h=${heights[nr][nc]}: max(${effort}, |${heights[r][c]}-${heights[nr][nc]}|)=max(${effort},${Math.abs(heights[r][c]-heights[nr][nc])})=${newE} ${better?'<':'≥'} dist=${oldD===INF?'∞':oldD} → ${better?'UPDATE':'skip'}`});
+
+      if(better){
+        dist[nr][nc]=newE;
+        heap.push({effort:newE,r:nr,c:nc,stale:false});
+        heap.forEach(e=>{if(finalized.has(key(e.r,e.c)))e.stale=true});
+        steps.push({...snap('update',{current:{r,c},relaxing:{r,c,nr,nc,newE,oldD,effortSoFar:effort,diff:Math.abs(heights[r][c]-heights[nr][nc])},popEffort:effort}),
+          log:`    dist[${nr}][${nc}] = ${newE} (was ${oldD===INF?'∞':oldD}). Push (${newE}, ${nr}, ${nc}).`});
+      }
+    }
+  }
+  const result=dist[rows-1][cols-1];
+  steps.push({...snap('done_early'),result,log:`Done. dist[${rows-1}][${cols-1}] = ${result}`});
+  return steps;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function cellState(r,c,step,ex){
+  if(!step) return 'unvisited';
+  const rows=ex.heights.length,cols=ex.heights[0].length;
+  const k=`${r},${c}`;
+  if(r===rows-1&&c===cols-1&&(step.phase==='done_early'||step.result!==undefined)) return 'dest';
+  if(step.current&&step.current.r===r&&step.current.c===c) return 'current';
+  if(step.finalized.has(k)) return 'finalized';
+  if(step.heap.some(e=>e.r===r&&e.c===c&&!e.stale)) return 'inheap';
+  return 'unvisited';
+}
+const CST={
+  unvisited:{bg:'#21262d',bdr:'#30363d',tc:'#484f58'},
+  inheap:   {bg:'#3d2b00',bdr:'#d29922',tc:'#e3b341'},
+  current:  {bg:'#2d1f69',bdr:'#bc8cff',tc:'#d2b8ff'},
+  finalized:{bg:'#0d1f38',bdr:'#58a6ff',tc:'#58a6ff'},
+  dest:     {bg:'#0d2a16',bdr:'#3fb950',tc:'#3fb950'},
+};
+
+function renderGrid(ex,step){
+  const{heights}=ex;
+  const rows=heights.length,cols=heights[0].length;
+  const g=document.getElementById('grid');
+  g.style.gridTemplateColumns=`repeat(${cols}, 74px)`;
+  const cellSize=Math.min(74,Math.floor(320/Math.max(rows,cols)));
+  g.style.gridTemplateColumns=`repeat(${cols}, ${cellSize}px)`;
+
+  let html='';
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cs=CST[cellState(r,c,step,ex)];
+      const d=step?step.dist[r][c]:Infinity;
+      const dStr=d===Infinity?'∞':d;
+      const isRelax=step?.relaxing&&step.relaxing.nr===r&&step.relaxing.nc===c;
+      const glow=isRelax?`;box-shadow:0 0 0 3px rgba(210,153,34,.5)`:'';
+      const isStart=r===0&&c===0,isEnd=r===rows-1&&c===cols-1;
+      html+=`<div class="cell" style="background:${cs.bg};border-color:${cs.bdr};color:${cs.tc};width:${cellSize}px;height:${cellSize}px${glow}">
+        ${isStart?`<span class="cell-lbl" style="color:${cs.tc}">S</span>`:''}
+        ${isEnd?`<span class="cell-lbl" style="color:${cs.tc}">E</span>`:''}
+        <span class="cell-h">${heights[r][c]}</span>
+        <span class="cell-d" style="color:${d===Infinity?'#484f58':cs.bdr}">${dStr}</span>
+        <span class="cell-rc">${r},${c}</span>
+      </div>`;
+    }
+  }
+  g.innerHTML=html;
+}
+
+function renderState(ex,step){
+  if(!step) return;
+  const hl=document.getElementById('heap-list');
+  const sorted=[...step.heap].sort((a,b)=>a.effort-b.effort);
+  if(sorted.length===0){hl.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">empty</span>'}
+  else hl.innerHTML=sorted.map((e,i)=>{
+    const cls=e.stale?'stale':i===0?'top':'normal';
+    const tag=i===0&&!e.stale?`<span class="heap-tag">← next</span>`:'';
+    return `<div class="heap-entry ${cls}">(${e.effort===Infinity?'∞':e.effort}, [${e.r},${e.c}])${tag}</div>`;
+  }).join('');
+
+  const rb=document.getElementById('relax-box');
+  if(step.relaxing){
+    const{r,c,nr,nc,newE,oldD,effortSoFar,diff}=step.relaxing;
+    const better=newE<oldD;
+    rb.innerHTML=`
+      <div class="relax-row"><span class="r-lbl">diff</span><span>|h[${r}][${c}] − h[${nr}][${nc}]| = |${EX[exIdx].heights[r][c]}−${EX[exIdx].heights[nr][nc]}| = ${diff}</span></div>
+      <div class="relax-row"><span class="r-lbl">new_e</span><span>max(effort=${effortSoFar}, diff=${diff})</span><span class="r-eq"> = ${newE}</span></div>
+      <div class="relax-row"><span class="r-eq">${newE}</span><span class="r-cmp">${better?'<':'≥'}</span><span>dist[${nr}][${nc}] = ${oldD===Infinity?'∞':oldD}</span><span class="${better?'r-yes':'r-no'}">&nbsp;${better?'→ UPDATE ✓':'→ no change'}</span></div>
+    `;
+  } else if(step.phase==='stale'){
+    rb.innerHTML=`<div style="color:var(--red);font-size:11px">⚠ Stale: effort=${step.popEffort} > dist[${step.current?.r}][${step.current?.c}]=${step.dist[step.current?.r]?.[step.current?.c]}. Skip.</div>`;
+  } else {
+    rb.innerHTML='<span style="color:#484f58;font-style:italic;font-size:11px">— waiting —</span>';
+  }
+
+  const ll=document.getElementById('log-list');
+  const idx=steps.indexOf(step);
+  ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${esc(s.log)}</div>`).join('');
+  ll.lastElementChild?.scrollIntoView({block:'nearest'});
+}
+
+function renderCode(ex,step){
+  const cb=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=PHASE_HL[phase]||'';
+  cb.innerHTML=CODE_LINES.map((l,i)=>`<div class="code-line${l.phases.includes(phase)?' '+hl:''}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">heights</span><span class="io-sep">=</span><span class="io-v">${esc(JSON.stringify(ex.heights))}</span></span>`;
+  const out=document.getElementById('code-output');
+  if(step&&step.result!==undefined) out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">${step.result}</span>`;
+  else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+
+function render(){
+  const step=stepIdx>=0?steps[stepIdx]:null;
+  const ex=EX[exIdx];
+  renderGrid(ex,step);renderState(ex,step);renderCode(ex,step);
+  const rt=document.getElementById('result-tag');
+  if(step&&step.result!==undefined){rt.className='result-tag show pos';rt.textContent='Answer: '+step.result}
+  else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?esc(step.log):`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+
+function loadEx(i){
+  if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}
+  exIdx=i;steps=simulate(EX[i]);stepIdx=-1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  render();
+}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1&&autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}}
+function toggleAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else{clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}},800)}}
+function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto'}stepIdx=-1;render()}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
+loadEx(0);
+</script>
+</body>
+</html>
