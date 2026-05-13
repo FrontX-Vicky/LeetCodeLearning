@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #261 Graph Valid Tree — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.1);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-na{color:#484f58;font-style:italic}.io-v{color:var(--text)}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:14px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.checks-row{display:flex;gap:14px;flex-wrap:wrap}
+.check-box{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;border:2px solid;display:flex;align-items:center;gap:6px}
+.ck-pass{background:#0d2a16;border-color:var(--green);color:var(--green)}
+.ck-fail{background:#3b0c0c;border-color:var(--red);color:var(--red)}
+.ck-wait{background:#21262d;border-color:#30363d;color:var(--muted)}
+.state-panel{width:230px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:65px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show-t{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.result-tag.show-f{display:flex;background:#3b0c0c;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Graph Valid Tree &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #261 · Day 20 Problem 3</span></h1>
+    <p>Valid tree iff: exactly n-1 edges AND no cycle (Union-Find). Both conditions must hold.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① valid tree</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② cycle (invalid)</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ disconnected</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python</div>
+    <div class="io-bar input" id="code-input"><span class="io-lbl">IN</span><span class="io-na">n + edges</span></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">Graph — green=safe · red=cycle edge · orange=current</div>
+      <svg id="uf-svg" width="520" height="200"></svg>
+    </div>
+    <div>
+      <div class="panel-label">Validity checks</div>
+      <div class="checks-row" id="checks-row"></div>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {n:5,edges:[[0,1],[0,2],[0,3],[1,4]]},
+  {n:5,edges:[[0,1],[1,2],[2,3],[1,3],[1,4]]},
+  {n:4,edges:[[0,1],[2,3]]},
+];
+
+function simulate(ex){
+  const{n,edges}=ex;const steps=[];
+  const parent=Array.from({length:n},(_,i)=>i);
+  const rank=Array(n).fill(0);
+  function find(x){while(parent[x]!==x){parent[x]=parent[parent[x]];x=parent[x];}return x;}
+  function union(a,b){const ra=find(a),rb=find(b);if(ra===rb) return false;if(rank[ra]<rank[rb]) parent[ra]=rb;else if(rank[ra]>rank[rb]) parent[rb]=ra;else{parent[rb]=ra;rank[ra]++;}return true;}
+  const edgeCheck=edges.length===n-1;
+  const safe=[];let hasCycle=false;
+  steps.push({safe:[],hasCycle:false,activeEdge:null,parent:[...parent],phase:'start',edgeCheck,log:`Check 1: edges=${edges.length}, need ${n-1} → ${edgeCheck?'PASS':'FAIL'}`});
+  if(!edgeCheck){
+    steps.push({safe:[],hasCycle:false,activeEdge:null,parent:[...parent],phase:'done',edgeCheck,hasCycleFlag:false,result:false,log:`Edge count wrong → not a valid tree`});
+    return steps;
+  }
+  for(const[u,v] of edges){
+    const merged=union(u,v);
+    if(merged){safe.push([u,v]);steps.push({safe:[...safe],hasCycle:false,activeEdge:[u,v],parent:[...parent],phase:'safe',edgeCheck,log:`Edge (${u},${v}): safe — union`});}
+    else{hasCycle=true;steps.push({safe:[...safe],hasCycle:true,activeEdge:[u,v],parent:[...parent],phase:'cycle',edgeCheck,log:`Edge (${u},${v}): CYCLE! → not a valid tree`});}
+  }
+  steps.push({safe,hasCycle,activeEdge:null,parent:[...parent],phase:'done',edgeCheck,hasCycleFlag:hasCycle,result:!hasCycle,log:`Result: ${!hasCycle?'True (valid tree)':'False (has cycle)'}`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">valid_tree</span>(n, edges):`,
+  `    <span class="kw">if</span> <span class="bi">len</span>(edges) != n-<span class="nm">1</span>: <span class="kw">return</span> <span class="bi">False</span>`,
+  `    parent = <span class="bi">list</span>(<span class="bi">range</span>(n))`,
+  `    <span class="kw">def</span> <span class="fn">find</span>(x):`,
+  `        <span class="kw">while</span> parent[x] != x: x = parent[x]`,
+  `        <span class="kw">return</span> x`,
+  `    <span class="kw">for</span> u, v <span class="kw">in</span> edges:`,
+  `        pu, pv = find(u), find(v)`,
+  `        <span class="kw">if</span> pu == pv: <span class="kw">return</span> <span class="bi">False</span>  <span class="cm"># cycle</span>`,
+  `        parent[pu] = pv`,
+  `    <span class="kw">return</span> <span class="bi">True</span>`,
+];
+function phaseHL(ph){
+  if(ph==='start') return{1:'hl-orange'};
+  if(ph==='safe') return{7:'hl-orange',9:'hl-green'};
+  if(ph==='cycle') return{7:'hl-orange',8:'hl-red'};
+  if(ph==='done') return{10:'hl-green'};
+  return{};
+}
+
+function nodePos(i,n,cx,cy,r){const a=-Math.PI/2+i*(2*Math.PI/n);return[cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+function renderGraph(n,edges,step){
+  const svg=document.getElementById('uf-svg');
+  const W=520,H=190;svg.setAttribute('width',W);svg.setAttribute('height',H);
+  const cx=W/2,cy=H/2,r=75;
+  const safe=step?step.safe:[];const hasCycle=step?step.hasCycle:false;const active=step?step.activeEdge:null;
+  const pos={};for(let i=0;i<n;i++) pos[i]=nodePos(i,n,cx,cy,r);
+  let html='';
+  for(const[u,v] of safe){const[x1,y1]=pos[u];const[x2,y2]=pos[v];
+    html+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--green)" stroke-width="2.5" opacity="0.7"/>`;
+  }
+  if(active){const[u,v]=active;const[x1,y1]=pos[u];const[x2,y2]=pos[v];
+    html+=`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${hasCycle?'var(--red)':'var(--orange)'}" stroke-width="3" stroke-dasharray="${hasCycle?'':'6,3'}"/>`;
+  }
+  for(let i=0;i<n;i++){const[x,y]=pos[i];
+    const isActive=active&&(i===active[0]||i===active[1]);
+    html+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="18" fill="${isActive?'#3d2b00':'#21262d'}" stroke="${isActive?'var(--orange)':'#58a6ff'}" stroke-width="2"/>`;
+    html+=`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" dy="5" text-anchor="middle" font-size="13" font-weight="700" fill="var(--blue)">${i}</text>`;
+  }
+  svg.innerHTML=html;
+}
+function renderChecks(step){
+  const cr=document.getElementById('checks-row');
+  if(!step){cr.innerHTML='';return;}
+  const edgeOk=step.edgeCheck;
+  const cycleState=step.hasCycle?'fail':(step.phase==='done'?'pass':'wait');
+  const edgeCls=edgeOk?'ck-pass':'ck-fail';const cycleClsMap={pass:'ck-pass',fail:'ck-fail',wait:'ck-wait'};
+  cr.innerHTML=`<div class="check-box ${edgeCls}">${edgeOk?'✓':'✗'} n-1 edges</div><div class="check-box ${cycleClsMap[cycleState]}">${cycleState==='pass'?'✓':cycleState==='fail'?'✗':'?'} no cycle</div>`;
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const ex=EX[exIdx];const step=stepIdx>=0?steps[stepIdx]:null;
+  renderGraph(ex.n,ex.edges,step);renderChecks(step);
+  const ph=step?step.phase:'';const hl=phaseHL(ph);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span style="color:var(--purple)">n</span>=<span style="color:var(--text)">${ex.n}</span>, <span style="color:var(--purple)">edges</span>=<span style="color:var(--muted)">${ex.edges.length} total</span>`;
+  const co=document.getElementById('code-output');
+  if(step&&step.phase==='done') co.innerHTML=`<span class="io-lbl">OUT</span><span style="color:${step.result?'var(--green)':'var(--red)'}">${step.result}</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const vl=document.getElementById('var-list');
+  if(step) vl.innerHTML=`<div class="var-row"><span class="var-name">n</span><span class="var-eq">=</span><span class="var-val">${ex.n}</span></div><div class="var-row"><span class="var-name">edges</span><span class="var-eq">=</span><span class="var-val">${ex.edges.length}</span></div>`;
+  else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  const rt=document.getElementById('result-tag');
+  if(step&&step.phase==='done'){rt.className=`result-tag ${step.result?'show-t':'show-f'}`;rt.textContent=step.result?'True (valid tree)':'False';}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1)stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>

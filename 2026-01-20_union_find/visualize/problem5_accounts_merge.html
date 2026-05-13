@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #721 Accounts Merge — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.1);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-na{color:#484f58;font-style:italic}.io-v{color:var(--text)}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:12px;overflow-y:auto;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.accounts-grid{display:flex;flex-direction:column;gap:6px}
+.acct-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:7px;background:#21262d;border:2px solid transparent;transition:all .18s}
+.acct-row.active{background:#3d2b00;border-color:var(--orange)}
+.acct-row.merged{border-color:var(--green)}
+.acct-name{font-weight:700;font-size:13px;min-width:60px}
+.email-chips{display:flex;gap:5px;flex-wrap:wrap}
+.email-chip{font-family:monospace;font-size:10.5px;padding:2px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border)}
+.email-chip.active{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+.email-chip.union{background:#0d2a16;border-color:var(--green);color:var(--green)}
+.merged-results{display:flex;flex-direction:column;gap:6px}
+.merged-card{padding:8px 12px;border-radius:7px;border:2px solid;display:flex;flex-direction:column;gap:4px}
+.merged-name{font-size:12px;font-weight:700}.merged-emails{font-family:monospace;font-size:10.5px;display:flex;gap:5px;flex-wrap:wrap}
+.state-panel{width:230px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:65px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1;word-break:break-all}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Accounts Merge &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #721 · Day 20 Problem 5</span></h1>
+    <p>Union emails by account. Group by root email, attach account name, sort emails per group.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① 2 merges</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② no merge</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ chain merge</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python</div>
+    <div class="io-bar input"><span class="io-lbl">IN</span><span class="io-na">accounts list</span></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel" id="visual-panel">
+    <div>
+      <div class="panel-label" id="vis-label">Accounts — orange=processing · green=union happened</div>
+      <div id="vis-area"></div>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {accounts:[["John","johnsmith@mail.com","john_newyork@mail.com"],["John","johnsmith@mail.com","john00@mail.com"],["Mary","mary@mail.com"],["John","johnnybravo@mail.com"]]},
+  {accounts:[["Gabe","Gabe0@m.co","Gabe3@m.co"],["Kevin","Kevin3@m.co","Kevin5@m.co"],["Ethan","Ethan5@m.co","Ethan4@m.co"]]},
+  {accounts:[["David","David0@m.co","David1@m.co"],["David","David3@m.co","David4@m.co"],["David","David4@m.co","David5@m.co"]]},
+];
+const COMP_COLORS=['#3fb950','#58a6ff','#d29922','#bc8cff','#f85149','#39c5cf'];
+
+function simulate(ex){
+  const{accounts}=ex;const steps=[];
+  const parent={};const emailToName={};
+  function find(x){if(parent[x]===undefined) parent[x]=x;while(parent[x]!==x){parent[x]=parent[parent[x]]||parent[x];x=parent[x];}return x;}
+  function union(a,b){parent[find(a)]=find(b);}
+  // init
+  for(const acc of accounts){const name=acc[0];for(let i=1;i<acc.length;i++){if(!parent[acc[i]]) parent[acc[i]]=acc[i];emailToName[acc[i]]=name;}}
+  steps.push({phase:'init',activeAcct:null,activeEmail:null,unionPair:null,parent:{...parent},log:'Init: each email is its own root'});
+  for(let ai=0;ai<accounts.length;ai++){
+    const acc=accounts[ai];
+    for(let i=2;i<acc.length;i++){
+      const wasSame=find(acc[1])===find(acc[i]);
+      union(acc[1],acc[i]);
+      steps.push({phase:wasSame?'same':'union',activeAcct:ai,activeEmail:acc[i],unionPair:[acc[1],acc[i]],parent:{...parent},log:wasSame?`${acc[i]}: already same component`:`Union "${acc[1]}" ↔ "${acc[i]}" (account #${ai+1})`});
+    }
+    if(acc.length===2) steps.push({phase:'single',activeAcct:ai,activeEmail:acc[1],unionPair:null,parent:{...parent},log:`"${acc[1]}" only email in account #${ai+1}`});
+  }
+  // build result
+  const groups={};
+  for(const email of Object.keys(parent)){const r=find(email);if(!groups[r])groups[r]=[];groups[r].push(email);}
+  const result=Object.entries(groups).map(([root,emails])=>[emailToName[root],...emails.sort()]);
+  steps.push({phase:'done',activeAcct:null,activeEmail:null,unionPair:null,parent:{...parent},result,log:`Merged → ${result.length} account group(s)`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">accounts_merge</span>(accounts):`,
+  `    parent = {}`,
+  `    <span class="kw">def</span> <span class="fn">find</span>(x): ...  <span class="cm"># path compression</span>`,
+  `    <span class="kw">def</span> <span class="fn">union</span>(a, b): parent[find(a)] = find(b)`,
+  `    email_name = {}`,
+  `    <span class="kw">for</span> name, *emails <span class="kw">in</span> accounts:`,
+  `        <span class="kw">for</span> e <span class="kw">in</span> emails: email_name[e] = name`,
+  `        <span class="kw">for</span> e <span class="kw">in</span> emails[<span class="nm">1</span>:]: union(emails[<span class="nm">0</span>], e)`,
+  `    groups = defaultdict(<span class="bi">list</span>)`,
+  `    <span class="kw">for</span> e <span class="kw">in</span> email_name: groups[find(e)].append(e)`,
+  `    <span class="kw">return</span> [[email_name[r], *<span class="bi">sorted</span>(g)] <span class="kw">for</span> r,g <span class="kw">in</span> groups.items()]`,
+];
+function phaseHL(ph){
+  if(ph==='union'||ph==='same') return{5:'hl-orange',7:'hl-orange',3:ph==='union'?'hl-green':'hl-red'};
+  if(ph==='done') return{10:'hl-green'};
+  return{};
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const ex=EX[exIdx];const step=stepIdx>=0?steps[stepIdx]:null;
+  const va=document.getElementById('vis-area');
+  const vl=document.getElementById('vis-label');
+  if(step&&step.phase==='done'){
+    vl.textContent='Merged result groups';
+    va.innerHTML=`<div class="merged-results">${step.result.map((grp,i)=>{const col=COMP_COLORS[i%COMP_COLORS.length];return `<div class="merged-card" style="border-color:${col};background:${col}11"><div class="merged-name" style="color:${col}">${grp[0]}</div><div class="merged-emails">${grp.slice(1).map(e=>`<span style="font-family:monospace;font-size:10.5px;padding:2px 7px;border-radius:4px;background:${col}22;border:1px solid ${col};color:${col}">${e}</span>`).join('')}</div></div>`;}).join('')}</div>`;
+  } else {
+    vl.textContent='Accounts — orange=processing · green=union happened';
+    va.innerHTML=`<div class="accounts-grid">${ex.accounts.map((acc,ai)=>{const isAct=step&&step.activeAcct===ai;return `<div class="acct-row${isAct?' active':''}"><span class="acct-name" style="color:var(--blue)">${acc[0]}</span><div class="email-chips">${acc.slice(1).map(e=>{const isActE=step&&step.activeEmail===e&&step.activeAcct===ai;const inPair=step&&step.unionPair&&step.unionPair.includes(e);return `<span class="email-chip${isActE?' active':inPair&&step.phase==='union'?' union':''}">${e}</span>`;}).join('')}</div></div>`;}).join('')}</div>`;
+  }
+  const ph=step?step.phase:'';const hl=phaseHL(ph);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  const co=document.getElementById('code-output');
+  if(step&&step.phase==='done') co.innerHTML=`<span class="io-lbl">OUT</span><span style="color:var(--green)">${step.result.length} groups</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const vlv=document.getElementById('var-list');
+  if(step&&step.unionPair) vlv.innerHTML=`<div class="var-row"><span class="var-name">email1</span><span class="var-eq">=</span><span class="var-val" style="font-size:10px">${step.unionPair[0]}</span></div><div class="var-row"><span class="var-name">email2</span><span class="var-eq">=</span><span class="var-val" style="font-size:10px">${step.unionPair[1]}</span></div>`;
+  else vlv.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  const rt=document.getElementById('result-tag');
+  if(step&&step.phase==='done'){rt.className='result-tag show';rt.textContent=`${step.result.length} groups`;}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1)stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},700);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>
