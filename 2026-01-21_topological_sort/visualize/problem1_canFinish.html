@@ -239,10 +239,10 @@
         .step-num { transition:color 0.25s ease; }
         .btn.primary:hover:not(:disabled) { box-shadow:0 0 0 3px rgba(88,166,255,0.15); }
         /* ── Inline value badges */
-        .val-badge { display:inline-block; background:#161b22; border:1px solid #30363d; border-radius:3px; padding:0 4px; font-size:9.5px; color:#8b949e; margin-left:3px; vertical-align:middle; font-weight:600; transition:color 0.15s,border-color 0.15s; }
-        .code-line.hl-orange .val-badge { border-color:#d29922; color:#e3b341; }
-        .code-line.hl-green  .val-badge { border-color:#3fb950; color:#3fb950; }
-        .code-line.hl-red    .val-badge { border-color:#f85149; color:#f85149; }
+        .val-badge { display:inline-block; background:#0d1117; border:1px dashed #444c56; border-radius:10px; padding:1px 6px; font-size:9px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-style:italic; font-weight:400; color:#6e7681; margin-left:4px; vertical-align:middle; letter-spacing:0.01em; transition:color 0.15s,border-color 0.15s; }
+        .code-line.hl-orange .val-badge { border-color:#6e4c00; color:#b08800; background:#1a1200; }
+        .code-line.hl-green  .val-badge { border-color:#1a4d2a; color:#2d8a3e; background:#040d07; }
+        .code-line.hl-red    .val-badge { border-color:#5a1e1e; color:#c0392b; background:#120505; }
 
         /* ── Code panel ──────────────────────────────────────────── */
         .code-panel {
@@ -648,7 +648,7 @@ function renderCode() {
                 const val = _vars[sp.dataset.var];
                 if (val === undefined || val === NOT_YET) return;
                 const s = String(val); const b = document.createElement('span');
-                b.className = 'val-badge'; b.textContent = s.length > 20 ? s.slice(0,20)+'…' : s;
+                b.className = 'val-badge'; b.textContent = '= ' + (s.replace(/\s+/g,' ').trim().length > 24 ? s.replace(/\s+/g,' ').trim().slice(0,24)+'…' : s.replace(/\s+/g,' ').trim());
                 sp.after(b);
             });
         });

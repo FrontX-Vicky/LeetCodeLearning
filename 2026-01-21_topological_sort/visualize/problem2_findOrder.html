@@ -121,7 +121,13 @@
         .result-tag.show  { animation:fadeUp 0.28s ease both; }
         .q-node,.order-node { animation:popIn 0.2s ease both; }
         .step-num { transition:color 0.25s ease; }
-        .btn.primary:hover:not(:disabled) { box-shadow:0 0 0 3px rgba(88,166,255,0.15); }    </style>
+        .btn.primary:hover:not(:disabled) { box-shadow:0 0 0 3px rgba(88,166,255,0.15); }
+        /* ── Inline value badges */
+        .val-badge { display:inline-block; background:#0d1117; border:1px dashed #444c56; border-radius:10px; padding:1px 6px; font-size:9px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; font-style:italic; font-weight:400; color:#6e7681; margin-left:4px; vertical-align:middle; letter-spacing:0.01em; transition:color 0.15s,border-color 0.15s; }
+        .code-line.hl-orange .val-badge { border-color:#6e4c00; color:#b08800; background:#1a1200; }
+        .code-line.hl-green  .val-badge { border-color:#1a4d2a; color:#2d8a3e; background:#040d07; }
+        .code-line.hl-red    .val-badge { border-color:#5a1e1e; color:#c0392b; background:#120505; }
+    </style>
 </head>
 <body>
 
@@ -384,7 +390,7 @@ function renderCode(){
         row.appendChild(lnEl); row.appendChild(lt); block.appendChild(row);
         if(active&&!block._scrolled){ block._scrolled=true; setTimeout(()=>row.scrollIntoView({block:'nearest'}),0); }
     }
-    if(step){ const _v=getVars(step); block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{ r.querySelectorAll('.vt').forEach(sp=>{ const val=_v[sp.dataset.var]; if(val===undefined||val===NOT_YET)return; const s=String(val),b=document.createElement('span'); b.className='val-badge'; b.textContent=s.length>20?s.slice(0,20)+'…':s; sp.after(b); }); }); }
+    if(step){ const _v=getVars(step); block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{ r.querySelectorAll('.vt').forEach(sp=>{ const val=_v[sp.dataset.var]; if(val===undefined||val===NOT_YET)return; const s=String(val),b=document.createElement('span'); b.className='val-badge'; const _s=String(val).replace(/\s+/g,' ').trim(); b.textContent='= '+(_s.length>24?_s.slice(0,24)+'…':_s); sp.after(b); }); }); }
     block._scrolled=false;
 }
 
