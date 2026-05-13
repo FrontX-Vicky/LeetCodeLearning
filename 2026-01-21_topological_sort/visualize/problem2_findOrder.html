@@ -384,6 +384,7 @@ function renderCode(){
         row.appendChild(lnEl); row.appendChild(lt); block.appendChild(row);
         if(active&&!block._scrolled){ block._scrolled=true; setTimeout(()=>row.scrollIntoView({block:'nearest'}),0); }
     }
+    if(step){ const _v=getVars(step); block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{ r.querySelectorAll('.vt').forEach(sp=>{ const val=_v[sp.dataset.var]; if(val===undefined||val===NOT_YET)return; const s=String(val),b=document.createElement('span'); b.className='val-badge'; b.textContent=s.length>20?s.slice(0,20)+'…':s; sp.after(b); }); }); }
     block._scrolled=false;
 }
 
