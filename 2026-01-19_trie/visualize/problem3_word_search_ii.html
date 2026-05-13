@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #212 Word Search II — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.1);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:10px;overflow:hidden;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.grid-wrap{display:inline-block}
+.grid-row{display:flex;gap:4px;margin-bottom:4px}
+.grid-cell{width:42px;height:42px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:15px;font-weight:700;border:2px solid transparent;transition:all .18s}
+.gc-n{background:#21262d;color:var(--muted);border-color:#30363d}
+.gc-path{background:#2d1f00;color:var(--orange);border-color:#d29922}
+.gc-found{background:#0d2a16;color:var(--green);border-color:#3fb950}
+.gc-cur{background:#2d1f69;color:var(--purple);border-color:#bc8cff}
+.results-row{display:flex;gap:8px;flex-wrap:wrap}
+.result-chip{padding:4px 12px;border-radius:14px;font-family:monospace;font-size:12px;font-weight:700;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.state-panel{width:230px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:65px}.var-eq{color:#484f58}.var-val{color:var(--text);flex:1}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Word Search II &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #212 · Day 19 Problem 3</span></h1>
+    <p>Build Trie from word list. DFS on board, walk trie simultaneously. When end node = found word.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① oath/pea/eat/rain</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② a only</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ 3 words</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python</div>
+    <div class="io-bar input"><span class="io-lbl">IN</span><span class="io-na">board + words</span></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+  <div class="resizer" id="resizer"></div>
+  <div class="visual-panel">
+    <div>
+      <div class="panel-label">Board — purple=start · orange=DFS path · green=found word</div>
+      <div class="grid-wrap" id="grid-wrap"></div>
+    </div>
+    <div>
+      <div class="panel-label">Found words</div>
+      <div class="results-row" id="results-row"></div>
+    </div>
+  </div>
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+<script>
+const EX=[
+  {board:[['o','a','a','n'],['e','t','a','e'],['i','h','k','r'],['i','f','l','v']],words:['oath','pea','eat','rain']},
+  {board:[['a']],words:['a']},
+  {board:[['a','b','c'],['d','e','f'],['g','h','i']],words:['abc','aei','beh']},
+];
+
+function simulate(ex){
+  const{board,words}=ex;const rows=board.length,cols=board[0].length;
+  const steps=[];
+  // build trie
+  const root={ch:{},word:null};
+  for(const w of words){let n=root;for(const c of w){if(!n.ch[c]) n.ch[c]={ch:{},word:null};n=n.ch[c];}n.word=w;}
+  const found=new Set();
+  const foundPaths={};
+  function dfs(node,r,c,path,visited){
+    if(r<0||r>=rows||c<0||c>=cols) return;
+    const ch=board[r][c];
+    if(!node.ch[ch]) return;
+    const key=r*100+c;
+    if(visited.has(key)) return;
+    const next=node.ch[ch];
+    const newPath=[...path,[r,c]];
+    const newVis=new Set(visited);newVis.add(key);
+    if(next.word&&!found.has(next.word)){
+      found.add(next.word);
+      foundPaths[next.word]=newPath.map(p=>[...p]);
+      steps.push({path:newPath,foundSet:new Set(found),phase:'found',word:next.word,log:`Found "${next.word}" at path ${newPath.map(p=>`(${p[0]},${p[1]})`).join('→')}`});
+    } else {
+      steps.push({path:newPath,foundSet:new Set(found),phase:'dfs',word:null,log:`DFS at (${r},${c})='${ch}', building path`});
+    }
+    for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]) dfs(next,r+dr,c+dc,newPath,newVis);
+  }
+  steps.push({path:[],foundSet:new Set(),phase:'start',word:null,log:`Build Trie from [${words.map(w=>`"${w}"`).join(', ')}], then DFS`});
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) dfs(root,r,c,[],new Set());
+  steps.push({path:[],foundSet:new Set(found),phase:'done',word:null,log:`Done! Found: [${[...found].map(w=>`"${w}"`).join(', ')}]`});
+  return steps;
+}
+
+const CODE=[
+  `<span class="kw">def</span> <span class="fn">find_words</span>(board, words):`,
+  `    trie = build_trie(words)`,
+  `    result = <span class="bi">set</span>()`,
+  `    <span class="kw">def</span> <span class="fn">dfs</span>(node, r, c, path):`,
+  `        <span class="kw">if</span> node.word: result.add(node.word)`,
+  `        board[r][c], tmp = <span class="nm">'#'</span>, board[r][c]`,
+  `        <span class="kw">for</span> dr, dc <span class="kw">in</span> dirs:`,
+  `            <span class="kw">if</span> (nr,nc) valid <span class="kw">and</span> board[nr][nc] <span class="kw">in</span> node.ch:`,
+  `                dfs(node.ch[board[nr][nc]], nr, nc)`,
+  `        board[r][c] = tmp  <span class="cm"># restore</span>`,
+  `    <span class="kw">for</span> r,c: <span class="kw">if</span> board[r][c] <span class="kw">in</span> trie: dfs(trie[...], r, c)`,
+  `    <span class="kw">return</span> <span class="bi">list</span>(result)`,
+];
+function phaseHL(ph){
+  if(ph==='dfs') return{6:'hl-orange',7:'hl-orange',8:'hl-orange'};
+  if(ph==='found') return{4:'hl-green'};
+  if(ph==='done') return{11:'hl-green'};
+  return{};
+}
+
+function renderGrid(ex,step){
+  const gw=document.getElementById('grid-wrap');
+  if(!step){gw.innerHTML='';return;}
+  const{path,foundSet,phase}=step;
+  const pathSet=new Set(path.map(([r,c])=>r*100+c));
+  const rows=ex.board.length,cols=ex.board[0].length;
+  // find all cells that are part of found word paths
+  // color: last in path = cur, rest of path = orange, not in path = normal
+  const lastKey=path.length?path[path.length-1][0]*100+path[path.length-1][1]:-1;
+  gw.innerHTML=Array.from({length:rows},(_,r)=>`<div class="grid-row">${Array.from({length:cols},(_,c)=>{
+    const key=r*100+c;
+    let cls='grid-cell ';
+    if(phase==='found'&&pathSet.has(key)) cls+='gc-found';
+    else if(key===lastKey) cls+='gc-cur';
+    else if(pathSet.has(key)) cls+='gc-path';
+    else cls+='gc-n';
+    return `<div class="${cls}">${ex.board[r][c]}</div>`;
+  }).join('')}</div>`).join('');
+}
+
+let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
+function render(){
+  const ex=EX[exIdx];const step=stepIdx>=0?steps[stepIdx]:null;
+  renderGrid(ex,step);
+  const ph=step?step.phase:'';const hl=phaseHL(ph);
+  document.getElementById('code-block').innerHTML=CODE.map((l,i)=>`<div class="code-line${hl[i]?' '+hl[i]:''}""><span class="ln">${i+1}</span><span class="lt">${l}</span></div>`).join('');
+  const co=document.getElementById('code-output');
+  if(step&&step.phase==='done') co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-v" style="color:var(--green)">[${[...step.foundSet].map(w=>`"${w}"`).join(', ')}]</span>`;
+  else co.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  const rr=document.getElementById('results-row');
+  if(step&&step.foundSet.size) rr.innerHTML=[...step.foundSet].map(w=>`<div class="result-chip">${w}</div>`).join('');
+  else rr.innerHTML='<span style="color:#484f58;font-size:12px">none yet</span>';
+  const vl=document.getElementById('var-list');
+  if(step) vl.innerHTML=`<div class="var-row"><span class="var-name">path len</span><span class="var-eq">=</span><span class="var-val">${step.path.length}</span></div><div class="var-row"><span class="var-name">found</span><span class="var-eq">=</span><span class="var-val">${step.foundSet.size}</span></div>`;
+  else vl.innerHTML='';
+  const ll=document.getElementById('log-list');
+  if(step){const idx=steps.indexOf(step);ll.innerHTML=steps.slice(0,idx+1).map((s,i)=>`<div class="log-entry${i===idx?' active':''}">${s.log}</div>`).join('');ll.lastElementChild?.scrollIntoView({block:'nearest'});}
+  const rt=document.getElementById('result-tag');
+  if(step&&step.phase==='done'){rt.className='result-tag show';rt.textContent=`${step.foundSet.size} words found`;}else rt.className='result-tag';
+  document.getElementById('step-desc').innerHTML=step?step.log:`Pick an example, then click <strong>Next Step ▶</strong>`;
+  document.getElementById('step-num').textContent=stepIdx>=0?`${stepIdx+1} / ${steps.length}`:'— / —';
+  document.getElementById('btn-prev').disabled=stepIdx<=0;
+  document.getElementById('btn-next').disabled=stepIdx>=steps.length-1;
+}
+function loadEx(i){stopAuto();exIdx=i;steps=simulate(EX[i]);stepIdx=-1;document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active',j===i));render();}
+function go(d){stepIdx=Math.max(-1,Math.min(steps.length-1,stepIdx+d));render();if(stepIdx>=steps.length-1)stopAuto();}
+function stopAuto(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getElementById('btn-auto').classList.remove('playing');document.getElementById('btn-auto').textContent='▶▶ Auto';}}
+function toggleAuto(){if(autoTmr)stopAuto();else{document.getElementById('btn-auto').classList.add('playing');document.getElementById('btn-auto').textContent='⏸ Pause';autoTmr=setInterval(()=>{if(stepIdx<steps.length-1)go(1);else stopAuto();},600);}}
+function reset(){stopAuto();stepIdx=-1;render();}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto();}else if(e.key==='r'||e.key==='R')reset();});
+(function(){const r=document.getElementById('resizer'),cp=document.getElementById('code-panel');let sx,sw;r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;document.body.style.cursor='col-resize';document.body.style.userSelect='none';const mv=e=>{cp.style.width=Math.max(120,sw+(e.clientX-sx))+'px';};const up=()=>{document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);});})();
+loadEx(0);
+</script>
+</body>
+</html>
