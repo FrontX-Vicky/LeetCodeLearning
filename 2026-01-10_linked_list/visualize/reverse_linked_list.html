@@ -165,7 +165,7 @@ function simulate(arr){
   const n=arr.length;
   steps.push({phase:'init',prev:-1,curr:0,next_node:null,reversedPtrs:[],log:`Init: prev=None, curr=head(${arr[0]})`});
   let prev=-1,curr=0,reversedPtrs=[];// -1 = None
-  while(curr<n){
+  while(curr!==-1){
     steps.push({phase:'loop',prev,curr,next_node:null,reversedPtrs:[...reversedPtrs],log:`curr=${curr}(val=${arr[curr]}) is not None. Enter loop.`});
     const next_node=curr+1<n?curr+1:-1;
     steps.push({phase:'save_next',prev,curr,next_node,reversedPtrs:[...reversedPtrs],log:`next_node = curr.next = ${next_node===-1?'None':arr[next_node]}`});
@@ -230,7 +230,7 @@ function drawList(svgId,arr,step,reversed){
       if(i<revArr.length-1){const ax=x+NODE_W,ay=REV_Y+NODE_H/2;html+=`<path d="M${ax},${ay} L${ax+GAP-10},${ay}" stroke="#3fb950" stroke-width="2" fill="none" marker-end="url(#arr-g)"/>`;} 
       else html+=`<text x="${x+NODE_W+6}" y="${REV_Y+26}" font-family="monospace" font-size="11" fill="#484f58">null</text>`;
     }
-    if(i===0) html+=`<text x="${GAP+NODE_W/2}" y="${REV_Y-4}" text-anchor="middle" font-family="monospace" font-size="9" fill="#3fb950" font-weight="600">new head</text>`;
+    html+=`<text x="${GAP+NODE_W/2}" y="${REV_Y-4}" text-anchor="middle" font-family="monospace" font-size="9" fill="#3fb950" font-weight="600">new head</text>`;
   }
   svg.innerHTML=html;
 }
@@ -283,5 +283,6 @@ function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getEle
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
 loadEx(0);
 </script>
+<script src="../../visualize/problem_panel.js"></script>
 </body>
 </html>

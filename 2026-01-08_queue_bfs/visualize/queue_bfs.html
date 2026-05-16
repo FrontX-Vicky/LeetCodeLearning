@@ -308,5 +308,6 @@ function reset(){if(autoTmr){clearInterval(autoTmr);autoTmr=null;document.getEle
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')go(1);else if(e.key==='ArrowLeft'||e.key==='ArrowUp')go(-1);else if(e.key===' '){e.preventDefault();toggleAuto()}else if(e.key==='r'||e.key==='R')reset()});
 loadEx(0);
 </script>
+<script src="../../visualize/problem_panel.js"></script>
 </body>
 </html>
