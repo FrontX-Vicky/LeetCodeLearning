@@ -130,7 +130,10 @@
   function addStyle() {
     const style = document.createElement("style");
     style.textContent =
-      ".pp-open-btn{position:fixed;right:16px;bottom:16px;z-index:10000;background:#1c3458;border:1px solid #58a6ff;color:#58a6ff;padding:8px 12px;border-radius:8px;font:600 12px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;cursor:pointer}" +
+      ".pp-open-btn{position:fixed;right:16px;bottom:72px;z-index:10000;-webkit-appearance:none;appearance:none;outline:none;box-shadow:none;background:#1c3458;border:1px solid #58a6ff;color:#58a6ff;padding:8px 12px;border-radius:8px;font:600 12px/1 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;cursor:pointer;line-height:1;letter-spacing:.01em}" +
+      ".pp-open-btn:hover{filter:brightness(1.08)}" +
+      ".pp-open-btn:focus{outline:none;box-shadow:none}" +
+      ".pp-open-btn:focus-visible{outline:none;box-shadow:0 0 0 2px rgba(88,166,255,.25)}" +
       ".pp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10001;display:none}" +
       ".pp-overlay.show{display:block}" +
       ".pp-panel{position:absolute;top:0;right:0;width:min(560px,92vw);height:100%;background:#161b22;border-left:1px solid #30363d;display:flex;flex-direction:column}" +
