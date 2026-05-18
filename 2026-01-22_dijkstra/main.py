@@ -25,7 +25,30 @@ def networkDelayTime(times: List[List[int]], n: int, k: int) -> int:
     - If any node unreachable, return -1
     """
     # TODO: Build graph and run Dijkstra
-    pass
+    graph = defaultdict(list)
+
+    for u, v, w in times:
+        graph[u].append((v, w))
+    
+    dist = { i : float('inf') for i in range(1, n + 1)}
+    dist[k] = 0
+    heap = [(0, k)]
+
+    while heap:
+        cost, node = heapq.heappop(heap)
+
+        if cost > dist[node]:
+            continue
+
+        for neighbor, weight in graph[node]:
+            new_cost = cost + weight
+            if new_cost < dist[neighbor]:
+                dist[neighbor] = new_cost
+
+            heapq.heappush(heap, (new_cost, neighbor))
+    
+    max_dist = max(dist.values())
+    return max_dist if max_dist < float('inf') else -1
 
 
 # ============================================================
