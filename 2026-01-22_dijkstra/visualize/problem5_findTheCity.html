@@ -406,6 +406,37 @@ function renderCode(ex,step){
   else out.innerHTML=`<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>`;
 }
 
+// ════════════════════════════════════════════════════════════════
+// TOOLTIP
+// ════════════════════════════════════════════════════════════════
+document.addEventListener('mousemove',e=>{
+  const vt=e.target.closest('[data-var]');
+  const tip=document.getElementById('var-tooltip');
+  if(!vt||!steps.length){tip.style.display='none';return}
+  const ex=EX[exIdx];
+  const INF=Infinity;
+  const baseDist=Array.from({length:ex.n},(_,i)=>Array.from({length:ex.n},(_,j)=>i===j?0:INF));
+  for(const [u,v,w] of ex.edges){baseDist[u][v]=w;baseDist[v][u]=w;}
+  const baseStep=stepIdx>=0?steps[stepIdx]:{dist:baseDist,kij:{k:-1,i:-1,j:-1},relaxing:null,counts:[],result:null};
+  const step=stepIdx>=0?steps[stepIdx]:baseStep;
+  const flight=step.relaxing;
+  const VAL={
+    n:String(ex.n),
+    edges:JSON.stringify(ex.edges),
+    dt:String(ex.threshold),
+    dist:JSON.stringify(step.dist),
+    k:step.kij?.k>=0?String(step.kij.k):'—',
+    i:step.kij?.i>=0?String(step.kij.i):'—',
+    j:step.kij?.j>=0?String(step.kij.j):'—',
+    via:flight?String(flight.via):'—'
+  };
+  const name=vt.dataset.var;
+  document.getElementById('vt-name').textContent=name;
+  document.getElementById('vt-val').textContent=VAL[name]??'—';
+  tip.style.display='block';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';
+});
+document.addEventListener('mouseleave',()=>{document.getElementById('var-tooltip').style.display='none'},true);
+
 let exIdx=0,steps=[],stepIdx=-1,autoTmr=null;
 
 function render(){
