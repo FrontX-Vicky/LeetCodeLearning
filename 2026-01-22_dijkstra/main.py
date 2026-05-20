@@ -70,7 +70,23 @@ def findCheapestPrice(n: int, flights: List[List[int]], src: int, dst: int, k: i
     Why not Dijkstra? Dijkstra doesn't respect the hop limit naturally.
     """
     # TODO: Implement Bellman-Ford with k+1 rounds
-    pass
+    prices = [float('inf')] * n
+    prices[src] = 0
+
+    for _ in range(k + 1):
+        temp = prices[:]
+        for u, v, w in flights:
+            # print(u, v, w)
+            print(prices)
+
+            if prices[u] != float('inf'):
+                print(temp)
+                if prices[u] + w < temp[v]:
+                    temp[v] = prices[u] + w
+        
+        prices = temp
+    
+    return prices[dst] if prices[dst] < float('inf') else -1
 
 
 # ============================================================
