@@ -44,8 +44,7 @@ def networkDelayTime(times: List[List[int]], n: int, k: int) -> int:
             new_cost = cost + weight
             if new_cost < dist[neighbor]:
                 dist[neighbor] = new_cost
-
-            heapq.heappush(heap, (new_cost, neighbor))
+                heapq.heappush(heap, (new_cost, neighbor))
     
     max_dist = max(dist.values())
     return max_dist if max_dist < float('inf') else -1
@@ -76,11 +75,7 @@ def findCheapestPrice(n: int, flights: List[List[int]], src: int, dst: int, k: i
     for _ in range(k + 1):
         temp = prices[:]
         for u, v, w in flights:
-            # print(u, v, w)
-            # print(prices)
-
             if prices[u] != float('inf'):
-                # print(temp)
                 if prices[u] + w < temp[v]:
                     temp[v] = prices[u] + w
         
@@ -192,7 +187,6 @@ def findTheCity(n: int, edges: List[List[int]], distanceThreshold: int) -> int:
     - Count reachable cities per city, return city with fewest (or highest index on tie)
     """
     # TODO: Implement Floyd-Warshall then count reachable cities
-    dt = distanceThreshold
     dist = [[float('inf')] * n for _ in range(n)]
     for i in range(n): dist[i][i] = 0
     for u, v, w in edges:
@@ -207,7 +201,7 @@ def findTheCity(n: int, edges: List[List[int]], distanceThreshold: int) -> int:
                 
     res, minCnt = -1, n
     for i in range(n):
-        cnt = sum(1 for j in range(n) if i != j and dist[i][j] <= dt)
+        cnt = sum(1 for j in range(n) if i != j and dist[i][j] <= distanceThreshold)
         if cnt <= minCnt:
             res, minCnt = i, cnt
     
