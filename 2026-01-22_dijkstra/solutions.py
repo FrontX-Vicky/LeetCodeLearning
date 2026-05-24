@@ -75,26 +75,26 @@ def minimumEffortPath(heights: List[List[int]]) -> int:
     dist[r][c] = minimum effort (max diff along path) to reach (r, c).
     Heap key = current max effort so far.
     """
-    rows, cols = len(heights), len(heights[0])
-    dist = [[float('inf')] * cols for _ in range(rows)]
-    dist[0][0] = 0
-    heap = [(0, 0, 0)]  # (effort, row, col)
+    rows, cols = len(heights), len(heights[0]) # here we are getting the actual count of rows and columns
+    dist = [[float('inf')] * cols for _ in range(rows)] # here we are creating a grid for distance calculation initially they are ♾️
+    dist[0][0] = 0 # marking the first node distance as 0
+    heap = [(0, 0, 0)]  # (effort, row, col) initiating a heap to perform iterations 
 
-    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)] # directions referenced to current node
+                #  right   left    bottom   top
     while heap:
-        effort, r, c = heapq.heappop(heap)
+        effort, r, c = heapq.heappop(heap) # popping out the first element from heap
 
-        if effort > dist[r][c]:
+        if effort > dist[r][c]: # is current effort is greater than previous then skip
             continue
 
-        if r == rows - 1 and c == cols - 1:
+        if r == rows - 1 and c == cols - 1: # destination node, last node
             return effort
 
-        for dr, dc in directions:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols:
-                new_effort = max(effort, abs(heights[r][c] - heights[nr][nc]))
+        for dr, dc in directions: # now do bfs from current node
+            nr, nc = r + dr, c + dc # new row , new coulmn = current + directions(row , column)
+            if 0 <= nr < rows and 0 <= nc < cols: # out off bound rows cols prevention
+                new_effort = max(effort, abs(heights[r][c] - heights[nr][nc])) # take the max effort to reach to cell as it will go in bottom of heap
                 if new_effort < dist[nr][nc]:
                     dist[nr][nc] = new_effort
                     heapq.heappush(heap, (new_effort, nr, nc))
