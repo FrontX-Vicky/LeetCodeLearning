@@ -103,7 +103,7 @@ def test_findTheCity():
         ((4, [[0,1,3],[1,2,1],[1,3,4],[2,3,1]], 4),   3, "canonical example"),
         ((5, [[0,1,2],[0,4,8],[1,2,3],[1,4,2],[2,3,1],[3,4,1]], 2), 0, "5 cities threshold=2"),
         ((2, [[0,1,1]], 1),                             1, "two cities tie -> higher index"),
-        ((3, [[0,1,1],[1,2,1]], 2),                     0, "chain, threshold=2 -> city 0 or 2, ties -> 2"),
+        ((3, [[0,1,1],[1,2,1]], 2),                     2, "chain, threshold=2 -> all tie at 2, ties -> highest index 2"),
         ((4, [[0,1,1],[1,2,1],[2,3,1],[0,3,10]], 3),   3, "tie at far city"),
     ]
 
