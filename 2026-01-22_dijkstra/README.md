@@ -1,7 +1,8 @@
-# Day 22: Dijkstra's Shortest Path
+# Day 22: Dijkstra's Shortest Path ✅
 
-**Date**: January 22, 2026  
-**Focus**: Weighted shortest-path algorithms on graphs  
+**Date**: January 22, 2026
+**Status**: COMPLETED — 25/25 tests passed
+**Focus**: Weighted shortest-path algorithms on graphs
 **Difficulty**: Medium–Hard
 
 ---

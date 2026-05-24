@@ -844,7 +844,39 @@
 
 ---
 
-## Master Concepts Index
+### **Day 22: Dijkstra's Shortest Path** 📅 *2026-01-22* ✅ **COMPLETED**
+
+**Problems Solved** (5 shortest-path problems):
+1. **Network Delay Time** - Dijkstra single-source, return max dist (LeetCode #743)
+2. **Cheapest Flights Within K Stops** - Bellman-Ford with k+1 rounds (LeetCode #787)
+3. **Path With Minimum Effort** - Minimax Dijkstra on grid (LeetCode #1631)
+4. **Swim in Rising Water** - Bottleneck Dijkstra on grid (LeetCode #778)
+5. **Find City With Smallest Neighbors** - Floyd-Warshall all-pairs (LeetCode #1334)
+
+**Topics Covered**:
+- Classic Dijkstra with min-heap + stale-check guard
+- Bellman-Ford relaxation rounds with snapshot copy to prevent chaining
+- Minimax path: swap `+` for `max()` in the relaxation step
+- Floyd-Warshall triple-loop for all-pairs shortest paths
+
+**Key Concepts Learned**:
+- Dijkstra requires non-negative weights; stale check `if cost > dist[node]: continue` prevents reprocessing
+- Bellman-Ford naturally enforces hop limit: run exactly `k+1` rounds
+- Minimax/bottleneck problems (P3, P4) use same Dijkstra skeleton — only the edge cost formula changes
+- Floyd-Warshall: O(V³) simple but effective for small dense graphs; `dist[i][j] = min(dist[i][j], dist[i][k]+dist[k][j])`
+
+**Bugs Caught**:
+- P1: `heappush` was outside the `if new_cost < dist` block — pushed stale entries unconditionally
+- P2: Debug `print` statements left in from development
+- P5: `if minCnt <= minCnt` (always-True self-comparison) — should be `cnt <= minCnt`
+
+**Patterns Locked In**:
+- `if cost > dist[node]: continue` → Dijkstra stale guard
+- `temp = prices[:]` before each Bellman-Ford round → prevents within-round chaining
+- `max(current, edge)` instead of `current + edge` → minimax/bottleneck Dijkstra
+- Triple `for k, i, j` loop → Floyd-Warshall
+
+**Test Results**: 25/25 tests passed ✅
 - **Hash Maps**: Day 1, Day 2, Day 3, Day 4
 - **Arrays**: Day 1, Day 2, Day 5
 - **Prefix Sums**: Day 2
@@ -902,6 +934,11 @@
 - **Kahn's Algorithm**: Day 21
 - **Cycle Detection (Topo)**: Day 21
 - **Layered BFS**: Day 21
+- **Dijkstra's Algorithm**: Day 22
+- **Bellman-Ford**: Day 22
+- **Floyd-Warshall**: Day 22
+- **Minimax / Bottleneck Path**: Day 22
+- **Stale-check Guard**: Day 22
 - **Trie (Prefix Tree)**: Day 19
 - **Prefix Matching**: Day 19
 - **Wildcard DFS on Trie**: Day 19
@@ -942,7 +979,7 @@
 - Day 15: Binary Search Trees ✅
 - Day 16: Tree DFS/BFS ✅
 
-### **Phase 4: Advanced Data Structures** (Days 17-20) 🔄 **IN PROGRESS**
+### **Phase 4: Advanced Data Structures** (Days 17-20) ✅ **COMPLETE**
 **Focus**: Specialized data structures for complex problems
 - Day 17: Heap/Priority Queue ✅
 - Day 18: Graphs (BFS/DFS) ✅
@@ -952,8 +989,8 @@
 ### **Phase 5: Graph Algorithms** (Days 21-24) 🔄 **IN PROGRESS**
 **Focus**: Advanced graph traversal and optimization
 - Day 21: Topological Sort ✅
-- Day 22: Dijkstra's Shortest Path 🎯 **NEXT**
-- Day 23: Minimum Spanning Tree (Kruskal/Prim)
+- Day 22: Dijkstra's Shortest Path ✅
+- Day 23: Minimum Spanning Tree (Kruskal/Prim) 🎯 **NEXT**
 - Day 24: Advanced Graph Problems
 
 ### **Phase 6: Dynamic Programming** (Days 25-32) 📋 **PLANNED**
