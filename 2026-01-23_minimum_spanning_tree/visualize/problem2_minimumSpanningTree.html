@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kruskal's Minimum Spanning Tree Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:240px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58;transition:border-color .1s}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-top:1px}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.graph-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.svg-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#g-svg{width:100%;height:100%;max-height:300px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0}
+.state-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+.edge-list{display:flex;flex-direction:column;gap:3px;max-height:110px;overflow-y:auto}
+.edge-list::-webkit-scrollbar{width:3px}.edge-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.edge-row{display:flex;align-items:center;justify-content:space-between;padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11.5px;transition:all .15s}
+.edge-row.pending{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.edge-row.active{background:#3d2b00;border:1px solid var(--orange);color:var(--orange);font-weight:700}
+.edge-row.accepted{background:#0d2a16;border:1px solid #1a4d2a;color:var(--green)}
+.edge-row.rejected{background:#2d1215;border:1px solid #5a1e1e;color:var(--red);opacity:.55;text-decoration:line-through}
+.etag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.etag.acc{background:#0d2a16;color:var(--green)}.etag.rej{background:#2d1215;color:var(--red)}.etag.cur{background:#3d2b00;color:var(--orange)}
+.total-row{display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:13px;margin-top:6px}
+.total-val{font-size:20px;font-weight:700;color:var(--green)}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.result-tag.neg{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.72)}65%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+.edge-row.active{animation:popIn .2s ease both}
+.val-badge{display:inline-block;background:#0d1117;border:1px dashed #444c56;border-radius:10px;padding:1px 6px;font-size:9px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-style:italic;font-weight:400;color:#6e7681;margin-left:4px;vertical-align:middle}
+.code-line.hl-orange .val-badge{border-color:#6e4c00;color:#b08800;background:#1a1200}
+.code-line.hl-green .val-badge{border-color:#1a4d2a;color:#2d8a3e;background:#040d07}
+.code-line.hl-red .val-badge{border-color:#5a1e1e;color:#c0392b;background:#120505}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_minCostConnectPoints.html">P1 · minCostConnectPoints</option>
+    <option value="problem2_minimumSpanningTree.html" selected>P2 · minimumSpanningTree</option>
+    <option value="problem3_minCostToSupplyWater.html">P3 · minCostToSupplyWater</option>
+    <option value="problem4_findCriticalEdges.html">P4 · findCriticalEdges</option>
+    <option value="problem5_minimumCost.html">P5 · minimumCost</option>
+  </select>
+  <div class="header-left">
+    <h1>Kruskal's Minimum Spanning Tree <span style="color:var(--muted);font-weight:400;font-size:12px">custom</span></h1>
+    <p>Sort edges by weight → greedily add if no cycle (Union-Find) → stop at n-1 edges</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① 4-node</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② 5-node</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ Cycle skip</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="graph-panel">
+    <div class="panel-label">Undirected Weighted Graph — green = MST edge · orange = currently evaluating · red = rejected (cycle)</div>
+    <div class="svg-wrap">
+      <svg id="g-svg" viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">
+        <g id="g-edges"></g>
+        <g id="g-nodes"></g>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#30363d"></div>Unvisited</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>In MST</div>
+      <div class="legend-item" style="color:#484f58">— green = MST · orange = active · red = rejected cycle</div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Sorted Edges — processing top→bottom</div>
+      <div class="edge-list" id="edge-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">MST Progress</div>
+      <div class="total-row">
+        <span style="color:var(--muted);font-size:12px">Total cost</span>
+        <span class="total-val" id="total-val">0</span>
+      </div>
+      <div style="margin-top:6px;font-size:11px;font-family:monospace;color:var(--muted)" id="count-label">0 / ? edges added</div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {label:'4-node', n:4,
+   edges:[[0,1,1],[0,2,4],[1,2,2],[1,3,5],[2,3,3]],
+   pos:{0:{x:100,y:140},1:{x:280,y:60},2:{x:280,y:220},3:{x:460,y:140}}},
+  {label:'5-node', n:5,
+   edges:[[0,1,2],[0,3,6],[1,2,3],[1,3,8],[1,4,5],[2,4,7],[3,4,9]],
+   pos:{0:{x:80,y:140},1:{x:220,y:60},2:{x:360,y:60},3:{x:220,y:220},4:{x:360,y:220}}},
+  {label:'Cycle skip', n:4,
+   edges:[[0,1,1],[1,2,1],[2,3,1],[0,3,1],[0,2,2]],
+   pos:{0:{x:140,y:80},1:{x:420,y:80},2:{x:420,y:220},3:{x:140,y:220}}},
+];
+
+const V=(name,lbl)=>`<span class="vt" data-var="${name}">${lbl||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">minimumSpanningTree</span>(${V('n')}, ${V('edges')}):`,phases:[]},
+  {h:`    ${V('edges')}.sort(key<span class="op">=</span><span class="kw">lambda</span> e: e[<span class="nm">2</span>])`,phases:['sort']},
+  {h:`    ${V('uf')} <span class="op">=</span> UnionFind(${V('n')})`,phases:['sort']},
+  {h:`    ${V('total')}, ${V('count')} <span class="op">=</span> <span class="nm">0</span>, <span class="nm">0</span>`,phases:['sort']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> ${V('u')}, ${V('v')}, ${V('w')} <span class="kw">in</span> ${V('edges')}:`,phases:['check','accept','reject']},
+  {h:`        <span class="kw">if</span> ${V('uf')}.union(${V('u')}, ${V('v')}):  <span class="cm"># no cycle</span>`,phases:['check','accept','reject']},
+  {h:`            ${V('total')} <span class="op">+=</span> ${V('w')}`,phases:['accept']},
+  {h:`            ${V('count')} <span class="op">+=</span> <span class="nm">1</span>`,phases:['accept']},
+  {h:`            <span class="kw">if</span> ${V('count')} <span class="op">==</span> ${V('n')} <span class="op">-</span> <span class="nm">1</span>: <span class="kw">return</span> ${V('total')}`,phases:['accept']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> ${V('total')} <span class="kw">if</span> ${V('count')} <span class="op">==</span> ${V('n')}<span class="op">-</span><span class="nm">1</span> <span class="kw">else</span> <span class="op">-</span><span class="nm">1</span>`,phases:['done']},
+];
+const PHASE_HL={sort:'hl-orange',check:'hl-orange',accept:'hl-green',reject:'hl-red',done:'hl-green'};
+
+// Union-Find
+function makeUF(n){const p=Array.from({length:n},(_,i)=>i),r=new Array(n).fill(0);return{p,r,find(x){while(p[x]!==x){p[x]=p[p[x]];x=p[x];}return x;},union(x,y){const px=this.find(x),py=this.find(y);if(px===py)return false;if(r[px]<r[py])p[px]=py;else if(r[px]>r[py])p[py]=px;else{p[py]=px;r[px]++;}return true;},comps(){const m={};for(let i=0;i<n;i++){const root=this.find(i);if(!m[root])m[root]=[];m[root].push(i);}return Object.values(m);}}}
+
+function simulate(ex){
+  const {n,edges}=ex;
+  const sorted=[...edges].sort((a,b)=>a[2]-b[2]);
+  const steps=[];
+  const uf=makeUF(n);
+  let total=0,count=0;
+  const edgeStatus=sorted.map(()=>'pending'); // pending/active/accepted/rejected
+
+  const snap=(phase,idx,extra={})=>({phase,edgeStatus:[...edgeStatus],total,count,n,curEdgeIdx:idx,...extra});
+
+  steps.push({...snap('sort',-1),sortedEdges:sorted,log:`Sort ${edges.length} edges by weight: [${sorted.map(e=>e[2]).join(',')}]`});
+
+  for(let i=0;i<sorted.length;i++){
+    const [u,v,w]=sorted[i];
+    edgeStatus[i]='active';
+    steps.push({...snap('check',i),sortedEdges:sorted,
+      log:`Check edge (${u}-${v}, w=${w}): find(${u})=${uf.find(u)}, find(${v})=${uf.find(v)} — ${uf.find(u)===uf.find(v)?'SAME component → CYCLE':'different → add to MST'}`});
+
+    if(uf.union(u,v)){
+      total+=w; count++;
+      edgeStatus[i]='accepted';
+      steps.push({...snap('accept',i),sortedEdges:sorted,
+        log:`ACCEPT (${u}-${v}, w=${w}). total=${total}, count=${count}/${n-1}`});
+      if(count===n-1){
+        steps.push({...snap('done',-1,{result:total}),sortedEdges:sorted,log:`MST complete with ${count} edges. Total = ${total}`});
+        return steps;
+      }
+    } else {
+      edgeStatus[i]='rejected';
+      steps.push({...snap('reject',i),sortedEdges:sorted,
+        log:`REJECT (${u}-${v}, w=${w}): would create a cycle (same component)`});
+    }
+  }
+  const result=count===n-1?total:-1;
+  steps.push({...snap('done',-1,{result}),sortedEdges:sorted,log:count===n-1?`MST done. Total=${total}`:`Graph disconnected — need ${n-1} edges, only got ${count}`});
+  return steps;
+}
+
+// ── RENDER ──────────────────────────────────────────────
+function renderGraph(ex,step){
+  const {n,pos}=ex;
+  const sorted=step?step.sortedEdges:[...ex.edges].sort((a,b)=>a[2]-b[2]);
+  document.getElementById('g-edges').innerHTML='';
+  document.getElementById('g-nodes').innerHTML='';
+  const eg=document.getElementById('g-edges'),ng=document.getElementById('g-nodes');
+
+  // Draw all edges
+  sorted.forEach(([u,v,w],i)=>{
+    const p1=pos[u],p2=pos[v];
+    let col='#30363d',sw2=1.5,dash='';
+    if(step){
+      if(step.edgeStatus[i]==='accepted'){col='#3fb950';sw2=2.5;}
+      else if(step.edgeStatus[i]==='active'){col='#d29922';sw2=3;dash='none';}
+      else if(step.edgeStatus[i]==='rejected'){col='#f85149';sw2=1.5;dash='6,3';}
+    }
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+    l.setAttribute('stroke',col);l.setAttribute('stroke-width',sw2);
+    if(dash) l.setAttribute('stroke-dasharray',dash);
+    eg.appendChild(l);
+    const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+    const nx=-dy/len*12,ny=dx/len*12;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',mx+nx);t.setAttribute('y',my+ny);t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle');t.setAttribute('font-size','11');
+    t.setAttribute('font-weight','700');t.setAttribute('fill',col);
+    t.setAttribute('font-family','SF Mono,Fira Code,monospace');t.textContent=w;eg.appendChild(t);
+  });
+
+  // UF component colors
+  const COMP_COLS=['#1c3458','#1a3a1a','#3d2b00','#2d1f69','#2d1215','#1a2a3d'];
+  let compMap={};
+  if(step){
+    const uf2=makeUF(n);
+    sorted.forEach(([u,v],i)=>{if(step.edgeStatus[i]==='accepted') uf2.union(u,v);});
+    const comps=uf2.comps();
+    comps.forEach((c,ci)=>c.forEach(node=>compMap[node]=ci));
+  }
+
+  for(let id=0;id<n;id++){
+    const p=pos[id];
+    const compIdx=compMap[id]!==undefined?compMap[id]:-1;
+    const fill=compIdx>=0?COMP_COLS[compIdx%COMP_COLS.length]:'#21262d';
+    const stroke=compIdx>=0?['#58a6ff','#3fb950','#d29922','#bc8cff','#f85149','#79c0ff'][compIdx%6]:'#30363d';
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',20);
+    c.setAttribute('fill',fill);c.setAttribute('stroke',stroke);c.setAttribute('stroke-width',2.5);ng.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x);t.setAttribute('y',p.y+1);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','13');t.setAttribute('font-weight','700');t.setAttribute('fill',stroke);
+    t.setAttribute('font-family','SF Mono,Fira Code,monospace');t.textContent=id;ng.appendChild(t);
+  }
+}
+
+function renderState(step){
+  if(!step) return;
+  document.getElementById('total-val').textContent=step.total;
+  document.getElementById('count-label').textContent=`${step.count} / ${step.n-1} edges added`;
+  const el=document.getElementById('edge-list');
+  if(!step.sortedEdges){el.innerHTML='';return;}
+  el.innerHTML=step.sortedEdges.map(([u,v,w],i)=>{
+    const st=step.edgeStatus?step.edgeStatus[i]:'pending';
+    let cls='edge-row ',tag='';
+    if(st==='active'){cls+='active';tag='<span class="etag cur">▶</span>';}
+    else if(st==='accepted'){cls+='accepted';tag='<span class="etag acc">✓</span>';}
+    else if(st==='rejected'){cls+='rejected';tag='<span class="etag rej">✗</span>';}
+    else cls+='pending';
+    return `<div class="${cls}">${u} — ${v} &nbsp;(w=${w}) ${tag}</div>`;
+  }).join('');
+}
+
+function renderCode(step){
+  const block=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=phase?PHASE_HL[phase]:'';
+  block.innerHTML=CODE_LINES.map((l,i)=>{
+    const cls=l.phases.includes(phase)&&hl?hl:'';
+    return `<div class="code-line ${cls}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`;
+  }).join('');
+  if(step){
+    const _vars=getVars(step);
+    block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{
+      r.querySelectorAll('.vt').forEach(sp=>{
+        const val=_vars[sp.dataset.var];
+        if(val===undefined) return;
+        const s=String(val).replace(/\s+/g,' ').trim();
+        const b=document.createElement('span');b.className='val-badge';
+        b.textContent='= '+(s.length>22?s.slice(0,22)+'…':s);sp.after(b);
+      });
+    });
+  }
+}
+
+function getVars(step){
+  if(!step) return {};
+  const e=step.sortedEdges&&step.curEdgeIdx>=0?step.sortedEdges[step.curEdgeIdx]:null;
+  return {n:step.n,edges:`${step.sortedEdges?step.sortedEdges.length:0} edges`,uf:'UnionFind',
+    total:step.total,count:step.count,u:e?e[0]:'?',v:e?e[1]:'?',w:e?e[2]:'?'};
+}
+
+document.addEventListener('mousemove',e=>{
+  const sp=e.target.closest('.vt');const tt=document.getElementById('var-tooltip');
+  if(!sp||!curSteps||curIdx<0){tt.style.display='none';return;}
+  const vars=getVars(curSteps[curIdx]);const val=vars[sp.dataset.var];
+  if(val===undefined){tt.style.display='none';return;}
+  document.getElementById('vt-name').textContent=sp.dataset.var;document.getElementById('vt-val').textContent=String(val);
+  tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+});
+document.addEventListener('click',()=>document.getElementById('var-tooltip').style.display='none');
+
+let curEx=null,curSteps=[],curIdx=-1,autoTimer=null,logs=[];
+
+function loadEx(n){
+  clearAuto();
+  document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  curEx=EX[n];curSteps=simulate(curEx);curIdx=-1;logs=[];
+  renderGraph(curEx,null);renderCode(null);renderState(null);
+  document.getElementById('log-list').innerHTML='';document.getElementById('total-val').textContent='0';
+  document.getElementById('count-label').textContent=`0 / ${curEx.n-1} edges needed`;
+  document.getElementById('edge-list').innerHTML='';
+  document.getElementById('result-tag').className='result-tag';
+  document.getElementById('code-output').innerHTML='<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>';
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${curEx.n}</span></span><span class="io-kv"><span class="io-key">edges</span><span class="io-sep">=</span><span class="io-v">${JSON.stringify(curEx.edges)}</span></span>`;
+  document.getElementById('step-desc').innerHTML='Click <strong>Next Step ▶</strong> to start';
+  document.getElementById('step-num').textContent='— / —';
+  document.getElementById('btn-prev').disabled=true;document.getElementById('btn-next').disabled=false;
+}
+
+function renderAll(){
+  if(curIdx<0||!curSteps.length) return;
+  const step=curSteps[curIdx];
+  renderGraph(curEx,step);renderCode(step);renderState(step);
+  if(step.log&&!logs.includes(step.log)) logs.push(step.log);
+  const ll=document.getElementById('log-list');
+  ll.innerHTML=logs.map((l,i)=>`<div class="log-entry${i===logs.length-1?' active':''}">${l}</div>`).join('');
+  ll.scrollTop=ll.scrollHeight;
+  document.getElementById('step-num').textContent=`${curIdx+1} / ${curSteps.length}`;
+  document.getElementById('step-desc').textContent=step.log||'';
+  document.getElementById('btn-prev').disabled=curIdx===0;
+  document.getElementById('btn-next').disabled=curIdx===curSteps.length-1;
+  if(step.result!==undefined){
+    const rt=document.getElementById('result-tag');
+    rt.className='result-tag '+(step.result>=0?'pos':'neg')+' show';rt.textContent=(step.result>=0?'✓ ':'✗ ')+step.result;
+    document.getElementById('code-output').innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-v">${step.result}</span></span>`;
+    void rt.offsetWidth;
+  }
+}
+
+function go(dir){if(!curSteps.length) return;const next=curIdx+dir;if(next<0||next>=curSteps.length) return;curIdx=next;renderAll();}
+function reset(){clearAuto();if(curEx) loadEx(EX.indexOf(curEx));}
+function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;document.getElementById('btn-auto').textContent='▶▶ Auto';document.getElementById('btn-auto').classList.remove('playing');}}
+function toggleAuto(){
+  if(autoTimer){clearAuto();return;}
+  if(curIdx>=curSteps.length-1) curIdx=-1;
+  autoTimer=setInterval(()=>{if(curIdx>=curSteps.length-1){clearAuto();return;}curIdx++;renderAll();},600);
+  document.getElementById('btn-auto').textContent='⏸ Pause';document.getElementById('btn-auto').classList.add('playing');
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft') go(e.key==='ArrowRight'?1:-1);
+  else if(e.key===' '){e.preventDefault();toggleAuto();}
+  else if(e.key==='r'||e.key==='R') reset();
+});
+loadEx(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1584 Min Cost Connect Points — Prim's Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:240px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58;transition:border-color .1s}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;word-break:break-all;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;padding-top:1px}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.graph-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.svg-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#g-svg{width:100%;height:100%;max-height:340px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0}
+.state-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+.heap-list{display:flex;flex-direction:column;gap:3px;max-height:100px;overflow-y:auto}
+.heap-list::-webkit-scrollbar{width:3px}.heap-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.heap-entry{display:flex;align-items:center;justify-content:space-between;padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11.5px;transition:all .15s}
+.heap-entry.top{background:#1c3458;border:1px solid var(--blue);color:var(--blue)}
+.heap-entry.normal{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+.heap-entry.stale{background:#2d1215;border:1px solid #5a1e1e;color:var(--red);opacity:.65;text-decoration:line-through}
+.heap-tag{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}
+.heap-tag.pop-next{background:#1c3458;color:var(--blue);font-weight:700}
+.mst-list{display:flex;flex-direction:column;gap:3px;max-height:80px;overflow-y:auto}
+.mst-entry{padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11.5px;background:var(--bg);border:1px solid #1a4d2a;color:var(--green)}
+.total-box{font-family:monospace;font-size:22px;font-weight:700;color:var(--green);text-align:center;padding:6px 0}
+.total-label{font-size:10px;color:var(--muted);text-align:center;margin-top:2px}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.72)}65%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+.heap-entry.top{animation:popIn .2s ease both}
+.val-badge{display:inline-block;background:#0d1117;border:1px dashed #444c56;border-radius:10px;padding:1px 6px;font-size:9px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-style:italic;font-weight:400;color:#6e7681;margin-left:4px;vertical-align:middle;letter-spacing:.01em}
+.code-line.hl-orange .val-badge{border-color:#6e4c00;color:#b08800;background:#1a1200}
+.code-line.hl-green .val-badge{border-color:#1a4d2a;color:#2d8a3e;background:#040d07}
+.code-line.hl-red .val-badge{border-color:#5a1e1e;color:#c0392b;background:#120505}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_minCostConnectPoints.html" selected>P1 · minCostConnectPoints</option>
+    <option value="problem2_minimumSpanningTree.html">P2 · minimumSpanningTree</option>
+    <option value="problem3_minCostToSupplyWater.html">P3 · minCostToSupplyWater</option>
+    <option value="problem4_findCriticalEdges.html">P4 · findCriticalEdges</option>
+    <option value="problem5_minimumCost.html">P5 · minimumCost</option>
+  </select>
+  <div class="header-left">
+    <h1>Min Cost Connect Points &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1584</span></h1>
+    <p>Prim's algorithm — grow MST greedily from cheapest reachable point using Manhattan distance</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① 4 Points</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② 5 Points</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ Line</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="graph-panel">
+    <div class="panel-label">2D Point Graph — Manhattan edges · green = MST edge added · orange = being evaluated</div>
+    <div class="svg-wrap">
+      <svg id="g-svg" viewBox="0 0 560 320" xmlns="http://www.w3.org/2000/svg">
+        <g id="g-edges-pot"></g>
+        <g id="g-edges-mst"></g>
+        <g id="g-nodes"></g>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#30363d"></div>Unvisited</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2d1f69;border-color:#bc8cff"></div>Processing</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>In MST ✓</div>
+      <div class="legend-item" style="color:#484f58">— green edge = MST · orange = evaluating</div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card" style="padding:10px 13px">
+      <div class="card-title">MST Total Cost</div>
+      <div class="total-box" id="total-box">0</div>
+      <div class="total-label" id="total-label">0 / ? points visited</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Min-Heap &nbsp;<span style="color:#484f58;font-weight:400;text-transform:none;letter-spacing:0;font-size:9px">(cost, point_index)</span></div>
+      <div class="heap-list" id="heap-list"><span style="font-size:11px;color:#484f58;font-style:italic">empty</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">MST Edges Added</div>
+      <div class="mst-list" id="mst-list"><span style="font-size:11px;color:#484f58;font-style:italic">none yet</span></div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// RESIZER
+// ══════════════════════════════════════════════════════════
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{
+    sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');
+    document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+// ══════════════════════════════════════════════════════════
+// EXAMPLES
+// ══════════════════════════════════════════════════════════
+const EX = [
+  { label:'4 Points', points:[[0,0],[2,2],[3,10],[5,2]] },
+  { label:'5 Points', points:[[0,0],[3,0],[0,3],[3,3],[1,2]] },
+  { label:'Line',     points:[[0,0],[2,0],[4,0],[6,0]] },
+];
+
+// ══════════════════════════════════════════════════════════
+// CODE LINES
+// ══════════════════════════════════════════════════════════
+const V=(name,lbl)=>`<span class="vt" data-var="${name}">${lbl||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">minCostConnectPoints</span>(${V('points')}):`,phases:[]},
+  {h:`    ${V('n')} <span class="op">=</span> <span class="bi">len</span>(${V('points')})`,phases:['init']},
+  {h:`    ${V('visited')} <span class="op">=</span> <span class="bi">set</span>()`,phases:['init']},
+  {h:`    ${V('heap')} <span class="op">=</span> [(<span class="nm">0</span>, <span class="nm">0</span>)]`,phases:['init']},
+  {h:`    ${V('total')} <span class="op">=</span> <span class="nm">0</span>`,phases:['init']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">while</span> <span class="bi">len</span>(${V('visited')}) <span class="op">&lt;</span> ${V('n')}:`,phases:['pop','skip','expand']},
+  {h:`        ${V('cost')}, ${V('i')} <span class="op">=</span> heapq.heappop(${V('heap')})`,phases:['pop','skip']},
+  {h:`        <span class="kw">if</span> ${V('i')} <span class="kw">in</span> ${V('visited')}: <span class="kw">continue</span>`,phases:['skip']},
+  {h:`        ${V('visited')}.add(${V('i')})`,phases:['expand']},
+  {h:`        ${V('total')} <span class="op">+=</span> ${V('cost')}`,phases:['expand']},
+  {h:`        <span class="kw">for</span> ${V('j')} <span class="kw">in</span> <span class="bi">range</span>(${V('n')}):`,phases:['push']},
+  {h:`            <span class="kw">if</span> ${V('j')} <span class="kw">not in</span> ${V('visited')}:`,phases:['push']},
+  {h:`                ${V('d')} <span class="op">=</span> <span class="bi">abs</span>(px[i]<span class="op">-</span>px[j])<span class="op">+</span><span class="bi">abs</span>(py[i]<span class="op">-</span>py[j])`,phases:['push']},
+  {h:`                heapq.heappush(${V('heap')}, (${V('d')}, ${V('j')}))`,phases:['push']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> ${V('total')}`,phases:['done']},
+];
+const PHASE_HL={init:'hl-orange',pop:'hl-orange',skip:'hl-red',expand:'hl-green',push:'hl-orange',done:'hl-green'};
+
+// ══════════════════════════════════════════════════════════
+// SIMULATION
+// ══════════════════════════════════════════════════════════
+function manhattan(p1,p2){return Math.abs(p1[0]-p2[0])+Math.abs(p1[1]-p2[1]);}
+
+function simulate(ex){
+  const pts=ex.points;
+  const n=pts.length;
+  const steps=[];
+
+  const snap=(phase,extra={})=>({phase,visited:new Set(visited),heap:heap.map(e=>({...e})),mstEdges:[...mstEdges],total,n,...extra});
+
+  let visited=new Set(), heap=[{cost:0,idx:0}], total=0, mstEdges=[];
+
+  steps.push({...snap('init'),log:`Init: n=${n}, heap=[(0,0)], visited={}, total=0`});
+
+  let safety=0;
+  while(visited.size<n && safety++<300){
+    heap.sort((a,b)=>a.cost-b.cost);
+    const {cost,idx}=heap[0];
+    heap=heap.slice(1);
+
+    if(visited.has(idx)){
+      steps.push({...snap('skip',{popIdx:idx,popCost:cost}),
+        log:`Pop (cost=${cost}, i=${idx}) → SKIP: point ${idx} already in MST`});
+      continue;
+    }
+
+    steps.push({...snap('pop',{popIdx:idx,popCost:cost}),
+        log:`Pop (cost=${cost}, i=${idx}) → Add point ${idx} to MST. total+=${cost}=${total+cost}`});
+
+    visited.add(idx);
+    total+=cost;
+    if(cost>0){
+      // find which edge this came from (closest already-visited point)
+      let from=-1,minD=Infinity;
+      for(const v of visited){
+        if(v===idx) continue;
+        const d=manhattan(pts[v],pts[idx]);
+        if(d<minD){minD=d;from=v;}
+      }
+      if(from!==-1) mstEdges.push({u:from,v:idx,w:cost});
+    }
+
+    steps.push({...snap('expand',{current:idx,popCost:cost}),
+      log:`Visited: {${[...visited].join(',')}}. total=${total}. Now push neighbors.`});
+
+    for(let j=0;j<n;j++){
+      if(!visited.has(j)){
+        const d=manhattan(pts[idx],pts[j]);
+        heap.push({cost:d,idx:j});
+        steps.push({...snap('push',{current:idx,target:j,edgeCost:d}),
+          log:`  Push (${d}, ${j}): Manhattan dist [${pts[idx]}]→[${pts[j]}] = ${d}`});
+      }
+    }
+  }
+
+  steps.push({...snap('done'),result:total,log:`All ${n} points connected. MST cost = ${total}`});
+  return steps;
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════
+function ptPos(pts){
+  const xs=pts.map(p=>p[0]),ys=pts.map(p=>p[1]);
+  const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+  const W=520,H=280,PAD=50;
+  const rngX=maxX-minX||1,rngY=maxY-minY||1;
+  return pts.map(p=>({
+    x:PAD+(p[0]-minX)/rngX*(W-PAD*2),
+    y:PAD+(p[1]-minY)/rngY*(H-PAD*2)
+  }));
+}
+
+const NST={
+  unvisited:{fill:'#21262d',stroke:'#30363d',text:'#8b949e'},
+  current:{fill:'#2d1f69',stroke:'#bc8cff',text:'#d2b8ff'},
+  done:{fill:'#0d2a16',stroke:'#3fb950',text:'#3fb950'},
+};
+
+function renderGraph(ex,step){
+  const pts=ex.points;
+  const pos=ptPos(pts);
+  document.getElementById('g-edges-pot').innerHTML='';
+  document.getElementById('g-edges-mst').innerHTML='';
+  document.getElementById('g-nodes').innerHTML='';
+  const eP=document.getElementById('g-edges-pot');
+  const eM=document.getElementById('g-edges-mst');
+  const nG=document.getElementById('g-nodes');
+
+  if(!step){
+    pos.forEach((p,i)=>{
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',20);
+      c.setAttribute('fill','#21262d');c.setAttribute('stroke','#30363d');c.setAttribute('stroke-width',2);nG.appendChild(c);
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',p.x);t.setAttribute('y',p.y+1);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-size','12');t.setAttribute('font-weight','700');t.setAttribute('fill','#8b949e');
+      t.setAttribute('font-family','SF Mono,Fira Code,monospace');t.textContent=i;nG.appendChild(t);
+    });
+    return;
+  }
+
+  // MST edges
+  if(step.mstEdges){
+    for(const {u,v} of step.mstEdges){
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1',pos[u].x);l.setAttribute('y1',pos[u].y);
+      l.setAttribute('x2',pos[v].x);l.setAttribute('y2',pos[v].y);
+      l.setAttribute('stroke','#3fb950');l.setAttribute('stroke-width',2.5);
+      eM.appendChild(l);
+    }
+  }
+
+  // active edge being evaluated
+  if(step.current!==undefined && step.target!==undefined){
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',pos[step.current].x);l.setAttribute('y1',pos[step.current].y);
+    l.setAttribute('x2',pos[step.target].x);l.setAttribute('y2',pos[step.target].y);
+    l.setAttribute('stroke','#d29922');l.setAttribute('stroke-width',2);l.setAttribute('stroke-dasharray','5,3');
+    eP.appendChild(l);
+    const mx=(pos[step.current].x+pos[step.target].x)/2;
+    const my=(pos[step.current].y+pos[step.target].y)/2;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',mx);t.setAttribute('y',my-8);t.setAttribute('text-anchor','middle');
+    t.setAttribute('font-size','10');t.setAttribute('fill','#d29922');t.setAttribute('font-family','SF Mono,Fira Code,monospace');
+    t.textContent=step.edgeCost;eP.appendChild(t);
+  }
+
+  // nodes
+  pos.forEach((p,i)=>{
+    let st;
+    if(step.visited && step.visited.has(i)) st=NST.done;
+    else if(step.current===i || step.popIdx===i) st=NST.current;
+    else st=NST.unvisited;
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',20);
+    c.setAttribute('fill',st.fill);c.setAttribute('stroke',st.stroke);c.setAttribute('stroke-width',2);nG.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x);t.setAttribute('y',p.y+1);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','12');t.setAttribute('font-weight','700');t.setAttribute('fill',st.text);
+    t.setAttribute('font-family','SF Mono,Fira Code,monospace');t.textContent=i;nG.appendChild(t);
+    // coords label
+    const lbl=document.createElementNS('http://www.w3.org/2000/svg','text');
+    lbl.setAttribute('x',p.x);lbl.setAttribute('y',p.y+34);lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('font-size','9');lbl.setAttribute('fill','#484f58');lbl.setAttribute('font-family','SF Mono,Fira Code,monospace');
+    lbl.textContent=`[${ex.points[i]}]`;nG.appendChild(lbl);
+  });
+}
+
+function renderState(step){
+  if(!step) return;
+  // total
+  document.getElementById('total-box').textContent=step.total||0;
+  document.getElementById('total-label').textContent=`${step.visited?step.visited.size:0} / ${step.n||'?'} points visited`;
+  // heap
+  const hl=document.getElementById('heap-list');
+  const sorted=[...step.heap].sort((a,b)=>a.cost-b.cost);
+  if(sorted.length===0){hl.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">empty</span>';return;}
+  hl.innerHTML=sorted.slice(0,10).map((e,i)=>{
+    const cls=i===0?'top':'normal';
+    const tag=i===0?'<span class="heap-tag pop-next">next pop</span>':'';
+    return `<div class="heap-entry ${cls}">(${e.cost}, ${e.idx})${tag}</div>`;
+  }).join('');
+  if(sorted.length>10) hl.innerHTML+=`<div style="font-size:10px;color:#484f58;padding:2px 8px">+${sorted.length-10} more…</div>`;
+  // mst edges
+  const ml=document.getElementById('mst-list');
+  if(!step.mstEdges||step.mstEdges.length===0){ml.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">none yet</span>';return;}
+  ml.innerHTML=step.mstEdges.map(e=>`<div class="mst-entry">${e.u} — ${e.v} &nbsp;(w=${e.w})</div>`).join('');
+}
+
+function renderCode(step){
+  const block=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=phase?PHASE_HL[phase]:'';
+  block.innerHTML=CODE_LINES.map((l,i)=>{
+    const active=l.phases.includes(phase);
+    const cls=active&&hl?hl:'';
+    return `<div class="code-line ${cls}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`;
+  }).join('');
+  if(step){
+    const _vars=getVars(step);
+    block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{
+      r.querySelectorAll('.vt').forEach(sp=>{
+        const val=_vars[sp.dataset.var];
+        if(val===undefined) return;
+        const s=String(val).replace(/\s+/g,' ').trim();
+        const b=document.createElement('span');b.className='val-badge';
+        b.textContent='= '+(s.length>22?s.slice(0,22)+'…':s);sp.after(b);
+      });
+    });
+  }
+}
+
+function getVars(step){
+  if(!step) return {};
+  const pts=curEx?curEx.points:[];
+  return {
+    points:`${pts.length} points`,
+    n:step.n,
+    visited:`{${[...(step.visited||[])].join(',')}}`,
+    heap:`heap[${step.heap?step.heap.length:0}]`,
+    total:step.total,
+    cost:step.popCost,
+    i:step.popIdx,
+    j:step.target,
+    d:step.edgeCost,
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+// TOOLTIP
+// ══════════════════════════════════════════════════════════
+document.addEventListener('mousemove',e=>{
+  const sp=e.target.closest('.vt');
+  const tt=document.getElementById('var-tooltip');
+  if(!sp||!curSteps||curIdx<0){tt.style.display='none';return;}
+  const vars=getVars(curSteps[curIdx]);
+  const val=vars[sp.dataset.var];
+  if(val===undefined){tt.style.display='none';return;}
+  document.getElementById('vt-name').textContent=sp.dataset.var;
+  document.getElementById('vt-val').textContent=String(val);
+  tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+});
+document.addEventListener('click',()=>document.getElementById('var-tooltip').style.display='none');
+
+// ══════════════════════════════════════════════════════════
+// CONTROLLER
+// ══════════════════════════════════════════════════════════
+let curEx=null,curSteps=[],curIdx=-1,autoTimer=null,logs=[];
+
+function loadEx(n){
+  clearAuto();
+  document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  curEx=EX[n];
+  curSteps=simulate(curEx);
+  curIdx=-1;logs=[];
+  renderGraph(curEx,null);
+  renderCode(null);
+  renderState(null);
+  document.getElementById('log-list').innerHTML='';
+  document.getElementById('total-box').textContent='0';
+  document.getElementById('total-label').textContent=`0 / ${curEx.points.length} points visited`;
+  document.getElementById('heap-list').innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">empty</span>';
+  document.getElementById('mst-list').innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">none yet</span>';
+  document.getElementById('result-tag').className='result-tag';
+  document.getElementById('code-output').innerHTML='<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>';
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">points</span><span class="io-sep">=</span><span class="io-v">${JSON.stringify(curEx.points)}</span></span>`;
+  document.getElementById('step-desc').innerHTML='Click <strong>Next Step ▶</strong> to start';
+  document.getElementById('step-num').textContent='— / —';
+  document.getElementById('btn-prev').disabled=true;
+  document.getElementById('btn-next').disabled=false;
+}
+
+function renderAll(){
+  if(curIdx<0||!curSteps.length) return;
+  const step=curSteps[curIdx];
+  renderGraph(curEx,step);
+  renderCode(step);
+  renderState(step);
+  // logs
+  if(step.log && !logs.includes(step.log)) logs.push(step.log);
+  const ll=document.getElementById('log-list');
+  ll.innerHTML=logs.map((l,i)=>`<div class="log-entry${i===logs.length-1?' active':''}">${l}</div>`).join('');
+  ll.scrollTop=ll.scrollHeight;
+  document.getElementById('step-num').textContent=`${curIdx+1} / ${curSteps.length}`;
+  document.getElementById('step-desc').textContent=step.log||'';
+  document.getElementById('btn-prev').disabled=curIdx===0;
+  document.getElementById('btn-next').disabled=curIdx===curSteps.length-1;
+  if(step.result!==undefined){
+    const rt=document.getElementById('result-tag');
+    rt.className='result-tag pos show';rt.textContent='✓ '+step.result;
+    document.getElementById('code-output').innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-v">${step.result}</span></span>`;
+    void rt.offsetWidth;
+  }
+}
+
+function go(dir){
+  if(!curSteps.length) return;
+  const next=curIdx+dir;
+  if(next<0||next>=curSteps.length) return;
+  curIdx=next;renderAll();
+}
+function reset(){clearAuto();if(curEx) loadEx(EX.indexOf(curEx));}
+function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;document.getElementById('btn-auto').textContent='▶▶ Auto';document.getElementById('btn-auto').classList.remove('playing');}}
+function toggleAuto(){
+  if(autoTimer){clearAuto();return;}
+  if(curIdx>=curSteps.length-1) curIdx=-1;
+  autoTimer=setInterval(()=>{
+    if(curIdx>=curSteps.length-1){clearAuto();return;}
+    curIdx++;renderAll();
+  },600);
+  document.getElementById('btn-auto').textContent='⏸ Pause';
+  document.getElementById('btn-auto').classList.add('playing');
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft') go(e.key==='ArrowRight'?1:-1);
+  else if(e.key===' '){e.preventDefault();toggleAuto();}
+  else if(e.key==='r'||e.key==='R') reset();
+});
+
+// init
+loadEx(0);
+</script>
+</body>
+</html>

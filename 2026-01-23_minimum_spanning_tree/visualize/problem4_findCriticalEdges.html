@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1489 Critical & Pseudo-Critical Edges Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:240px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.graph-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.svg-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#g-svg{width:100%;height:100%;max-height:280px}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.legend-swatch{width:24px;height:4px;border-radius:2px}
+.state-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+.edge-list{display:flex;flex-direction:column;gap:3px;max-height:90px;overflow-y:auto}
+.edge-list::-webkit-scrollbar{width:3px}.edge-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.edge-row{display:flex;align-items:center;justify-content:space-between;padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11px;transition:all .15s}
+.edge-row.unknown{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.edge-row.testing{background:#3d2b00;border:1px solid var(--orange);color:var(--orange);font-weight:700}
+.edge-row.critical{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.edge-row.pseudo{background:#1a2a3d;border:1px solid var(--blue);color:var(--blue)}
+.edge-row.regular{background:var(--bg);border:1px solid #1a4d2a;color:var(--green)}
+.etag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.etag.crit{background:#2d1215;color:var(--red)}.etag.ps{background:#1a2a3d;color:var(--blue)}.etag.reg{background:#040d07;color:var(--green)}.etag.test{background:#3d2b00;color:var(--orange)}
+.result-rows{display:flex;flex-direction:column;gap:6px}
+.result-row{padding:5px 8px;border-radius:5px;font-family:monospace;font-size:11px}
+.result-row.crit{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.result-row.ps{background:#1a2a3d;border:1px solid var(--blue);color:var(--blue)}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0;max-width:200px}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+.val-badge{display:inline-block;background:#0d1117;border:1px dashed #444c56;border-radius:10px;padding:1px 6px;font-size:9px;font-family:-apple-system,sans-serif;font-style:italic;font-weight:400;color:#6e7681;margin-left:4px;vertical-align:middle}
+.code-line.hl-orange .val-badge{border-color:#6e4c00;color:#b08800;background:#1a1200}
+.code-line.hl-green .val-badge{border-color:#1a4d2a;color:#2d8a3e;background:#040d07}
+.code-line.hl-red .val-badge{border-color:#5a1e1e;color:#c0392b;background:#120505}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_minCostConnectPoints.html">P1 · minCostConnectPoints</option>
+    <option value="problem2_minimumSpanningTree.html">P2 · minimumSpanningTree</option>
+    <option value="problem3_minCostToSupplyWater.html">P3 · minCostToSupplyWater</option>
+    <option value="problem4_findCriticalEdges.html" selected>P4 · findCriticalEdges</option>
+    <option value="problem5_minimumCost.html">P5 · minimumCost</option>
+  </select>
+  <div class="header-left">
+    <h1>Critical &amp; Pseudo-Critical Edges &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1489</span></h1>
+    <p>Critical: removing raises MST cost · Pseudo-critical: forcing keeps cost same · else: regular</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① LC example</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② Multi-critical</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ All pseudo</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="graph-panel">
+    <div class="panel-label">Graph — red = critical · blue = pseudo-critical · green = regular MST · gray = not in MST</div>
+    <div class="svg-wrap">
+      <svg id="g-svg" viewBox="0 0 560 260" xmlns="http://www.w3.org/2000/svg">
+        <g id="g-edges"></g>
+        <g id="g-nodes"></g>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--red)"></div>Critical (must have)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--blue)"></div>Pseudo-critical (can swap)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:var(--green)"></div>Regular MST edge</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#30363d"></div>Not in baseline MST</div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Edges — classification status</div>
+      <div class="edge-list" id="edge-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Result</div>
+      <div class="result-rows" id="result-rows">
+        <div class="result-row crit">Critical: [ ]</div>
+        <div class="result-row ps">Pseudo: [ ]</div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;font-family:monospace;color:var(--muted)" id="baseline-label">Baseline MST: —</div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+const EX=[
+  {label:'LC example', n:5,
+   edges:[[0,1,1],[1,2,1],[2,3,2],[0,3,2],[0,4,3],[3,4,3],[1,4,6]],
+   pos:{0:{x:100,y:130},1:{x:240,y:60},2:{x:380,y:60},3:{x:380,y:200},4:{x:240,y:200}}},
+  {label:'Multi-critical', n:4,
+   edges:[[0,1,1],[1,2,1],[2,3,1],[0,3,10]],
+   pos:{0:{x:100,y:130},1:{x:250,y:60},2:{x:400,y:130},3:{x:250,y:200}}},
+  {label:'All pseudo', n:3,
+   edges:[[0,1,1],[1,2,1],[0,2,1]],
+   pos:{0:{x:100,y:180},1:{x:270,y:60},2:{x:440,y:180}}},
+];
+
+const V=(name,lbl)=>`<span class="vt" data-var="${name}">${lbl||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">findCriticalAndPseudoCriticalEdges</span>(${V('n')}, ${V('edges')}):`,phases:[]},
+  {h:`    ${V('indexed')} <span class="op">=</span> sorted(enumerate(${V('edges')}), key<span class="op">=</span>...)`,phases:['sort']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">def</span> <span class="fn">kruskal</span>(skip<span class="op">=-</span><span class="nm">1</span>, force<span class="op">=-</span><span class="nm">1</span>):  <span class="cm"># returns MST cost</span>`,phases:[]},
+  {h:`        <span class="kw">if</span> force <span class="op">!=</span> <span class="nm">-1</span>: uf.union(force edges)`,phases:['force']},
+  {h:`        <span class="kw">for</span> i, e <span class="kw">in</span> indexed:`,phases:['kruskal']},
+  {h:`            <span class="kw">if</span> i <span class="op">==</span> skip: <span class="kw">continue</span>  <span class="cm"># skip this edge</span>`,phases:['kruskal']},
+  {h:`            uf.union(e)`,phases:['kruskal']},
+  {h:``,phases:[]},
+  {h:`    ${V('baseline')} <span class="op">=</span> kruskal()`,phases:['baseline']},
+  {h:`    ${V('critical')}, ${V('pseudo')} <span class="op">=</span> [], []`,phases:['baseline']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> ${V('i')} <span class="kw">in</span> range(len(indexed)):`,phases:['test_crit','test_pseudo','classify']},
+  {h:`        <span class="kw">if</span> kruskal(skip<span class="op">=</span>i) <span class="op">&gt;</span> ${V('baseline')}:  <span class="cm"># critical</span>`,phases:['test_crit','classify']},
+  {h:`            ${V('critical')}.append(orig_idx)`,phases:['classify']},
+  {h:`        <span class="kw">elif</span> kruskal(force<span class="op">=</span>i) <span class="op">==</span> ${V('baseline')}:  <span class="cm"># pseudo</span>`,phases:['test_pseudo','classify']},
+  {h:`            ${V('pseudo')}.append(orig_idx)`,phases:['classify']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> [${V('critical')}, ${V('pseudo')}]`,phases:['done']},
+];
+const PHASE_HL={sort:'hl-orange',baseline:'hl-orange',force:'hl-orange',kruskal:'hl-orange',test_crit:'hl-orange',test_pseudo:'hl-orange',classify:'hl-green',done:'hl-green'};
+
+function makeUF(n){const p=Array.from({length:n},(_,i)=>i),r=new Array(n).fill(0);return{p,r,find(x){while(p[x]!==x){p[x]=p[p[x]];x=p[x];}return x;},union(x,y){const px=this.find(x),py=this.find(y);if(px===py)return false;if(r[px]<r[py])p[px]=py;else if(r[px]>r[py])p[py]=px;else{p[py]=px;r[px]++;}return true;},connected(x,y){return this.find(x)===this.find(y);}}}
+
+function kruskal(n,sorted,skip,force){
+  const uf=makeUF(n);let total=0,count=0;
+  if(force!==-1){const[u,v,w]=sorted[force];uf.union(u,v);total+=w;count++;}
+  for(let i=0;i<sorted.length;i++){
+    if(i===skip) continue;
+    const[u,v,w]=sorted[i];
+    if(uf.union(u,v)){total+=w;count++;}
+  }
+  return count===n-1?total:Infinity;
+}
+
+function simulate(ex){
+  const {n,edges}=ex;
+  const sorted=[...edges].sort((a,b)=>a[2]-b[2]);
+  const origIdx=sorted.map(s=>edges.findIndex(e=>e[0]===s[0]&&e[1]===s[1]&&e[2]===s[2]));
+  const steps=[];
+  const edgeClass=edges.map(()=>'unknown');
+
+  steps.push({phase:'sort',edgeClass:[...edgeClass],critical:[],pseudo:[],baseline:null,n,edges,sorted,
+    log:`Sort ${edges.length} edges by weight. indexed = ${JSON.stringify(sorted.map(e=>e[2]))}`});
+
+  const baseline=kruskal(n,sorted,-1,-1);
+  steps.push({phase:'baseline',edgeClass:[...edgeClass],critical:[],pseudo:[],baseline,n,edges,sorted,
+    log:`Baseline MST cost = ${baseline}`});
+
+  const critical=[],pseudo=[];
+
+  for(let i=0;i<sorted.length;i++){
+    const oi=origIdx[i];
+    const [u,v,w]=sorted[i];
+
+    // Test critical: skip edge i
+    edgeClass[oi]='testing';
+    const skipCost=kruskal(n,sorted,i,-1);
+    steps.push({phase:'test_crit',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,curI:i,
+      log:`Edge ${oi}(${u}-${v},w=${w}): remove → MST=${skipCost===Infinity?'∞':skipCost} vs baseline=${baseline} → ${skipCost>baseline?'CRITICAL':'not critical'}`});
+
+    if(skipCost>baseline){
+      critical.push(oi);
+      edgeClass[oi]='critical';
+      steps.push({phase:'classify',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,curI:i,
+        log:`→ CRITICAL: edge ${oi}(${u}-${v}) is essential for MST`});
+      continue;
+    }
+
+    // Test pseudo: force edge i
+    const forceCost=kruskal(n,sorted,-1,i);
+    steps.push({phase:'test_pseudo',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,curI:i,
+      log:`Edge ${oi}(${u}-${v},w=${w}): force → MST=${forceCost} vs baseline=${baseline} → ${forceCost===baseline?'PSEUDO-CRITICAL':'regular (not in any MST)'}`});
+
+    if(forceCost===baseline){
+      pseudo.push(oi);
+      edgeClass[oi]='pseudo';
+      steps.push({phase:'classify',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,curI:i,
+        log:`→ PSEUDO-CRITICAL: edge ${oi}(${u}-${v}) can appear in some MSTs`});
+    } else {
+      edgeClass[oi]='regular';
+      steps.push({phase:'classify',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,curI:i,
+        log:`→ REGULAR: edge ${oi}(${u}-${v}) not needed (not in any optimal MST)`});
+    }
+  }
+
+  const result=[critical.slice().sort((a,b)=>a-b),pseudo.slice().sort((a,b)=>a-b)];
+  steps.push({phase:'done',edgeClass:[...edgeClass],critical:[...critical],pseudo:[...pseudo],baseline,n,edges,sorted,result,
+    log:`Done! Critical: [${result[0]}], Pseudo: [${result[1]}]`});
+  return steps;
+}
+
+function renderGraph(ex,step){
+  const {n,pos,edges}=ex;
+  document.getElementById('g-edges').innerHTML='';
+  document.getElementById('g-nodes').innerHTML='';
+  const eg=document.getElementById('g-edges'),ng=document.getElementById('g-nodes');
+  const edgeClass=step?step.edgeClass:edges.map(()=>'unknown');
+
+  // Compute baseline MST edges for display
+  let baselineMSTEdges=new Set();
+  if(step&&step.baseline!==null){
+    const sorted=[...edges].sort((a,b)=>a[2]-b[2]);
+    const uf=makeUF(n);
+    sorted.forEach((e,i)=>{
+      const origI=edges.findIndex(ed=>ed[0]===e[0]&&ed[1]===e[1]&&ed[2]===e[2]);
+      if(uf.union(e[0],e[1])) baselineMSTEdges.add(origI);
+    });
+  }
+
+  edges.forEach(([u,v,w],i)=>{
+    const p1=pos[u],p2=pos[v];
+    const cls=edgeClass[i];
+    let col='#30363d',sw2=1.5,dash='';
+    if(cls==='critical'){col='#f85149';sw2=3;}
+    else if(cls==='pseudo'){col='#58a6ff';sw2=2.5;}
+    else if(cls==='regular'&&baselineMSTEdges.has(i)){col='#3fb950';sw2=2.5;}
+    else if(cls==='testing'){col='#d29922';sw2=3;dash='5,3';}
+    else if(cls==='regular'){col='#30363d';sw2=1.5;}
+    const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+    l.setAttribute('stroke',col);l.setAttribute('stroke-width',sw2);if(dash) l.setAttribute('stroke-dasharray',dash);
+    eg.appendChild(l);
+    const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+    const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+    const nx=-dy/len*13,ny=dx/len*13;
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',mx+nx);t.setAttribute('y',my+ny);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','10');t.setAttribute('font-weight','700');t.setAttribute('fill',col);t.setAttribute('font-family','SF Mono,monospace');
+    t.textContent=`e${i}:${w}`;eg.appendChild(t);
+  });
+
+  for(let id=0;id<n;id++){
+    const p=pos[id];
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',20);
+    c.setAttribute('fill','#161b22');c.setAttribute('stroke','#58a6ff');c.setAttribute('stroke-width',2);ng.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x);t.setAttribute('y',p.y+1);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','13');t.setAttribute('font-weight','700');t.setAttribute('fill','#c9d1d9');t.setAttribute('font-family','SF Mono,monospace');t.textContent=id;ng.appendChild(t);
+  }
+}
+
+function renderState(step){
+  if(!step) return;
+  const el=document.getElementById('edge-list');
+  el.innerHTML=(step.edges||[]).map((e,i)=>{
+    const cls=step.edgeClass?step.edgeClass[i]:'unknown';
+    let rowCls='edge-row ',tag='';
+    if(cls==='testing'){rowCls+='testing';tag='<span class="etag test">?</span>';}
+    else if(cls==='critical'){rowCls+='critical';tag='<span class="etag crit">CRIT</span>';}
+    else if(cls==='pseudo'){rowCls+='pseudo';tag='<span class="etag ps">PSEUDO</span>';}
+    else if(cls==='regular'){rowCls+='regular';tag='<span class="etag reg">reg</span>';}
+    else rowCls+='unknown';
+    return `<div class="${rowCls}">e${i}: ${e[0]}-${e[1]} w=${e[2]} ${tag}</div>`;
+  }).join('');
+  const rr=document.getElementById('result-rows');
+  const crit=step.critical||[],ps=step.pseudo||[];
+  rr.innerHTML=`<div class="result-row crit">Critical: [${crit.join(', ')}]</div><div class="result-row ps">Pseudo: [${ps.join(', ')}]</div>`;
+  document.getElementById('baseline-label').textContent=step.baseline!==null?`Baseline MST: ${step.baseline}`:'Baseline MST: —';
+}
+
+function renderCode(step){
+  const block=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=phase?PHASE_HL[phase]:'';
+  block.innerHTML=CODE_LINES.map((l,i)=>{
+    const cls=l.phases.includes(phase)&&hl?hl:'';
+    return `<div class="code-line ${cls}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`;
+  }).join('');
+  if(step){
+    const _vars=getVars(step);
+    block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{
+      r.querySelectorAll('.vt').forEach(sp=>{
+        const val=_vars[sp.dataset.var];if(val===undefined) return;
+        const s=String(val).replace(/\s+/g,' ').trim();
+        const b=document.createElement('span');b.className='val-badge';b.textContent='= '+(s.length>20?s.slice(0,20)+'…':s);sp.after(b);
+      });
+    });
+  }
+}
+
+function getVars(step){
+  if(!step) return {};
+  return {n:step.n,edges:`${(step.edges||[]).length} edges`,indexed:`sorted`,baseline:step.baseline,
+    critical:`[${(step.critical||[]).join(',')}]`,pseudo:`[${(step.pseudo||[]).join(',')}]`,i:step.curI};
+}
+
+document.addEventListener('mousemove',e=>{
+  const sp=e.target.closest('.vt');const tt=document.getElementById('var-tooltip');
+  if(!sp||!curSteps||curIdx<0){tt.style.display='none';return;}
+  const vars=getVars(curSteps[curIdx]);const val=vars[sp.dataset.var];
+  if(val===undefined){tt.style.display='none';return;}
+  document.getElementById('vt-name').textContent=sp.dataset.var;document.getElementById('vt-val').textContent=String(val);
+  tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+});
+document.addEventListener('click',()=>document.getElementById('var-tooltip').style.display='none');
+
+let curEx=null,curSteps=[],curIdx=-1,autoTimer=null,logs=[];
+
+function loadEx(n){
+  clearAuto();
+  document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  curEx=EX[n];curSteps=simulate(curEx);curIdx=-1;logs=[];
+  renderGraph(curEx,null);renderCode(null);renderState(null);
+  document.getElementById('log-list').innerHTML='';
+  document.getElementById('result-rows').innerHTML='<div class="result-row crit">Critical: [ ]</div><div class="result-row ps">Pseudo: [ ]</div>';
+  document.getElementById('baseline-label').textContent='Baseline MST: —';
+  document.getElementById('edge-list').innerHTML='';
+  document.getElementById('result-tag').className='result-tag';
+  document.getElementById('code-output').innerHTML='<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>';
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${curEx.n}</span></span><span class="io-kv"><span class="io-key">edges</span><span class="io-sep">=</span><span class="io-v">${curEx.edges.length} edges</span></span>`;
+  document.getElementById('step-desc').innerHTML='Click <strong>Next Step ▶</strong> to start';
+  document.getElementById('step-num').textContent='— / —';
+  document.getElementById('btn-prev').disabled=true;document.getElementById('btn-next').disabled=false;
+}
+
+function renderAll(){
+  if(curIdx<0||!curSteps.length) return;
+  const step=curSteps[curIdx];
+  renderGraph(curEx,step);renderCode(step);renderState(step);
+  if(step.log&&!logs.includes(step.log)) logs.push(step.log);
+  const ll=document.getElementById('log-list');
+  ll.innerHTML=logs.map((l,i)=>`<div class="log-entry${i===logs.length-1?' active':''}">${l}</div>`).join('');
+  ll.scrollTop=ll.scrollHeight;
+  document.getElementById('step-num').textContent=`${curIdx+1} / ${curSteps.length}`;
+  document.getElementById('step-desc').textContent=step.log||'';
+  document.getElementById('btn-prev').disabled=curIdx===0;
+  document.getElementById('btn-next').disabled=curIdx===curSteps.length-1;
+  if(step.result){
+    const rt=document.getElementById('result-tag');
+    rt.className='result-tag pos show';rt.textContent=`✓ [[${step.result[0]}],[${step.result[1]}]]`;
+    document.getElementById('code-output').innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-v">[[${step.result[0]}],[${step.result[1]}]]</span></span>`;
+    void rt.offsetWidth;
+  }
+}
+
+function go(dir){if(!curSteps.length) return;const next=curIdx+dir;if(next<0||next>=curSteps.length) return;curIdx=next;renderAll();}
+function reset(){clearAuto();if(curEx) loadEx(EX.indexOf(curEx));}
+function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;document.getElementById('btn-auto').textContent='▶▶ Auto';document.getElementById('btn-auto').classList.remove('playing');}}
+function toggleAuto(){
+  if(autoTimer){clearAuto();return;}
+  if(curIdx>=curSteps.length-1) curIdx=-1;
+  autoTimer=setInterval(()=>{if(curIdx>=curSteps.length-1){clearAuto();return;}curIdx++;renderAll();},700);
+  document.getElementById('btn-auto').textContent='⏸ Pause';document.getElementById('btn-auto').classList.add('playing');
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft') go(e.key==='ArrowRight'?1:-1);
+  else if(e.key===' '){e.preventDefault();toggleAuto();}
+  else if(e.key==='r'||e.key==='R') reset();
+});
+loadEx(0);
+</script>
+</body>
+</html>

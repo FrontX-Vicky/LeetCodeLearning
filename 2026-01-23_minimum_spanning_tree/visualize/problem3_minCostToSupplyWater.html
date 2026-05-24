@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1168 Min Cost to Supply Water — Virtual Node Kruskal</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}.header-left p{font-size:11px;color:var(--muted);margin-top:3px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;white-space:nowrap}.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;flex-shrink:0;max-width:240px}
+.prob-nav:hover,.prob-nav:focus{border-color:var(--blue);color:var(--blue)}.prob-nav option{background:#1c2128;color:var(--text)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:30%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border);position:relative;transition:background .15s;z-index:10}
+.resizer:hover,.resizer.dragging{background:var(--blue)}.resizer::after{content:'';position:absolute;inset:0 -4px}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-block::-webkit-scrollbar{width:3px}.code-block::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s,border-color .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}.code-line.hl-red{background:rgba(248,81,73,.13);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.code-line.hl-orange .ln{color:var(--orange)}.code-line.hl-green .ln{color:var(--green)}.code-line.hl-red .ln{color:var(--red)}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}.op{color:#ff7b72}
+.vt{cursor:help;border-bottom:1px dotted #484f58}.vt:hover{border-bottom-color:var(--blue)}
+#var-tooltip{position:fixed;background:#1c2128;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:monospace;font-size:11px;line-height:1.6;color:var(--text);pointer-events:none;z-index:9999;max-width:320px;white-space:pre-wrap;box-shadow:0 6px 20px rgba(0,0,0,.55);display:none}
+#var-tooltip .vt-name{color:var(--purple);font-weight:700;font-size:10px;margin-bottom:3px}#var-tooltip .vt-val{color:var(--green)}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-kv{display:flex;gap:4px;align-items:baseline}.io-key{color:var(--purple)}.io-sep{color:#484f58}.io-v{color:var(--text)}.io-na{color:#484f58;font-style:italic}
+.graph-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 16px;border-right:1px solid var(--border)}
+.panel-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;flex-shrink:0}
+.svg-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#g-svg{width:100%;height:100%;max-height:310px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0}
+.state-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
+.edge-list{display:flex;flex-direction:column;gap:3px;max-height:110px;overflow-y:auto}
+.edge-list::-webkit-scrollbar{width:3px}.edge-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.edge-row{display:flex;align-items:center;justify-content:space-between;padding:3px 8px;border-radius:5px;font-family:monospace;font-size:11px;transition:all .15s}
+.edge-row.pending{background:var(--bg);border:1px solid var(--border);color:var(--muted)}
+.edge-row.active{background:#3d2b00;border:1px solid var(--orange);color:var(--orange);font-weight:700}
+.edge-row.accepted{background:#0d2a16;border:1px solid #1a4d2a;color:var(--green)}
+.edge-row.rejected{background:#2d1215;border:1px solid #5a1e1e;color:var(--red);opacity:.55;text-decoration:line-through}
+.edge-row.well{border-left:3px solid #bc8cff}
+.etag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.etag.acc{background:#0d2a16;color:var(--green)}.etag.rej{background:#2d1215;color:var(--red)}.etag.cur{background:#3d2b00;color:var(--orange)}.etag.well{background:#1a1a3a;color:var(--purple)}
+.total-val{font-size:22px;font-weight:700;color:var(--green)}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.log-list::-webkit-scrollbar{width:3px}.log-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}.card-grow .log-list{flex:1;max-height:none;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;line-height:1.45;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex;align-items:center;gap:5px}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:60px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}.btn.primary:hover:not(:disabled){background:#1f4a7a}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.log-entry.active{animation:fadeUp .2s ease both}.result-tag.show{animation:fadeUp .28s ease both}
+.val-badge{display:inline-block;background:#0d1117;border:1px dashed #444c56;border-radius:10px;padding:1px 6px;font-size:9px;font-family:-apple-system,sans-serif;font-style:italic;font-weight:400;color:#6e7681;margin-left:4px;vertical-align:middle}
+.code-line.hl-orange .val-badge{border-color:#6e4c00;color:#b08800;background:#1a1200}
+.code-line.hl-green .val-badge{border-color:#1a4d2a;color:#2d8a3e;background:#040d07}
+.code-line.hl-red .val-badge{border-color:#5a1e1e;color:#c0392b;background:#120505}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_minCostConnectPoints.html">P1 · minCostConnectPoints</option>
+    <option value="problem2_minimumSpanningTree.html">P2 · minimumSpanningTree</option>
+    <option value="problem3_minCostToSupplyWater.html" selected>P3 · minCostToSupplyWater</option>
+    <option value="problem4_findCriticalEdges.html">P4 · findCriticalEdges</option>
+    <option value="problem5_minimumCost.html">P5 · minimumCost</option>
+  </select>
+  <div class="header-left">
+    <h1>Min Cost to Supply Water &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #1168</span></h1>
+    <p>Virtual node 0 trick — model wells as edges 0→house, then run Kruskal's on all edges</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① 3 houses</button>
+    <button class="ex-btn"        onclick="loadEx(1)">② 4 houses</button>
+    <button class="ex-btn"        onclick="loadEx(2)">③ Pipes beat wells</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div class="panel-label" style="padding:8px 12px 6px">Python Code — highlighted = executing · hover var for value</div>
+    <div class="io-bar input" id="code-input"></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">— not yet —</span></div>
+  </div>
+  <div id="var-tooltip"><div class="vt-name" id="vt-name"></div><div class="vt-val" id="vt-val"></div></div>
+  <div class="resizer" id="resizer"></div>
+
+  <div class="graph-panel">
+    <div class="panel-label">Houses + Virtual Well Node 0 — purple dashed = well edge (0→house) · solid = pipe edge</div>
+    <div class="svg-wrap">
+      <svg id="g-svg" viewBox="0 0 560 310" xmlns="http://www.w3.org/2000/svg">
+        <g id="g-edges"></g>
+        <g id="g-nodes"></g>
+      </svg>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#1a1a3a;border-color:#bc8cff"></div>Virtual well node 0</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#21262d;border-color:#30363d"></div>House (unconnected)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0d2a16;border-color:#3fb950"></div>In MST ✓</div>
+    </div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">All Edges Sorted &nbsp;<span style="color:#bc8cff;font-weight:400;font-size:9px">purple = well edge (0→h)</span></div>
+      <div class="edge-list" id="edge-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Total Cost</div>
+      <div class="total-val" id="total-val">0</div>
+      <div style="margin-top:4px;font-size:11px;font-family:monospace;color:var(--muted)" id="count-label">0 components merged</div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example above, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn"         id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn"         id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn"                        onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const r=document.getElementById('resizer'),cp=document.getElementById('code-panel'),m=document.querySelector('.main');
+  let sx,sw;
+  r.addEventListener('mousedown',e=>{sx=e.clientX;sw=cp.offsetWidth;r.classList.add('dragging');document.body.style.cursor='col-resize';document.body.style.userSelect='none';
+    const mv=e=>{const sp=document.querySelector('.state-panel').offsetWidth,av=m.offsetWidth-sp-5;cp.style.width=Math.min(Math.floor(av/2),Math.max(120,sw+(e.clientX-sx)))+'px'};
+    const up=()=>{r.classList.remove('dragging');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+})();
+
+// EX: wells[i] = cost to build well at house i+1
+// pipes: [h1, h2, cost]
+const EX=[
+  {label:'3 houses', n:3,
+   wells:[1,2,2], pipes:[[1,2,1],[2,3,1]],
+   pos:{0:{x:90,y:155},1:{x:240,y:80},2:{x:380,y:155},3:{x:240,y:230}}},
+  {label:'4 houses', n:4,
+   wells:[2,3,1,4], pipes:[[1,2,2],[2,3,3],[3,4,2],[1,4,5]],
+   pos:{0:{x:80,y:160},1:{x:220,y:80},2:{x:380,y:80},3:{x:380,y:240},4:{x:220,y:240}}},
+  {label:'Pipes beat wells', n:3,
+   wells:[10,10,10], pipes:[[1,2,1],[2,3,1]],
+   pos:{0:{x:90,y:155},1:{x:240,y:80},2:{x:380,y:155},3:{x:240,y:230}}},
+];
+
+const V=(name,lbl)=>`<span class="vt" data-var="${name}">${lbl||name}</span>`;
+const CODE_LINES=[
+  {h:`<span class="kw">def</span> <span class="fn">minCostToSupplyWater</span>(${V('n')}, ${V('wells')}, ${V('pipes')}):`,phases:[]},
+  {h:`    ${V('all_edges')} <span class="op">=</span> []`,phases:['build']},
+  {h:`    <span class="kw">for</span> i, cost <span class="kw">in</span> <span class="bi">enumerate</span>(${V('wells')}):`,phases:['build']},
+  {h:`        all_edges.append((cost, <span class="nm">0</span>, i<span class="op">+</span><span class="nm">1</span>))  <span class="cm"># virtual 0→house</span>`,phases:['build']},
+  {h:`    <span class="kw">for</span> h1, h2, cost <span class="kw">in</span> ${V('pipes')}:`,phases:['build']},
+  {h:`        all_edges.append((cost, h1, h2))`,phases:['build']},
+  {h:``,phases:[]},
+  {h:`    all_edges.sort()`,phases:['sort']},
+  {h:`    ${V('uf')} <span class="op">=</span> UnionFind(${V('n')} <span class="op">+</span> <span class="nm">1</span>)`,phases:['sort']},
+  {h:`    ${V('total')} <span class="op">=</span> <span class="nm">0</span>`,phases:['sort']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">for</span> ${V('cost')}, ${V('u')}, ${V('v')} <span class="kw">in</span> all_edges:`,phases:['check','accept','reject']},
+  {h:`        <span class="kw">if</span> ${V('uf')}.union(${V('u')}, ${V('v')}):`,phases:['check','accept','reject']},
+  {h:`            ${V('total')} <span class="op">+=</span> ${V('cost')}`,phases:['accept']},
+  {h:``,phases:[]},
+  {h:`    <span class="kw">return</span> ${V('total')}`,phases:['done']},
+];
+const PHASE_HL={build:'hl-orange',sort:'hl-orange',check:'hl-orange',accept:'hl-green',reject:'hl-red',done:'hl-green'};
+
+function makeUF(n){const p=Array.from({length:n},(_,i)=>i),r=new Array(n).fill(0);return{p,r,find(x){while(p[x]!==x){p[x]=p[p[x]];x=p[x];}return x;},union(x,y){const px=this.find(x),py=this.find(y);if(px===py)return false;if(r[px]<r[py])p[px]=py;else if(r[px]>r[py])p[py]=px;else{p[py]=px;r[px]++;}return true;},comps(){const m={};for(let i=0;i<n;i++){const root=this.find(i);if(!m[root])m[root]=[];m[root].push(i);}return Object.values(m);}}}
+
+function simulate(ex){
+  const {n,wells,pipes}=ex;
+  const steps=[];
+  let allEdges=[];
+
+  // Build phase
+  steps.push({phase:'build',log:`Build virtual edges: well[i] → edge(0, i+1, cost)`,allEdges:[],edgeStatus:[],total:0,count:0,n});
+  for(let i=0;i<wells.length;i++){
+    allEdges.push({cost:wells[i],u:0,v:i+1,isWell:true});
+  }
+  for(const [h1,h2,cost] of pipes){
+    allEdges.push({cost,u:h1,v:h2,isWell:false});
+  }
+  steps.push({phase:'build',log:`Total edges: ${allEdges.length} (${wells.length} well + ${pipes.length} pipe)`,allEdges:[...allEdges],edgeStatus:allEdges.map(()=>'pending'),total:0,count:0,n});
+
+  // Sort
+  allEdges.sort((a,b)=>a.cost-b.cost);
+  const edgeStatus=allEdges.map(()=>'pending');
+  steps.push({phase:'sort',log:`Sort all edges by cost: [${allEdges.map(e=>e.cost).join(',')}]`,allEdges:[...allEdges],edgeStatus:[...edgeStatus],total:0,count:0,n});
+
+  const uf=makeUF(n+1);
+  let total=0,count=0;
+
+  for(let i=0;i<allEdges.length;i++){
+    const {cost,u,v,isWell}=allEdges[i];
+    edgeStatus[i]='active';
+    const type=isWell?`well(0→${v})`:`pipe(${u}-${v})`;
+    steps.push({phase:'check',log:`Check ${type} cost=${cost}: find(${u})=${uf.find(u)}, find(${v})=${uf.find(v)}`,allEdges:[...allEdges],edgeStatus:[...edgeStatus],total,count,n,curIdx:i});
+    if(uf.union(u,v)){
+      total+=cost; count++;
+      edgeStatus[i]='accepted';
+      steps.push({phase:'accept',log:`ACCEPT ${type} w=${cost}. total=${total}`,allEdges:[...allEdges],edgeStatus:[...edgeStatus],total,count,n,curIdx:i});
+    } else {
+      edgeStatus[i]='rejected';
+      steps.push({phase:'reject',log:`REJECT ${type}: cycle`,allEdges:[...allEdges],edgeStatus:[...edgeStatus],total,count,n,curIdx:i});
+    }
+  }
+  steps.push({phase:'done',result:total,log:`All houses connected. Total = ${total}`,allEdges:[...allEdges],edgeStatus:[...edgeStatus],total,count,n});
+  return steps;
+}
+
+function renderGraph(ex,step){
+  const {n,pos}=ex;
+  document.getElementById('g-edges').innerHTML='';
+  document.getElementById('g-nodes').innerHTML='';
+  const eg=document.getElementById('g-edges'),ng=document.getElementById('g-nodes');
+  const allEdges=step?step.allEdges:null;
+  const edgeStatus=step?step.edgeStatus:null;
+
+  if(allEdges){
+    allEdges.forEach((e,i)=>{
+      const p1=pos[e.u],p2=pos[e.v];
+      const st=edgeStatus[i];
+      let col=e.isWell?'#3d2558':'#30363d',sw2=1.5,dash=e.isWell?'6,3':'';
+      if(st==='accepted'){col='#3fb950';sw2=2.5;dash='';}
+      else if(st==='active'){col='#d29922';sw2=3;dash='';}
+      else if(st==='rejected'){col='#f85149';sw2=1.5;dash='6,3';}
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1',p1.x);l.setAttribute('y1',p1.y);l.setAttribute('x2',p2.x);l.setAttribute('y2',p2.y);
+      l.setAttribute('stroke',col);l.setAttribute('stroke-width',sw2);if(dash) l.setAttribute('stroke-dasharray',dash);
+      eg.appendChild(l);
+      const mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;
+      const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.sqrt(dx*dx+dy*dy)||1;
+      const nx=-dy/len*12,ny=dx/len*12;
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('x',mx+nx);t.setAttribute('y',my+ny);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+      t.setAttribute('font-size','10');t.setAttribute('font-weight','700');t.setAttribute('fill',col);t.setAttribute('font-family','SF Mono,monospace');t.textContent=e.cost;eg.appendChild(t);
+    });
+  }
+
+  const COMP_COLS=['#1c3458','#1a3a1a','#3d2b00','#2d1f69','#2d1215','#1a2a3d'];
+  const COMP_STR=['#58a6ff','#3fb950','#d29922','#bc8cff','#f85149','#79c0ff'];
+  let compMap={};
+  if(step && step.allEdges){
+    const uf2=makeUF(n+1);
+    step.allEdges.forEach((e,i)=>{if(step.edgeStatus[i]==='accepted') uf2.union(e.u,e.v);});
+    const comps=uf2.comps();
+    comps.forEach((c,ci)=>c.forEach(node=>compMap[node]=ci));
+  }
+
+  // Virtual node 0
+  const p0=pos[0];
+  const comp0=compMap[0]!==undefined?compMap[0]:-1;
+  const f0=comp0>=0?COMP_COLS[comp0%COMP_COLS.length]:'#1a1a3a';
+  const s0=comp0>=0?COMP_STR[comp0%COMP_STR.length]:'#bc8cff';
+  const c0=document.createElementNS('http://www.w3.org/2000/svg','rect');
+  c0.setAttribute('x',p0.x-18);c0.setAttribute('y',p0.y-18);c0.setAttribute('width',36);c0.setAttribute('height',36);
+  c0.setAttribute('rx',8);c0.setAttribute('fill',f0);c0.setAttribute('stroke',s0);c0.setAttribute('stroke-width',2.5);ng.appendChild(c0);
+  const t0=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t0.setAttribute('x',p0.x);t0.setAttribute('y',p0.y+1);t0.setAttribute('text-anchor','middle');t0.setAttribute('dominant-baseline','middle');
+  t0.setAttribute('font-size','11');t0.setAttribute('font-weight','700');t0.setAttribute('fill',s0);t0.setAttribute('font-family','SF Mono,monospace');t0.textContent='W';ng.appendChild(t0);
+  const lbl0=document.createElementNS('http://www.w3.org/2000/svg','text');
+  lbl0.setAttribute('x',p0.x);lbl0.setAttribute('y',p0.y-26);lbl0.setAttribute('text-anchor','middle');
+  lbl0.setAttribute('font-size','9');lbl0.setAttribute('fill','#bc8cff');lbl0.setAttribute('font-family','SF Mono,monospace');lbl0.textContent='virtual 0';ng.appendChild(lbl0);
+
+  // Houses
+  for(let id=1;id<=n;id++){
+    const p=pos[id];
+    const ci=compMap[id]!==undefined?compMap[id]:-1;
+    const fill=ci>=0?COMP_COLS[ci%COMP_COLS.length]:'#21262d';
+    const stroke=ci>=0?COMP_STR[ci%COMP_STR.length]:'#30363d';
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',p.x);c.setAttribute('cy',p.y);c.setAttribute('r',20);
+    c.setAttribute('fill',fill);c.setAttribute('stroke',stroke);c.setAttribute('stroke-width',2.5);ng.appendChild(c);
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',p.x);t.setAttribute('y',p.y+1);t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');
+    t.setAttribute('font-size','13');t.setAttribute('font-weight','700');t.setAttribute('fill',stroke);t.setAttribute('font-family','SF Mono,monospace');t.textContent=id;ng.appendChild(t);
+  }
+}
+
+function renderState(step){
+  if(!step) return;
+  document.getElementById('total-val').textContent=step.total||0;
+  document.getElementById('count-label').textContent=`${step.count||0} edges accepted`;
+  const el=document.getElementById('edge-list');
+  if(!step.allEdges||!step.allEdges.length){el.innerHTML='<span style="font-size:11px;color:#484f58;font-style:italic">building…</span>';return;}
+  el.innerHTML=step.allEdges.map((e,i)=>{
+    const st=step.edgeStatus?step.edgeStatus[i]:'pending';
+    let cls='edge-row ',tag='';
+    if(st==='active'){cls+='active';tag='<span class="etag cur">▶</span>';}
+    else if(st==='accepted'){cls+='accepted';tag='<span class="etag acc">✓</span>';}
+    else if(st==='rejected'){cls+='rejected';tag='<span class="etag rej">✗</span>';}
+    else cls+='pending';
+    if(e.isWell) cls+=' well';
+    const label=e.isWell?`0→${e.v} (well)`:`${e.u}-${e.v} (pipe)`;
+    const wtag=e.isWell?'<span class="etag well">W</span>':'';
+    return `<div class="${cls}">${label} &nbsp;${e.cost} ${wtag}${tag}</div>`;
+  }).join('');
+}
+
+function renderCode(step){
+  const block=document.getElementById('code-block');
+  const phase=step?step.phase:'';
+  const hl=phase?PHASE_HL[phase]:'';
+  block.innerHTML=CODE_LINES.map((l,i)=>{
+    const cls=l.phases.includes(phase)&&hl?hl:'';
+    return `<div class="code-line ${cls}"><span class="ln">${i+1}</span><span class="lt">${l.h}</span></div>`;
+  }).join('');
+  if(step){
+    const _vars=getVars(step);
+    block.querySelectorAll('.code-line.hl-orange,.code-line.hl-green,.code-line.hl-red').forEach(r=>{
+      r.querySelectorAll('.vt').forEach(sp=>{
+        const val=_vars[sp.dataset.var];if(val===undefined) return;
+        const s=String(val).replace(/\s+/g,' ').trim();
+        const b=document.createElement('span');b.className='val-badge';b.textContent='= '+(s.length>22?s.slice(0,22)+'…':s);sp.after(b);
+      });
+    });
+  }
+}
+
+function getVars(step){
+  if(!step) return {};
+  const e=step.allEdges&&step.curIdx>=0?step.allEdges[step.curIdx]:null;
+  return {n:step.n,wells:curEx?`[${curEx.wells}]`:'',pipes:curEx?`${curEx.pipes.length} pipes`:'',
+    all_edges:step.allEdges?`${step.allEdges.length} edges`:'',uf:'UnionFind',total:step.total,
+    cost:e?e.cost:'?',u:e?e.u:'?',v:e?e.v:'?'};
+}
+
+document.addEventListener('mousemove',e=>{
+  const sp=e.target.closest('.vt');const tt=document.getElementById('var-tooltip');
+  if(!sp||!curSteps||curIdx<0){tt.style.display='none';return;}
+  const vars=getVars(curSteps[curIdx]);const val=vars[sp.dataset.var];
+  if(val===undefined){tt.style.display='none';return;}
+  document.getElementById('vt-name').textContent=sp.dataset.var;document.getElementById('vt-val').textContent=String(val);
+  tt.style.display='block';tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY-10)+'px';
+});
+document.addEventListener('click',()=>document.getElementById('var-tooltip').style.display='none');
+
+let curEx=null,curSteps=[],curIdx=-1,autoTimer=null,logs=[];
+
+function loadEx(n){
+  clearAuto();
+  document.querySelectorAll('.ex-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  curEx=EX[n];curSteps=simulate(curEx);curIdx=-1;logs=[];
+  renderGraph(curEx,null);renderCode(null);renderState(null);
+  document.getElementById('log-list').innerHTML='';document.getElementById('total-val').textContent='0';
+  document.getElementById('count-label').textContent='0 edges accepted';document.getElementById('edge-list').innerHTML='';
+  document.getElementById('result-tag').className='result-tag';
+  document.getElementById('code-output').innerHTML='<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>';
+  document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${curEx.n}</span></span><span class="io-kv"><span class="io-key">wells</span><span class="io-sep">=</span><span class="io-v">[${curEx.wells}]</span></span>`;
+  document.getElementById('step-desc').innerHTML='Click <strong>Next Step ▶</strong> to start';
+  document.getElementById('step-num').textContent='— / —';
+  document.getElementById('btn-prev').disabled=true;document.getElementById('btn-next').disabled=false;
+}
+
+function renderAll(){
+  if(curIdx<0||!curSteps.length) return;
+  const step=curSteps[curIdx];
+  renderGraph(curEx,step);renderCode(step);renderState(step);
+  if(step.log&&!logs.includes(step.log)) logs.push(step.log);
+  const ll=document.getElementById('log-list');
+  ll.innerHTML=logs.map((l,i)=>`<div class="log-entry${i===logs.length-1?' active':''}">${l}</div>`).join('');
+  ll.scrollTop=ll.scrollHeight;
+  document.getElementById('step-num').textContent=`${curIdx+1} / ${curSteps.length}`;
+  document.getElementById('step-desc').textContent=step.log||'';
+  document.getElementById('btn-prev').disabled=curIdx===0;
+  document.getElementById('btn-next').disabled=curIdx===curSteps.length-1;
+  if(step.result!==undefined){
+    const rt=document.getElementById('result-tag');
+    rt.className='result-tag pos show';rt.textContent='✓ '+step.result;
+    document.getElementById('code-output').innerHTML=`<span class="io-lbl">OUT</span><span class="io-kv"><span class="io-v">${step.result}</span></span>`;
+    void rt.offsetWidth;
+  }
+}
+
+function go(dir){if(!curSteps.length) return;const next=curIdx+dir;if(next<0||next>=curSteps.length) return;curIdx=next;renderAll();}
+function reset(){clearAuto();if(curEx) loadEx(EX.indexOf(curEx));}
+function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;document.getElementById('btn-auto').textContent='▶▶ Auto';document.getElementById('btn-auto').classList.remove('playing');}}
+function toggleAuto(){
+  if(autoTimer){clearAuto();return;}
+  if(curIdx>=curSteps.length-1) curIdx=-1;
+  autoTimer=setInterval(()=>{if(curIdx>=curSteps.length-1){clearAuto();return;}curIdx++;renderAll();},600);
+  document.getElementById('btn-auto').textContent='⏸ Pause';document.getElementById('btn-auto').classList.add('playing');
+}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT') return;
+  if(e.key==='ArrowRight'||e.key==='ArrowLeft') go(e.key==='ArrowRight'?1:-1);
+  else if(e.key===' '){e.preventDefault();toggleAuto();}
+  else if(e.key==='r'||e.key==='R') reset();
+});
+loadEx(0);
+</script>
+</body>
+</html>
