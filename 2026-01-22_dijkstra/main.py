@@ -147,7 +147,32 @@ def swimInWater(grid: List[List[int]]) -> int:
     - Edge weight = max(current_t, grid[nr][nc])
     """
     # TODO: Implement Dijkstra with max-elevation cost
-    pass
+    n = len(grid)
+    dist = [[float('inf')] * n for _ in range(n)]
+    dist[0][0] = grid[0][0]
+
+    heap = [(grid[0][0], 0, 0)]
+
+    directions = [(0,1), (0,-1),(1, 0), (-1, 0)]
+
+    while heap:
+        t, r, c = heapq.heappop(heap)
+
+        if t > dist[r][c]:
+            continue
+
+        if r == n - 1 and c == n - 1:
+            return t
+        
+        for dr, dc in directions:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < n and 0 <= nc < n:
+                new_t = max(t, grid[nr][nc])
+                if new_t < dist[nr][nc]:
+                    dist[nr][nc] = new_t
+                    heapq.heappush(heap, (new_t, nr, nc)) 
+            
+
 
 
 # ============================================================
