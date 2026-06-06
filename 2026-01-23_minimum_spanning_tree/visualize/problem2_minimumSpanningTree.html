@@ -42,7 +42,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;flex-shrink:0}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
 .legend-dot{width:12px;height:12px;border-radius:50%;border:2px solid;flex-shrink:0}
-.state-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
+.state-panel{width:330px;flex-shrink:0;display:flex;flex-direction:column;padding:10px;gap:8px;overflow:hidden}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
 .card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:9px}
 .edge-list{display:flex;flex-direction:column;gap:3px;max-height:110px;overflow-y:auto}
@@ -54,6 +54,24 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .edge-row.rejected{background:#2d1215;border:1px solid #5a1e1e;color:var(--red);opacity:.55;text-decoration:line-through}
 .etag{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
 .etag.acc{background:#0d2a16;color:var(--green)}.etag.rej{background:#2d1215;color:var(--red)}.etag.cur{background:#3d2b00;color:var(--orange)}
+.sort-box,.uf-box{display:flex;flex-direction:column;gap:7px}
+.sort-hint,.uf-hint{font-size:10px;color:var(--muted);line-height:1.45}
+.sort-list,.uf-list{display:flex;flex-direction:column;gap:4px;max-height:90px;overflow-y:auto}
+.sort-list::-webkit-scrollbar,.uf-list::-webkit-scrollbar{width:3px}
+.sort-list::-webkit-scrollbar-thumb,.uf-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sort-row{display:flex;align-items:center;justify-content:space-between;padding:4px 8px;border-radius:5px;background:var(--bg);border:1px solid var(--border);font-family:monospace;font-size:11px;color:var(--text)}
+.sort-row.active{border-color:var(--orange);background:#1a1200;color:var(--orange)}
+.sort-row.done{border-color:#1a4d2a;background:#040d07;color:var(--green)}
+.sort-row.wait{color:var(--muted)}
+.sort-key{color:var(--purple);font-weight:700}
+.uf-compare{display:flex;flex-wrap:wrap;gap:6px}
+.uf-pill{padding:3px 7px;border-radius:999px;background:var(--bg);border:1px solid var(--border);font-family:monospace;font-size:10px;color:var(--text)}
+.uf-pill.same{border-color:#5a1e1e;color:var(--red);background:#120505}
+.uf-pill.diff{border-color:#1a4d2a;color:var(--green);background:#040d07}
+.uf-row{display:flex;gap:6px;align-items:flex-start;font-family:monospace;font-size:10.5px;line-height:1.45}
+.uf-lbl{min-width:78px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:9px;padding-top:1px}
+.uf-val{color:var(--text);word-break:break-word}
+.uf-comp{padding:4px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--border);font-family:monospace;font-size:10.5px;color:var(--text)}
 .total-row{display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:13px;margin-top:6px}
 .total-val{font-size:20px;font-weight:700;color:var(--green)}
 .log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
@@ -136,6 +154,20 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div class="edge-list" id="edge-list"></div>
     </div>
     <div class="card">
+      <div class="card-title">Lambda Sort Key</div>
+      <div class="sort-box">
+        <div class="sort-hint" id="sort-hint">`lambda e: e[2]` means: sort each edge by its weight only.</div>
+        <div class="sort-list" id="sort-list"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Union-Find State</div>
+      <div class="uf-box">
+        <div class="uf-compare" id="uf-compare"></div>
+        <div class="uf-list" id="uf-list"></div>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">MST Progress</div>
       <div class="total-row">
         <span style="color:var(--muted);font-size:12px">Total cost</span>
@@ -213,33 +245,41 @@ function simulate(ex){
   let total=0,count=0;
   const edgeStatus=sorted.map(()=>'pending'); // pending/active/accepted/rejected
 
-  const snap=(phase,idx,extra={})=>({phase,edgeStatus:[...edgeStatus],total,count,n,curEdgeIdx:idx,...extra});
+  const ufState=(extra={})=>({
+    ufParent:[...uf.p],
+    ufRank:[...uf.r],
+    ufComps:uf.comps().map(c=>[...c]),
+    ...extra
+  });
+  const snap=(phase,idx,extra={})=>({phase,edgeStatus:[...edgeStatus],total,count,n,curEdgeIdx:idx,...ufState(),...extra});
 
-  steps.push({...snap('sort',-1),sortedEdges:sorted,log:`Sort ${edges.length} edges by weight: [${sorted.map(e=>e[2]).join(',')}]`});
+  steps.push({...snap('sort',-1),sortedEdges:sorted,lambdaKey:'e[2]',log:`Sort ${edges.length} edges by weight: lambda e: e[2] extracts [${sorted.map(e=>e[2]).join(',')}]`});
 
   for(let i=0;i<sorted.length;i++){
     const [u,v,w]=sorted[i];
     edgeStatus[i]='active';
-    steps.push({...snap('check',i),sortedEdges:sorted,
-      log:`Check edge (${u}-${v}, w=${w}): find(${u})=${uf.find(u)}, find(${v})=${uf.find(v)} — ${uf.find(u)===uf.find(v)?'SAME component → CYCLE':'different → add to MST'}`});
+    const rootU=uf.find(u),rootV=uf.find(v),same=rootU===rootV;
+    steps.push({...snap('check',i,{rootU,rootV,same}),sortedEdges:sorted,lambdaKey:'e[2]',
+      log:`Check edge (${u}-${v}, w=${w}): lambda key = ${w}. find(${u})=${rootU}, find(${v})=${rootV} — ${same?'SAME component → CYCLE':'different → add to MST'}`});
 
     if(uf.union(u,v)){
       total+=w; count++;
       edgeStatus[i]='accepted';
-      steps.push({...snap('accept',i),sortedEdges:sorted,
+      const mergedRoot=uf.find(u);
+      steps.push({...snap('accept',i,{rootU:mergedRoot,rootV:mergedRoot,same:false}),sortedEdges:sorted,lambdaKey:'e[2]',
         log:`ACCEPT (${u}-${v}, w=${w}). total=${total}, count=${count}/${n-1}`});
       if(count===n-1){
-        steps.push({...snap('done',-1,{result:total}),sortedEdges:sorted,log:`MST complete with ${count} edges. Total = ${total}`});
+        steps.push({...snap('done',-1,{result:total}),sortedEdges:sorted,lambdaKey:'e[2]',log:`MST complete with ${count} edges. Total = ${total}`});
         return steps;
       }
     } else {
       edgeStatus[i]='rejected';
-      steps.push({...snap('reject',i),sortedEdges:sorted,
+      steps.push({...snap('reject',i,{rootU,rootV,same:true}),sortedEdges:sorted,lambdaKey:'e[2]',
         log:`REJECT (${u}-${v}, w=${w}): would create a cycle (same component)`});
     }
   }
   const result=count===n-1?total:-1;
-  steps.push({...snap('done',-1,{result}),sortedEdges:sorted,log:count===n-1?`MST done. Total=${total}`:`Graph disconnected — need ${n-1} edges, only got ${count}`});
+  steps.push({...snap('done',-1,{result}),sortedEdges:sorted,lambdaKey:'e[2]',log:count===n-1?`MST done. Total=${total}`:`Graph disconnected — need ${n-1} edges, only got ${count}`});
   return steps;
 }
 
@@ -315,6 +355,34 @@ function renderState(step){
     else cls+='pending';
     return `<div class="${cls}">${u} — ${v} &nbsp;(w=${w}) ${tag}</div>`;
   }).join('');
+
+  const sl=document.getElementById('sort-list');
+  const sh=document.getElementById('sort-hint');
+  sh.textContent=step.curEdgeIdx >= 0
+    ? `lambda e: e[2] picks only the weight. Current edge key = ${step.sortedEdges[step.curEdgeIdx][2]}.`
+    : 'lambda e: e[2] means: compare edges by their weight only.';
+  sl.innerHTML=step.sortedEdges.map(([u,v,w],i)=>{
+    let cls='wait';
+    if(i < step.curEdgeIdx) cls='done';
+    else if(i === step.curEdgeIdx) cls='active';
+    return `<div class="sort-row ${cls}"><span>edge (${u}, ${v}, ${w})</span><span class="sort-key">key = ${w}</span></div>`;
+  }).join('');
+
+  const uc=document.getElementById('uf-compare');
+  if(step.curEdgeIdx >= 0){
+    const [u,v,w]=step.sortedEdges[step.curEdgeIdx];
+    uc.innerHTML=`<span class="uf-pill">edge = (${u}, ${v}, ${w})</span><span class="uf-pill ${step.same?'same':'diff'}">find(${u}) = ${step.rootU} ${step.same?'=':'!='} find(${v}) = ${step.rootV}</span>`;
+  } else {
+    uc.innerHTML='<span class="uf-pill">Union-Find starts with every node as its own parent</span>';
+  }
+
+  const ul=document.getElementById('uf-list');
+  const compHtml=(step.ufComps||[]).map(comp=>`<div class="uf-comp">{${comp.join(', ')}}</div>`).join('');
+  ul.innerHTML=`
+    <div class="uf-row"><span class="uf-lbl">parent[]</span><span class="uf-val">[${(step.ufParent||[]).join(', ')}]</span></div>
+    <div class="uf-row"><span class="uf-lbl">rank[]</span><span class="uf-val">[${(step.ufRank||[]).join(', ')}]</span></div>
+    <div class="uf-row"><span class="uf-lbl">components</span><span class="uf-val" style="display:flex;flex-wrap:wrap;gap:6px">${compHtml}</span></div>
+  `;
 }
 
 function renderCode(step){
@@ -343,7 +411,8 @@ function getVars(step){
   if(!step) return {};
   const e=step.sortedEdges&&step.curEdgeIdx>=0?step.sortedEdges[step.curEdgeIdx]:null;
   return {n:step.n,edges:`${step.sortedEdges?step.sortedEdges.length:0} edges`,uf:'UnionFind',
-    total:step.total,count:step.count,u:e?e[0]:'?',v:e?e[1]:'?',w:e?e[2]:'?'};
+    total:step.total,count:step.count,u:e?e[0]:'?',v:e?e[1]:'?',w:e?e[2]:'?',
+    lambda:'e[2]',rootU:step.rootU,rootV:step.rootV};
 }
 
 document.addEventListener('mousemove',e=>{
@@ -366,6 +435,10 @@ function loadEx(n){
   document.getElementById('log-list').innerHTML='';document.getElementById('total-val').textContent='0';
   document.getElementById('count-label').textContent=`0 / ${curEx.n-1} edges needed`;
   document.getElementById('edge-list').innerHTML='';
+  document.getElementById('sort-hint').textContent='lambda e: e[2] means: compare edges by their weight only.';
+  document.getElementById('sort-list').innerHTML='';
+  document.getElementById('uf-compare').innerHTML='<span class="uf-pill">Union-Find starts with every node as its own parent</span>';
+  document.getElementById('uf-list').innerHTML=`<div class="uf-row"><span class="uf-lbl">parent[]</span><span class="uf-val">[${Array.from({length:curEx.n},(_,i)=>i).join(', ')}]</span></div><div class="uf-row"><span class="uf-lbl">rank[]</span><span class="uf-val">[${Array.from({length:curEx.n},()=>0).join(', ')}]</span></div><div class="uf-row"><span class="uf-lbl">components</span><span class="uf-val" style="display:flex;flex-wrap:wrap;gap:6px">${Array.from({length:curEx.n},(_,i)=>`<div class="uf-comp">{${i}}</div>`).join('')}</span></div>`;
   document.getElementById('result-tag').className='result-tag';
   document.getElementById('code-output').innerHTML='<span class="io-lbl">OUT</span><span class="io-na">— not yet —</span>';
   document.getElementById('code-input').innerHTML=`<span class="io-lbl">IN</span><span class="io-kv"><span class="io-key">n</span><span class="io-sep">=</span><span class="io-v">${curEx.n}</span></span><span class="io-kv"><span class="io-key">edges</span><span class="io-sep">=</span><span class="io-v">${JSON.stringify(curEx.edges)}</span></span>`;
