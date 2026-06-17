@@ -7,6 +7,16 @@ from collections import defaultdict
 from typing import List
 
 
+class UnionFind:
+    def __init__(self,n):
+        self.parent = list(range(n))
+        self.rank   = [0] * n
+
+    def find(self, x):
+        if self.parent[x] != x:
+            self.parent[x] = self.find(self.parent[x])    # path compression 
+        return self.parent
+
 # ============================================================
 # PROBLEM 1: MIN COST TO CONNECT ALL POINTS
 # ============================================================
@@ -25,8 +35,23 @@ def minCostConnectPoints(points: List[List[int]]) -> int:
     - Manhattan distance: |x1-x2| + |y1-y2|
     """
     # TODO: Implement Prim's algorithm on a complete graph
-    pass
+    n = len(points)
+    visited = set()
+    heap = [(0, 0)]   #cost, node_index
+    total = 0
 
+    while len(visited) < n:
+        cost, i = heapq.heappop(heap)
+        if i in visited:
+            continue
+        visited.add(i)
+        total += cost
+        for j in range(n):
+            if j not in visited:
+                dist = abs(points[i][0] - points[j][0]) + abs(points[i][1] - points[j][1])
+                heapq.heappush(heap, (dist, j))
+    
+    return total
 
 # ============================================================
 # PROBLEM 2: KRUSKAL'S MST (UNION FIND)
@@ -43,7 +68,8 @@ def minimumSpanningTree(n: int, edges: List[List[int]]) -> int:
     - Stop when n-1 edges are added (or exhaust all edges)
     """
     # TODO: Implement Kruskal's with Union-Find
-    pass
+    edges.sort(key=lambda e: e[2])
+    uf = 
 
 
 # ============================================================
