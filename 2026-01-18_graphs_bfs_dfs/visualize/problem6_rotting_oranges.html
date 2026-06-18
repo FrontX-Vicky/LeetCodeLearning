@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #994 Rotting Oranges — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}
+.header-left p{font-size:11px;color:var(--muted);margin-top:2px}
+.ex-btns{display:flex;gap:6px;flex-shrink:0}
+.ex-btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--blue);color:var(--blue)}
+.ex-btn.active{border-color:var(--blue);background:#1c3458;color:var(--blue);font-weight:600}
+.ex-btn.warn:hover{border-color:var(--red);color:var(--red)}
+.ex-btn.warn.active{border-color:var(--red);background:#2d1215;color:var(--red);font-weight:600}
+.kbd-hint{font-size:11px;color:#484f58;flex-shrink:0;margin-left:auto;white-space:nowrap}
+.kbd-hint kbd{background:#21262d;border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--muted)}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.code-panel{width:28%;min-width:120px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden}
+.resizer{width:5px;flex-shrink:0;cursor:col-resize;background:var(--border)}
+.resizer:hover{background:var(--blue)}
+.code-block{flex:1;overflow-y:auto;padding:6px 0;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:11.5px;line-height:1.65}
+.code-line{display:flex;align-items:center;padding:0 10px 0 0;min-height:19px;border-left:2px solid transparent;transition:background .18s}
+.code-line.hl-orange{background:rgba(210,153,34,.13);border-left-color:var(--orange)}
+.code-line.hl-green{background:rgba(63,185,80,.13);border-left-color:var(--green)}
+.code-line.hl-red{background:rgba(248,81,73,.1);border-left-color:var(--red)}
+.ln{width:26px;text-align:right;flex-shrink:0;color:#484f58;font-size:10px;padding-right:10px;user-select:none}
+.lt{white-space:pre}.kw{color:#ff7b72}.fn{color:#d2a8ff}.bi{color:#79c0ff}.cm{color:#484f58;font-style:italic}.nm{color:#f2cc60}
+.io-bar{flex-shrink:0;padding:5px 10px;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:10.5px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;min-height:26px;background:#0a0d13}
+.io-bar.input{border-bottom:1px solid var(--border)}.io-bar.output{border-top:1px solid var(--border)}
+.io-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.io-bar.input .io-lbl{color:#58a6ff55}.io-bar.output .io-lbl{color:var(--green)}
+.io-na{color:#484f58;font-style:italic}
+.visual-panel{flex:1;min-width:0;display:flex;flex-direction:column;padding:14px 18px;gap:10px;overflow:hidden;border-right:1px solid var(--border)}
+.legend{display:flex;gap:14px;font-size:11px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px}
+.leg-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid transparent}
+.grid-wrap{display:inline-block;margin-top:2px}
+.grid-row{display:flex;gap:5px;margin-bottom:5px}
+.grid-cell{width:48px;height:48px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:17px;font-weight:700;border:2px solid transparent;transition:all .2s}
+.gc-empty{background:#1a1f27;color:#484f58;border-color:#21262d}
+.gc-fresh{background:#0d2a16;color:#3fb950;border-color:#2d5a2d}
+.gc-rotten{background:#2d1215;color:#f85149;border-color:#5a1e1e}
+.gc-active{box-shadow:0 0 0 3px rgba(188,140,255,.28);border-color:#bc8cff}
+.gc-new{animation:flashRot .48s ease}
+@keyframes flashRot{0%{transform:scale(.9);filter:brightness(1.7)}100%{transform:scale(1);filter:brightness(1)}}
+.state-panel{width:280px;flex-shrink:0;display:flex;flex-direction:column;padding:12px;gap:10px;overflow:hidden}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:11px 13px;flex-shrink:0}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:8px}
+.var-list{display:flex;flex-direction:column;gap:5px}
+.var-row{display:flex;align-items:center;gap:8px;font-family:monospace;font-size:12px}
+.var-name{color:var(--purple);font-weight:600;min-width:68px}
+.var-eq{color:#484f58}
+.var-val{color:var(--text);flex:1;word-break:break-word}
+.log-list{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.card-grow{flex:1;min-height:0;display:flex;flex-direction:column}
+.card-grow .log-list{flex:1;min-height:0}
+.log-entry{font-size:11px;line-height:1.4;color:#484f58;padding:4px 8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--border)}
+.log-entry.active{color:var(--text);border-left-color:var(--blue);background:#0d1f38}
+.bottom-bar{background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.step-desc{flex:1;font-size:13px;color:var(--text)}
+.result-tag{display:none;padding:4px 13px;border-radius:20px;font-size:13px;font-weight:700;flex-shrink:0}
+.result-tag.show{display:flex}
+.result-tag.pos{background:#0d2a16;border:1px solid var(--green);color:var(--green)}
+.result-tag.neg{background:#2d1215;border:1px solid var(--red);color:var(--red)}
+.step-num{font-size:11px;color:var(--muted);flex-shrink:0;min-width:66px;text-align:right}
+.controls{display:flex;gap:6px;flex-shrink:0}
+.btn{padding:7px 15px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn.primary{background:#1c3458;border-color:var(--blue);color:var(--blue)}
+.btn.playing{background:#3d2b00;border-color:var(--orange);color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-left">
+    <h1>Rotting Oranges &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #994 · Day 18 Problem 6</span></h1>
+    <p>Multi-source BFS: all rotten oranges spread in parallel each minute.</p>
+  </div>
+  <div class="ex-btns">
+    <button class="ex-btn active" onclick="loadEx(0)">① Classic</button>
+    <button class="ex-btn warn" onclick="loadEx(1)">② Impossible</button>
+    <button class="ex-btn" onclick="loadEx(2)">③ Already done</button>
+  </div>
+  <div class="kbd-hint"><kbd>←</kbd><kbd>→</kbd> step &nbsp;<kbd>Space</kbd> auto &nbsp;<kbd>R</kbd> reset</div>
+</div>
+
+<div class="main">
+  <div class="code-panel" id="code-panel">
+    <div style="padding:8px 12px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)">Python (Multi-source BFS)</div>
+    <div class="io-bar input"><span class="io-lbl">IN</span><span class="io-na">grid (see board)</span></div>
+    <div class="code-block" id="code-block"></div>
+    <div class="io-bar output" id="code-output"><span class="io-lbl">OUT</span><span class="io-na">—</span></div>
+  </div>
+
+  <div class="resizer" id="resizer"></div>
+
+  <div class="visual-panel">
+    <div class="legend">
+      <div class="legend-item"><div class="leg-dot" style="background:#1a1f27;border-color:#21262d"></div><span style="color:var(--muted)">0 empty</span></div>
+      <div class="legend-item"><div class="leg-dot" style="background:#0d2a16;border-color:#2d5a2d"></div><span style="color:var(--green)">1 fresh</span></div>
+      <div class="legend-item"><div class="leg-dot" style="background:#2d1215;border-color:#5a1e1e"></div><span style="color:var(--red)">2 rotten</span></div>
+      <div class="legend-item"><div class="leg-dot" style="background:#2d1215;border-color:#bc8cff"></div><span style="color:var(--purple)">active spread source</span></div>
+    </div>
+    <div class="grid-wrap" id="grid-wrap"></div>
+  </div>
+
+  <div class="state-panel">
+    <div class="card">
+      <div class="card-title">Variables</div>
+      <div class="var-list" id="var-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Queue (front → back)</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.5;word-break:break-word;color:var(--text)" id="queue-view">[]</div>
+    </div>
+    <div class="card card-grow">
+      <div class="card-title">Step Log</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="step-desc" id="step-desc">Pick an example, then click <strong>Next Step ▶</strong></div>
+  <div class="result-tag" id="result-tag"></div>
+  <div class="step-num" id="step-num">— / —</div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="go(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="go(+1)">Next Step ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">▶▶ Auto</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<script>
+const EX = [
+  { grid:[[2,1,1],[1,1,0],[0,1,1]] },
+  { grid:[[2,1,1],[0,1,1],[1,0,1]] },
+  { grid:[[0,2,0],[0,0,0],[0,0,0]] }
+];
+
+const CODE = [
+  `<span class="kw">def</span> <span class="fn">oranges_rotting</span>(grid):`,
+  `    queue, fresh = deque(), <span class="nm">0</span>`,
+  `    <span class="kw">for</span> r,c <span class="kw">in</span> grid: collect rotten + count fresh`,
+  `    <span class="kw">if</span> fresh == <span class="nm">0</span>: <span class="kw">return</span> <span class="nm">0</span>`,
+  `    minutes = <span class="nm">0</span>`,
+  `    <span class="kw">while</span> queue:`,
+  `        minutes += <span class="nm">1</span>`,
+  `        <span class="kw">for</span> _ <span class="kw">in</span> <span class="bi">range</span>(<span class="bi">len</span>(queue)):`,
+  `            r, c = queue.popleft()`,
+  `            <span class="kw">for</span> nr, nc <span class="kw">in</span> 4-neighbors:`,
+  `                <span class="kw">if</span> grid[nr][nc] == <span class="nm">1</span>: rot + enqueue`,
+  `    <span class="kw">return</span> minutes-<span class="nm">1</span> <span class="kw">if</span> fresh == <span class="nm">0</span> <span class="kw">else</span> <span class="op">-</span><span class="nm">1</span>`
+];
+
+function hlMap(phase){
+  if(phase === 'scan') return {2:'hl-orange'};
+  if(phase === 'check_zero') return {3:'hl-orange'};
+  if(phase === 'minute_start') return {5:'hl-orange',6:'hl-orange',7:'hl-orange'};
+  if(phase === 'pop') return {8:'hl-orange',9:'hl-orange'};
+  if(phase === 'rot') return {10:'hl-green'};
+  if(phase === 'done_ok') return {11:'hl-green'};
+  if(phase === 'done_fail') return {11:'hl-red'};
+  return {};
+}
+
+function copyGrid(g){ return g.map(r => [...r]); }
+
+function simulate(ex){
+  const grid = copyGrid(ex.grid);
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const q = [];
+  let fresh = 0;
+  const steps = [];
+
+  for(let r=0; r<rows; r++){
+    for(let c=0; c<cols; c++){
+      if(grid[r][c] === 2) q.push([r,c]);
+      else if(grid[r][c] === 1) fresh++;
+    }
+  }
+
+  steps.push({phase:'scan',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes:0,active:null,newly:[],log:`Scan complete: initial rotten=${q.length}, fresh=${fresh}`});
+
+  if(fresh === 0){
+    steps.push({phase:'check_zero',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes:0,active:null,newly:[],result:0,log:'No fresh oranges. Return 0 immediately.'});
+    return steps;
+  }
+
+  let minutes = 0;
+  const D = [[1,0],[-1,0],[0,1],[0,-1]];
+
+  while(q.length){
+    const batch = q.length;
+    minutes += 1;
+    steps.push({phase:'minute_start',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes,active:null,newly:[],log:`Minute ${minutes}: process ${batch} rotten source(s) in parallel.`});
+
+    let anyRot = false;
+
+    for(let i=0; i<batch; i++){
+      const [r,c] = q.shift();
+      steps.push({phase:'pop',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes,active:[r,c],newly:[],log:`Pop source (${r},${c}) and spread to its 4 neighbors.`});
+
+      for(const [dr,dc] of D){
+        const nr = r + dr;
+        const nc = c + dc;
+        if(nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] === 1){
+          grid[nr][nc] = 2;
+          fresh--;
+          anyRot = true;
+          q.push([nr,nc]);
+          steps.push({phase:'rot',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes,active:[r,c],newly:[[nr,nc]],log:`(${nr},${nc}) becomes rotten. fresh=${fresh}`});
+        }
+      }
+    }
+
+    if(!anyRot && fresh > 0){
+      break;
+    }
+  }
+
+  if(fresh === 0){
+    steps.push({phase:'done_ok',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes,active:null,newly:[],result:minutes-1,log:`All oranges rotted. Return ${minutes-1}.`});
+  } else {
+    steps.push({phase:'done_fail',grid:copyGrid(grid),queue:q.map(x=>[...x]),fresh,minutes,active:null,newly:[],result:-1,log:'Some fresh oranges are unreachable. Return -1.'});
+  }
+
+  return steps;
+}
+
+function isNew(step,r,c){
+  return step.newly && step.newly.some(([nr,nc]) => nr===r && nc===c);
+}
+
+function renderGrid(step){
+  const gw = document.getElementById('grid-wrap');
+  if(!step){ gw.innerHTML=''; return; }
+  const g = step.grid;
+  gw.innerHTML = g.map((row,r) => `<div class="grid-row">${row.map((v,c)=>{
+    let cls = 'grid-cell ';
+    if(v === 0) cls += 'gc-empty';
+    else if(v === 1) cls += 'gc-fresh';
+    else cls += 'gc-rotten';
+    if(step.active && step.active[0]===r && step.active[1]===c) cls += ' gc-active';
+    if(isNew(step,r,c)) cls += ' gc-new';
+    return `<div class="${cls}">${v}</div>`;
+  }).join('')}</div>`).join('');
+}
+
+function renderCode(step){
+  const phase = step ? step.phase : '';
+  const map = hlMap(phase);
+  document.getElementById('code-block').innerHTML = CODE.map((line,i)=>{
+    const cls = map[i] ? ` ${map[i]}` : '';
+    return `<div class="code-line${cls}"><span class="ln">${i+1}</span><span class="lt">${line}</span></div>`;
+  }).join('');
+}
+
+function renderVars(step){
+  const v = document.getElementById('var-list');
+  if(!step){ v.innerHTML=''; return; }
+  const act = step.active ? `(${step.active[0]},${step.active[1]})` : '—';
+  const newly = step.newly && step.newly.length ? step.newly.map(p=>`(${p[0]},${p[1]})`).join(', ') : '—';
+  v.innerHTML = `
+    <div class="var-row"><span class="var-name">minutes</span><span class="var-eq">=</span><span class="var-val">${step.minutes}</span></div>
+    <div class="var-row"><span class="var-name">fresh</span><span class="var-eq">=</span><span class="var-val">${step.fresh}</span></div>
+    <div class="var-row"><span class="var-name">active</span><span class="var-eq">=</span><span class="var-val">${act}</span></div>
+    <div class="var-row"><span class="var-name">newly</span><span class="var-eq">=</span><span class="var-val">${newly}</span></div>
+  `;
+  document.getElementById('queue-view').textContent = `[${step.queue.map(p=>`(${p[0]},${p[1]})`).join(', ')}]`;
+}
+
+let exIdx = 0;
+let steps = [];
+let stepIdx = -1;
+let autoTmr = null;
+
+function render(){
+  const step = stepIdx >= 0 ? steps[stepIdx] : null;
+  renderGrid(step);
+  renderCode(step);
+  renderVars(step);
+
+  const co = document.getElementById('code-output');
+  if(step && step.result !== undefined){
+    co.innerHTML = `<span class="io-lbl">OUT</span><span style="color:${step.result===-1?'var(--red)':'var(--green)'};font-family:monospace;font-size:11px">${step.result}</span>`;
+  } else {
+    co.innerHTML = `<span class="io-lbl">OUT</span><span class="io-na">—</span>`;
+  }
+
+  const ll = document.getElementById('log-list');
+  if(step){
+    ll.innerHTML = steps.slice(0, stepIdx+1).map((s,i)=>`<div class="log-entry${i===stepIdx?' active':''}">${s.log}</div>`).join('');
+    ll.lastElementChild?.scrollIntoView({block:'nearest'});
+  } else {
+    ll.innerHTML = '';
+  }
+
+  const rt = document.getElementById('result-tag');
+  if(step && step.result !== undefined){
+    rt.className = `result-tag show ${step.result===-1?'neg':'pos'}`;
+    rt.textContent = step.result===-1 ? '✗ return -1' : `✓ return ${step.result}`;
+  } else {
+    rt.className = 'result-tag';
+  }
+
+  document.getElementById('step-desc').innerHTML = step ? step.log : 'Pick an example, then click <strong>Next Step ▶</strong>';
+  document.getElementById('step-num').textContent = step ? `${stepIdx+1} / ${steps.length}` : '— / —';
+  document.getElementById('btn-prev').disabled = stepIdx <= 0;
+  document.getElementById('btn-next').disabled = stepIdx >= steps.length-1;
+}
+
+function stopAuto(){
+  if(autoTmr){
+    clearInterval(autoTmr);
+    autoTmr = null;
+    document.getElementById('btn-auto').classList.remove('playing');
+    document.getElementById('btn-auto').textContent = '▶▶ Auto';
+  }
+}
+
+function go(delta){
+  stepIdx = Math.max(-1, Math.min(steps.length-1, stepIdx + delta));
+  render();
+  if(stepIdx >= steps.length-1) stopAuto();
+}
+
+function toggleAuto(){
+  if(autoTmr){ stopAuto(); return; }
+  document.getElementById('btn-auto').classList.add('playing');
+  document.getElementById('btn-auto').textContent = '⏸ Pause';
+  autoTmr = setInterval(()=>{
+    if(stepIdx < steps.length-1) go(1);
+    else stopAuto();
+  }, 650);
+}
+
+function loadEx(i){
+  stopAuto();
+  exIdx = i;
+  steps = simulate(EX[i]);
+  stepIdx = -1;
+  document.querySelectorAll('.ex-btn').forEach((b,j)=>b.classList.toggle('active', j===i));
+  render();
+}
+
+function reset(){ stopAuto(); stepIdx = -1; render(); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') go(1);
+  else if(e.key==='ArrowLeft') go(-1);
+  else if(e.key===' '){ e.preventDefault(); toggleAuto(); }
+  else if(e.key==='r' || e.key==='R') reset();
+});
+
+(function(){
+  const r = document.getElementById('resizer');
+  const cp = document.getElementById('code-panel');
+  let sx, sw;
+  r.addEventListener('mousedown',e=>{
+    sx = e.clientX;
+    sw = cp.offsetWidth;
+    document.body.style.cursor='col-resize';
+    document.body.style.userSelect='none';
+    const mv = e2 => { cp.style.width = Math.max(120, sw + (e2.clientX - sx)) + 'px'; };
+    const up = ()=>{
+      document.body.style.cursor='';
+      document.body.style.userSelect='';
+      document.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseup', up);
+    };
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  });
+})();
+
+loadEx(0);
+</script>
+</body>
+</html>
