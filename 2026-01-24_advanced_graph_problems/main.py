@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections import deque
 from typing import List
 import collections
@@ -117,7 +118,34 @@ def criticalConnections(n: int, connections: List[List[int]]) -> List[List[int]]
     Return all critical connections in the network in any order.
     """
     # TODO: Implement Tarjan's Bridge-Finding Algorithm
-    pass
+    adj = defaultdict(list)
+    for u, v in connections:
+        adj[u].append(v)
+        adj[v].append(u)
+
+    discovery = [-1] * n
+    lowest = [-1] * n
+    res = []
+    time = 0
+
+    def dfs(node, parent):
+        nonlocal time
+        discovery[node] = lowest[node] = time
+        time += 1
+
+        for nei in adj[node]:
+            if nei == parent:
+                continue
+            if discovery[nei] == -1:
+                dfs(nei, node)
+                lowest[node] = min(lowest[node], lowest[nei])
+                if lowest[nei] > discovery[node]:
+                    res.append([node, nei])
+            else:
+                lowest[node] = min(lowest[node], discovery[nei])
+    
+    dfs(0, -1)
+    return res
 
 
 def main():

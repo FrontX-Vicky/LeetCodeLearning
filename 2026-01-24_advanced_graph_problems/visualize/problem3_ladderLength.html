@@ -3,38 +3,377 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LC #127 Word Ladder — Visualizer</title>
+<title>LC #127 Word Ladder — Unified Visualizer</title>
 <style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
-.header-left h1{font-size:15px;font-weight:600;color:var(--head)}
-.main{display:flex;flex:1;padding:20px;justify-content:center;align-items:center;flex-direction:column;gap:20px;text-align:center}
-.info-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:600px}
-.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; align-items:center;}
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; padding: 10px; gap: 4px; overflow: hidden; }
+.top-panels { display: flex; flex: 3; min-height: 0; gap: 4px; }
+.bottom-panel { flex: 1; min-height: 100px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL (CODE + VARIABLES) */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.inputs-container { background: #0d1117; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between; background: #161b22;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 80px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.ds-viewer { background: #0d1117; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0;}
+.ds-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 6px 10px; background: #161b22; border-bottom: 1px solid var(--border-color); }
+.ds-content { padding: 6px 10px; font-family: 'Consolas', monospace; font-size: 11px; color: var(--text-color); white-space: pre-wrap; flex-shrink: 0; }
+.ds-key { color: var(--purple); } .ds-val { color: var(--success-color); }
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e; min-height: 150px; }
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-com { color: #6a9955; } .k-num { color: #b5cea8; }
+
+/* CENTER PANEL (GRAPH) */
+.center-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative;}
+svg { width: 100%; height: 100%; max-height: 400px; max-width: 400px; }
+
+/* Dynamic Tree Building Styles */
+.node-group { opacity: 0; transition: opacity 0.4s ease-in-out; }
+.node-visible { opacity: 1; }
+.node-rect { fill: #21262d; stroke: #30363d; stroke-width: 2; rx: 15; transition: all 0.3s; }
+.node-text { fill: var(--text-color); font-family: 'Consolas', monospace; font-size: 14px; font-weight: bold; text-anchor: middle; dominant-baseline: central; pointer-events: none;}
+.node-active .node-rect { fill: rgba(88, 166, 255, 0.2); stroke: var(--accent-color); stroke-width: 3; }
+.node-done .node-rect { fill: rgba(63, 185, 80, 0.2); stroke: var(--success-color); }
+
+.edge-path { fill: none; stroke: #484f58; stroke-width: 2; opacity: 0; transition: opacity 0.5s ease-in-out; }
+.edge-visible { opacity: 1; }
+.edge-active { stroke: var(--warning-color); stroke-width: 3; }
+
+/* BOTTOM PANEL (LOGS) */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-danger { color: var(--danger-color); font-weight: bold; border-left-color: var(--danger-color); background: rgba(248, 81, 73, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+.log-warn { color: var(--warning-color); font-weight: bold; border-left-color: var(--warning-color); background: rgba(210, 153, 34, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* RESIZERS */
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
 </style>
 </head>
 <body>
+
 <div class="header">
   <select class="prob-nav" onchange="window.location.href=this.value">
-    <option value="problem1_findItinerary.html" >P1 · findItinerary</option>
-    <option value="problem2_isBipartite.html" >P2 · isBipartite</option>
+    <option value="problem1_findItinerary.html">P1 · findItinerary</option>
+    <option value="problem2_isBipartite.html">P2 · isBipartite</option>
     <option value="problem3_ladderLength.html" selected>P3 · ladderLength</option>
-    <option value="problem4_criticalConnections.html" >P4 · criticalConnections</option>
+    <option value="problem4_criticalConnections.html">P4 · criticalConnections</option>
   </select>
   <div class="header-left">
-    <h1>Word Ladder &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #127</span></h1>
+    <h1>Word Ladder &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #127</span></h1>
+    <p>Shortest Path (BFS) with Dynamic Tree Building</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
   </div>
 </div>
-<div class="main">
-  <div class="info-box">
-    <h2 style="color:var(--blue);margin-bottom:10px;">Visualizer Under Construction 🚧</h2>
-    <p style="color:var(--muted);line-height:1.5;font-size:14px;">
-      The interactive step-by-step visualizer for <strong>Word Ladder</strong> is currently being developed. 
-      Because this is an advanced graph algorithm, the execution state-machine requires custom mapping.
-    </p>
+
+<div class="main-wrapper">
+  <div class="top-panels">
+    
+    <div class="left-panel">
+      
+      <!-- NEW: RAW INPUTS VIEWER -->
+      <div class="inputs-container">
+        <div class="ds-title" style="border-top:0; padding-top:4px; padding-bottom:4px;">Initial Inputs</div>
+        <div class="ds-content" style="display:flex; flex-wrap:wrap; gap:10px;">
+            <div><span class="ds-key">begin:</span> <span class="k-str">"hit"</span></div>
+            <div><span class="ds-key">end:</span> <span class="k-str">"cog"</span></div>
+            <div><span class="ds-key">words:</span> [<span class="k-str">"hot"</span>, <span class="k-str">"dot"</span>, <span class="k-str">"dog"</span>, <span class="k-str">"lot"</span>, <span class="k-str">"log"</span>, <span class="k-str">"cog"</span>]</div>
+        </div>
+      </div>
+
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">Current Word</div>
+          <div class="var-val" id="var-word" style="color:var(--warning-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">Steps (Depth)</div>
+          <div class="var-val" id="var-steps" style="color:var(--purple)">0</div>
+        </div>
+      </div>
+      <div class="ds-viewer">
+        <div class="ds-title">Data Structures State</div>
+        <div class="ds-content" id="var-ds">
+            <div><span class="ds-key">Queue:</span> <span id="ds-q" class="ds-val">[]</span></div>
+            <div style="margin-top: 5px;"><span class="ds-key">wordSet:</span> <span id="ds-ws" class="ds-val">{"hot", "dot", "dog", "lot", "log", "cog"}</span></div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">ladderLength</span>(beginWord, endWord, wordList):</div></div>
+<div class="code-line" id="line-2"><div class="ln">2</div><div class="lt">    wordSet = <span class="k-fn">set</span>(wordList)</div></div>
+<div class="code-line" id="line-3"><div class="ln">3</div><div class="lt">    <span class="k-kw">if</span> endWord <span class="k-kw">not in</span> wordSet: <span class="k-kw">return</span> <span class="k-num">0</span></div></div>
+<div class="code-line" id="line-4"><div class="ln">4</div><div class="lt">    </div></div>
+<div class="code-line" id="line-5"><div class="ln">5</div><div class="lt">    q = deque([(beginWord, <span class="k-num">1</span>)])</div></div>
+<div class="code-line" id="line-6"><div class="ln">6</div><div class="lt">    </div></div>
+<div class="code-line" id="line-7"><div class="ln">7</div><div class="lt">    <span class="k-kw">while</span> q:</div></div>
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">        word, steps = q.popleft()</div></div>
+<div class="code-line" id="line-9"><div class="ln">9</div><div class="lt">        <span class="k-kw">if</span> word == endWord:</div></div>
+<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">            <span class="k-kw">return</span> steps</div></div>
+<div class="code-line" id="line-11"><div class="ln">11</div><div class="lt">        </div></div>
+<div class="code-line" id="line-12"><div class="ln">12</div><div class="lt">        <span class="k-kw">for</span> i <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-fn">len</span>(word)):</div></div>
+<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">            <span class="k-kw">for</span> c <span class="k-kw">in</span> <span class="k-str">'a'</span>..<span class="k-str">'z'</span>:</div></div>
+<div class="code-line" id="line-14"><div class="ln">14</div><div class="lt">                new_word = word[:i] + c + word[i + <span class="k-num">1</span>:]</div></div>
+<div class="code-line" id="line-15"><div class="ln">15</div><div class="lt">                <span class="k-kw">if</span> new_word <span class="k-kw">in</span> wordSet:</div></div>
+<div class="code-line" id="line-16"><div class="ln">16</div><div class="lt">                    wordSet.remove(new_word)</div></div>
+<div class="code-line" id="line-17"><div class="ln">17</div><div class="lt">                    q.append((new_word, steps + <span class="k-num">1</span>))</div></div>
+<div class="code-line" id="line-18"><div class="ln">18</div><div class="lt">    <span class="k-kw">return</span> <span class="k-num">0</span></div></div>
+      </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <div class="center-panel">
+      <div class="panel-title">BFS Transformation Tree</div>
+      <div class="svg-wrap">
+        
+        <svg id="svg-main" viewBox="0 0 400 380">
+          <!-- Edges (Rendered behind nodes) -->
+          <g id="edges">
+            <line class="edge-path" id="e-hit-hot" x1="200" y1="50" x2="200" y2="120" />
+            <line class="edge-path" id="e-hot-dot" x1="200" y1="120" x2="120" y2="190" />
+            <line class="edge-path" id="e-hot-lot" x1="200" y1="120" x2="280" y2="190" />
+            <line class="edge-path" id="e-dot-dog" x1="120" y1="190" x2="120" y2="260" />
+            <line class="edge-path" id="e-lot-log" x1="280" y1="190" x2="280" y2="260" />
+            <line class="edge-path" id="e-dog-cog" x1="120" y1="260" x2="200" y2="330" />
+            <line class="edge-path" id="e-log-cog" x1="280" y1="260" x2="200" y2="330" />
+          </g>
+          
+          <!-- Nodes -->
+          <!-- Level 1 -->
+          <g id="n-hit" class="node-group" style="transform-origin: 200px 50px" transform="translate(165, 35)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">hit</text></g>
+          <!-- Level 2 -->
+          <g id="n-hot" class="node-group" style="transform-origin: 200px 120px" transform="translate(165, 105)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">hot</text></g>
+          <!-- Level 3 -->
+          <g id="n-dot" class="node-group" style="transform-origin: 120px 190px" transform="translate(85, 175)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">dot</text></g>
+          <g id="n-lot" class="node-group" style="transform-origin: 280px 190px" transform="translate(245, 175)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">lot</text></g>
+          <!-- Level 4 -->
+          <g id="n-dog" class="node-group" style="transform-origin: 120px 260px" transform="translate(85, 245)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">dog</text></g>
+          <g id="n-log" class="node-group" style="transform-origin: 280px 260px" transform="translate(245, 245)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">log</text></g>
+          <!-- Level 5 -->
+          <g id="n-cog" class="node-group" style="transform-origin: 200px 330px" transform="translate(165, 315)"><rect class="node-rect" width="70" height="30" /><text class="node-text" x="35" y="15">cog</text></g>
+        </svg>
+
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="resizer-h" id="resizer-h"></div>
+  
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
   </div>
 </div>
+
+<script>
+// State mapping array
+const states = [
+  { l:2, w:"-", s:0, q:"[]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:[], edges:[], active:null, log:{ t:"Initialize wordSet with wordList.", c:"" } },
+  { l:5, w:"-", s:0, q:"[('hit', 1)]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:'n-hit', log:{ t:"Initialize BFS queue with beginWord ('hit') and step count 1.", c:"log-hl" } },
+  { l:7, w:"-", s:0, q:"[('hit', 1)]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:null, log:{ t:"Begin BFS while queue is not empty.", c:"" } },
+  
+  { l:8, w:"hit", s:1, q:"[]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:'n-hit', log:{ t:"Pop 'hit' from queue. Steps = 1.", c:"log-hl" } },
+  { l:9, w:"hit", s:1, q:"[]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:'n-hit', log:{ t:"'hit' != 'cog'. Checking all 1-letter transformations...", c:"" } },
+  { l:15, w:"hit", s:1, q:"[]", ws:'{"hot", "dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:'n-hit', log:{ t:"Found valid transformation 'hot' in wordSet!", c:"log-purple" } },
+  { l:16, w:"hit", s:1, q:"[]", ws:'{"dot", "dog", "lot", "log", "cog"}', nodes:['n-hit'], edges:[], active:'n-hit', log:{ t:"Remove 'hot' from wordSet to avoid cycles.", c:"" } },
+  { l:17, w:"hit", s:1, q:"[('hot', 2)]", ws:'{"dot", "dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot'], edges:['e-hit-hot'], active:'n-hit', log:{ t:"Append 'hot' to queue with steps 2. Graph node added!", c:"log-success" } },
+  
+  { l:8, w:"hot", s:2, q:"[]", ws:'{"dot", "dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot'], edges:['e-hit-hot'], active:'n-hot', log:{ t:"Pop 'hot' from queue. Steps = 2.", c:"log-hl" } },
+  { l:15, w:"hot", s:2, q:"[]", ws:'{"dot", "dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot'], edges:['e-hit-hot'], active:'n-hot', log:{ t:"Found valid transformation 'dot' in wordSet!", c:"log-purple" } },
+  { l:16, w:"hot", s:2, q:"[]", ws:'{"dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot'], edges:['e-hit-hot'], active:'n-hot', log:{ t:"Remove 'dot' from wordSet.", c:"" } },
+  { l:17, w:"hot", s:2, q:"[('dot', 3)]", ws:'{"dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot'], edges:['e-hit-hot', 'e-hot-dot'], active:'n-hot', log:{ t:"Append 'dot' to queue with steps 3.", c:"log-success" } },
+  { l:15, w:"hot", s:2, q:"[('dot', 3)]", ws:'{"dog", "lot", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot'], edges:['e-hit-hot', 'e-hot-dot'], active:'n-hot', log:{ t:"Found valid transformation 'lot' in wordSet!", c:"log-purple" } },
+  { l:16, w:"hot", s:2, q:"[('dot', 3)]", ws:'{"dog", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot'], edges:['e-hit-hot', 'e-hot-dot'], active:'n-hot', log:{ t:"Remove 'lot' from wordSet.", c:"" } },
+  { l:17, w:"hot", s:2, q:"[('dot', 3), ('lot', 3)]", ws:'{"dog", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot'], active:'n-hot', log:{ t:"Append 'lot' to queue with steps 3.", c:"log-success" } },
+
+  { l:8, w:"dot", s:3, q:"[('lot', 3)]", ws:'{"dog", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot'], active:'n-dot', log:{ t:"Pop 'dot' from queue. Steps = 3.", c:"log-hl" } },
+  { l:15, w:"dot", s:3, q:"[('lot', 3)]", ws:'{"dog", "log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot'], active:'n-dot', log:{ t:"Found valid transformation 'dog' in wordSet!", c:"log-purple" } },
+  { l:16, w:"dot", s:3, q:"[('lot', 3)]", ws:'{"log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot'], active:'n-dot', log:{ t:"Remove 'dog' from wordSet.", c:"" } },
+  { l:17, w:"dot", s:3, q:"[('lot', 3), ('dog', 4)]", ws:'{"log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog'], active:'n-dot', log:{ t:"Append 'dog' to queue with steps 4.", c:"log-success" } },
+
+  { l:8, w:"lot", s:3, q:"[('dog', 4)]", ws:'{"log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog'], active:'n-lot', log:{ t:"Pop 'lot' from queue. Steps = 3.", c:"log-hl" } },
+  { l:15, w:"lot", s:3, q:"[('dog', 4)]", ws:'{"log", "cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog'], active:'n-lot', log:{ t:"Found valid transformation 'log' in wordSet!", c:"log-purple" } },
+  { l:16, w:"lot", s:3, q:"[('dog', 4)]", ws:'{"cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog'], active:'n-lot', log:{ t:"Remove 'log' from wordSet.", c:"" } },
+  { l:17, w:"lot", s:3, q:"[('dog', 4), ('log', 4)]", ws:'{"cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log'], active:'n-lot', log:{ t:"Append 'log' to queue with steps 4.", c:"log-success" } },
+
+  { l:8, w:"dog", s:4, q:"[('log', 4)]", ws:'{"cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log'], active:'n-dog', log:{ t:"Pop 'dog' from queue. Steps = 4.", c:"log-hl" } },
+  { l:15, w:"dog", s:4, q:"[('log', 4)]", ws:'{"cog"}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log'], active:'n-dog', log:{ t:"Found valid transformation 'cog' in wordSet!", c:"log-purple" } },
+  { l:16, w:"dog", s:4, q:"[('log', 4)]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log'], active:'n-dog', log:{ t:"Remove 'cog' from wordSet.", c:"" } },
+  { l:17, w:"dog", s:4, q:"[('log', 4), ('cog', 5)]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog'], active:'n-dog', log:{ t:"Append 'cog' to queue with steps 5.", c:"log-success" } },
+  
+  { l:8, w:"log", s:4, q:"[('cog', 5)]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog'], active:'n-log', log:{ t:"Pop 'log' from queue. Steps = 4.", c:"log-hl" } },
+  { l:12, w:"log", s:4, q:"[('cog', 5)]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog', 'e-log-cog'], active:'n-log', log:{ t:"'cog' was already found and removed. No other words to check from 'log'.", c:"" } },
+
+  { l:8, w:"cog", s:5, q:"[]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog', 'e-log-cog'], active:'n-cog', log:{ t:"Pop 'cog' from queue. Steps = 5.", c:"log-hl" } },
+  { l:9, w:"cog", s:5, q:"[]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog', 'e-log-cog'], active:'n-cog', log:{ t:"word == endWord! Target reached.", c:"log-success" } },
+  { l:10, w:"cog", s:5, q:"[]", ws:'{}', nodes:['n-hit', 'n-hot', 'n-dot', 'n-lot', 'n-dog', 'n-log', 'n-cog'], edges:['e-hit-hot', 'e-hot-dot', 'e-hot-lot', 'e-dot-dog', 'e-lot-log', 'e-dog-cog', 'e-log-cog'], active:'n-cog', log:{ t:"Return shortest path length: 5.", c:"log-purple" } },
+];
+
+let curStep = -1;
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Update variables
+    document.getElementById('var-word').innerText = s.w;
+    document.getElementById('var-steps').innerText = s.s;
+    document.getElementById('ds-q').innerText = s.q;
+    document.getElementById('ds-ws').innerText = s.ws;
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById(`line-${s.l}`).classList.add('active');
+    
+    // Make Nodes Visible
+    document.querySelectorAll('.node-group').forEach(el => {
+        if (s.nodes.includes(el.id)) el.classList.add('node-visible');
+        else el.classList.remove('node-visible');
+        el.classList.remove('node-active', 'node-done');
+    });
+
+    // Make Edges Visible
+    document.querySelectorAll('.edge-path').forEach(el => {
+        if (s.edges.includes(el.id)) el.classList.add('edge-visible');
+        else el.classList.remove('edge-visible');
+    });
+    
+    // Active Node Pulse
+    if (s.active !== null) {
+        document.getElementById(s.active).classList.add('node-active');
+    }
+    
+    // Update Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Button States
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    
+    document.getElementById('var-word').innerText = '-';
+    document.getElementById('var-steps').innerText = '0';
+    document.getElementById('ds-q').innerText = '[]';
+    document.getElementById('ds-ws').innerText = '{"hot", "dot", "dog", "lot", "log", "cog"}';
+    
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    
+    document.querySelectorAll('.node-group').forEach(el => {
+        el.classList.remove('node-visible', 'node-active', 'node-done');
+    });
+    document.querySelectorAll('.edge-path').forEach(el => {
+        el.classList.remove('edge-visible');
+    });
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+
+// Resizer Logic
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.querySelector('.left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.querySelector('.top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+if (resizerV) {
+    resizerV.addEventListener('mousedown', (e) => {
+        isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+        document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+    });
+}
+if (resizerH) {
+    resizerH.addEventListener('mousedown', (e) => {
+        isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+        document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+    });
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); }
+});
+</script>
 </body>
 </html>
