@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #332 Reconstruct Itinerary — Unified Visualizer</title>
+<style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; }
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px; gap: 10px; }
+.top-panels { display: flex; flex: 2; min-height: 0; gap: 10px; }
+.bottom-panel { flex: 1; min-height: 150px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL (CODE + VARIABLES) */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 80px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e;}
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-com { color: #6a9955; }
+
+/* CENTER PANEL (GRAPH) */
+.center-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; }
+svg { width: 100%; height: 100%; }
+.node-circle { fill: #21262d; stroke: #30363d; stroke-width: 2; transition: all 0.3s; }
+.node-text { fill: var(--text-color); font-family: sans-serif; font-size: 14px; font-weight: 600; text-anchor: middle; dominant-baseline: central; pointer-events: none;}
+.node-active .node-circle { fill: rgba(88, 166, 255, 0.2); stroke: var(--accent-color); stroke-width: 3; }
+.node-done .node-circle { fill: rgba(63, 185, 80, 0.2); stroke: var(--success-color); }
+
+.edge-path { fill: none; stroke: #484f58; stroke-width: 2; transition: all 0.3s; marker-end: url(#arrow-normal); }
+.edge-active { stroke: var(--warning-color); stroke-width: 3; marker-end: url(#arrow-active); }
+.edge-consumed { stroke: var(--success-color); stroke-width: 2; opacity: 0.3; stroke-dasharray: 4; marker-end: url(#arrow-consumed); }
+
+/* BOTTOM PANEL (LOGS) */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-danger { color: var(--danger-color); font-weight: bold; border-left-color: var(--danger-color); background: rgba(248, 81, 73, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_findItinerary.html" selected>P1 · findItinerary</option>
+    <option value="problem2_isBipartite.html">P2 · isBipartite</option>
+    <option value="problem3_ladderLength.html">P3 · ladderLength</option>
+    <option value="problem4_criticalConnections.html">P4 · criticalConnections</option>
+  </select>
+  <div class="header-left">
+    <h1>Reconstruct Itinerary &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #332</span></h1>
+    <p>Hierholzer's Algorithm (Eulerian Path) using DFS and Post-order reversal</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels">
+    
+    <div class="left-panel">
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">Current Node</div>
+          <div class="var-val" id="var-curr" style="color:var(--warning-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">Result Array</div>
+          <div class="var-val" id="var-res" style="color:var(--success-color)">[]</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">Call Stack Depth</div>
+          <div class="var-val" id="var-stack" style="color:var(--purple)">0</div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">findItinerary</span>(tickets):</div></div>
+<div class="code-line" id="line-2"><div class="ln">2</div><div class="lt">    adj = collections.defaultdict(list)</div></div>
+<div class="code-line" id="line-3"><div class="ln">3</div><div class="lt">    <span class="k-kw">for</span> src, dst <span class="k-kw">in</span> <span class="k-fn">sorted</span>(tickets, reverse=<span class="k-kw">True</span>):</div></div>
+<div class="code-line" id="line-4"><div class="ln">4</div><div class="lt">        adj[src].append(dst)</div></div>
+<div class="code-line" id="line-5"><div class="ln">5</div><div class="lt">        </div></div>
+<div class="code-line" id="line-6"><div class="ln">6</div><div class="lt">    res = []</div></div>
+<div class="code-line" id="line-7"><div class="ln">7</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">dfs</span>(src):</div></div>
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">        <span class="k-kw">while</span> adj[src]:</div></div>
+<div class="code-line" id="line-9"><div class="ln">9</div><div class="lt">            dst = adj[src].pop()</div></div>
+<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">            <span class="k-fn">dfs</span>(dst)</div></div>
+<div class="code-line" id="line-11"><div class="ln">11</div><div class="lt">        res.append(src)</div></div>
+<div class="code-line" id="line-12"><div class="ln">12</div><div class="lt">        </div></div>
+<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">    <span class="k-fn">dfs</span>(<span class="k-str">"JFK"</span>)</div></div>
+<div class="code-line" id="line-14"><div class="ln">14</div><div class="lt">    <span class="k-kw">return</span> res[::-1]</div></div>
+      </div>
+    </div>
+
+    <div class="center-panel">
+      <div class="panel-title">Graph Visualization</div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 400 300">
+          <defs>
+            <marker id="arrow-normal" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,-5L10,0L0,5" fill="#484f58"></path></marker>
+            <marker id="arrow-active" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,-5L10,0L0,5" fill="#d29922"></path></marker>
+            <marker id="arrow-consumed" viewBox="0 -5 10 10" refX="28" refY="0" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,-5L10,0L0,5" fill="#3fb950"></path></marker>
+          </defs>
+          
+          <!-- Edges -->
+          <g id="edges-group">
+            <path class="edge-path" id="edge-0" d="M 100 80 Q 200 40 300 80" /> <!-- JFK to SFO -->
+            <path class="edge-path" id="edge-1" d="M 100 80 Q 80 160 200 240" /> <!-- JFK to ATL -->
+            <path class="edge-path" id="edge-2" d="M 300 80 Q 280 160 200 240" /> <!-- SFO to ATL -->
+            <path class="edge-path" id="edge-3" d="M 200 240 Q 150 160 100 80" /> <!-- ATL to JFK -->
+            <path class="edge-path" id="edge-4" d="M 200 240 Q 250 160 300 80" /> <!-- ATL to SFO -->
+          </g>
+          
+          <!-- Nodes -->
+          <g id="node-JFK" class="node-group" transform="translate(100, 80)">
+            <circle class="node-circle" r="20" />
+            <text class="node-text">JFK</text>
+          </g>
+          <g id="node-SFO" class="node-group" transform="translate(300, 80)">
+            <circle class="node-circle" r="20" />
+            <text class="node-text">SFO</text>
+          </g>
+          <g id="node-ATL" class="node-group" transform="translate(200, 240)">
+            <circle class="node-circle" r="20" />
+            <text class="node-text">ATL</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+    
+  </div>
+  
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+// State Machine Pre-computation for:
+// [["JFK","SFO"],["JFK","ATL"],["SFO","ATL"],["ATL","JFK"],["ATL","SFO"]]
+// Sorted descending to pop from end (lexical order processing):
+// adj[JFK] = ["SFO", "ATL"] -> pops ATL
+// adj[SFO] = ["ATL"] -> pops ATL
+// adj[ATL] = ["SFO", "JFK"] -> pops JFK
+// Edges Mapping: 0: JFK->SFO, 1: JFK->ATL, 2: SFO->ATL, 3: ATL->JFK, 4: ATL->SFO
+
+const states = [
+  { line: 3, curr: "-", res: "[]", stack: 0, log: { t: "Initialization: Sorted tickets and built adjacency list.", c: "" }, edgeStates: {}, activeNode: null },
+  { line: 13, curr: "JFK", res: "[]", stack: 1, log: { t: "Starting DFS from JFK.", c: "log-hl" }, edgeStates: {}, activeNode: "JFK" },
+  
+  { line: 8, curr: "JFK", res: "[]", stack: 1, log: { t: "adj['JFK'] has ['SFO', 'ATL'].", c: "" }, edgeStates: {}, activeNode: "JFK" },
+  { line: 9, curr: "JFK", res: "[]", stack: 1, log: { t: "Popped 'ATL' from adj['JFK'] (lexicographically smallest).", c: "log-purple" }, edgeStates: {1: "edge-active"}, activeNode: "JFK" },
+  { line: 10, curr: "ATL", res: "[]", stack: 2, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL" },
+  
+  { line: 8, curr: "ATL", res: "[]", stack: 2, log: { t: "adj['ATL'] has ['SFO', 'JFK'].", c: "" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL" },
+  { line: 9, curr: "ATL", res: "[]", stack: 2, log: { t: "Popped 'JFK' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-active"}, activeNode: "ATL" },
+  { line: 10, curr: "JFK", res: "[]", stack: 3, log: { t: "Recursive call -> DFS('JFK')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK" },
+  
+  { line: 8, curr: "JFK", res: "[]", stack: 3, log: { t: "adj['JFK'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK" },
+  { line: 9, curr: "JFK", res: "[]", stack: 3, log: { t: "Popped 'SFO' from adj['JFK'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-active"}, activeNode: "JFK" },
+  { line: 10, curr: "SFO", res: "[]", stack: 4, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO" },
+  
+  { line: 8, curr: "SFO", res: "[]", stack: 4, log: { t: "adj['SFO'] has ['ATL'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO" },
+  { line: 9, curr: "SFO", res: "[]", stack: 4, log: { t: "Popped 'ATL' from adj['SFO'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-active"}, activeNode: "SFO" },
+  { line: 10, curr: "ATL", res: "[]", stack: 5, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL" },
+  
+  { line: 8, curr: "ATL", res: "[]", stack: 5, log: { t: "adj['ATL'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL" },
+  { line: 9, curr: "ATL", res: "[]", stack: 5, log: { t: "Popped 'SFO' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-active"}, activeNode: "ATL" },
+  { line: 10, curr: "SFO", res: "[]", stack: 6, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  
+  { line: 8, curr: "SFO", res: "[]", stack: 6, log: { t: "adj['SFO'] is empty! (Dead end reached).", c: "log-danger" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  { line: 11, curr: "SFO", res: "['SFO']", stack: 6, log: { t: "Appending 'SFO' to result array.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  
+  { line: 11, curr: "ATL", res: "['SFO', 'ATL']", stack: 5, log: { t: "Backtracked to ATL. adj['ATL'] is empty. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL" },
+  { line: 11, curr: "SFO", res: "['SFO', 'ATL', 'SFO']", stack: 4, log: { t: "Backtracked to SFO. adj['SFO'] is empty. Appending 'SFO'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK']", stack: 3, log: { t: "Backtracked to JFK. adj['JFK'] is empty. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK" },
+  { line: 11, curr: "ATL", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL']", stack: 2, log: { t: "Backtracked to ATL. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL" },
+  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL', 'JFK']", stack: 1, log: { t: "Backtracked to JFK. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK" },
+  
+  { line: 14, curr: "-", res: "['JFK', 'ATL', 'JFK', 'SFO', 'ATL', 'SFO']", stack: 0, log: { t: "Returning reversed result array! Itinerary complete.", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: null },
+];
+
+let curStep = -1;
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Update variables
+    document.getElementById('var-curr').innerText = s.curr;
+    document.getElementById('var-res').innerText = s.res;
+    document.getElementById('var-stack').innerText = s.stack;
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById(`line-${s.line}`).classList.add('active');
+    
+    // Update SVG Nodes
+    document.querySelectorAll('.node-group').forEach(el => el.classList.remove('node-active'));
+    if (s.activeNode) {
+        document.getElementById(`node-${s.activeNode}`).classList.add('node-active');
+    }
+    
+    // Update SVG Edges
+    document.querySelectorAll('.edge-path').forEach(el => {
+        el.classList.remove('edge-active', 'edge-consumed');
+    });
+    for (const [edgeId, edgeClass] of Object.entries(s.edgeStates)) {
+        document.getElementById(`edge-${edgeId}`).classList.add(edgeClass);
+    }
+    
+    // Update Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Button States
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        // Clear logs and re-render to state
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    
+    document.getElementById('var-curr').innerText = '-';
+    document.getElementById('var-res').innerText = '[]';
+    document.getElementById('var-stack').innerText = '0';
+    
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.node-group').forEach(el => el.classList.remove('node-active'));
+    document.querySelectorAll('.edge-path').forEach(el => {
+        el.classList.remove('edge-active', 'edge-consumed');
+    });
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+</script>
+</body>
+</html>

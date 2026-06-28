@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #127 Word Ladder — Visualizer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:var(--head)}
+.main{display:flex;flex:1;padding:20px;justify-content:center;align-items:center;flex-direction:column;gap:20px;text-align:center}
+.info-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:600px}
+.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_findItinerary.html" >P1 · findItinerary</option>
+    <option value="problem2_isBipartite.html" >P2 · isBipartite</option>
+    <option value="problem3_ladderLength.html" selected>P3 · ladderLength</option>
+    <option value="problem4_criticalConnections.html" >P4 · criticalConnections</option>
+  </select>
+  <div class="header-left">
+    <h1>Word Ladder &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #127</span></h1>
+  </div>
+</div>
+<div class="main">
+  <div class="info-box">
+    <h2 style="color:var(--blue);margin-bottom:10px;">Visualizer Under Construction 🚧</h2>
+    <p style="color:var(--muted);line-height:1.5;font-size:14px;">
+      The interactive step-by-step visualizer for <strong>Word Ladder</strong> is currently being developed. 
+      Because this is an advanced graph algorithm, the execution state-machine requires custom mapping.
+    </p>
+  </div>
+</div>
+</body>
+</html>
