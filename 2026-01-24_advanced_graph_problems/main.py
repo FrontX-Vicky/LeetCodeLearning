@@ -43,7 +43,29 @@ def isBipartite(graph: List[List[int]]) -> bool:
     Return true if and only if it is bipartite.
     """
     # TODO: Implement BFS or DFS graph coloring
-    pass
+    n = len(graph)
+    colors = [0] * n 
+
+    for i in range(n):
+        if colors[i] != 0:
+            continue
+        
+        #BFS
+        q = collections.deque([i])
+        colors[i] = 1
+
+        while q:
+            node = q.popleft()
+            for nei in graph[node]:
+                if colors[nei] == colors[node]:
+                    return False
+                if colors[nei] == 0:
+                    colors[nei] = -colors[node]
+                    q.append(nei)
+    
+    return True
+
+
 
 
 # ============================================================
