@@ -15,7 +15,19 @@ def findItinerary(tickets: List[List[str]]) -> List[str]:
     smallest lexical order when read as a single string.
     """
     # TODO: Implement Eulerian Path algorithm (Hierholzer's Algorithm)
-    pass
+    adj = collections.defaultdict(list)
+    for src, dst in sorted(tickets, reverse=True):
+        adj[src].append(dst)
+    
+    res = []
+    def dfs(src):
+        while adj[src]:
+            dst = adj[src].pop()
+            dfs(dst)
+        res.append(src)
+    
+    dfs("JFK")
+    return res[::-1]
 
 
 # ============================================================

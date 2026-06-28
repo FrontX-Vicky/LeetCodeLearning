@@ -47,6 +47,11 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
 .lt { white-space: pre; color: #d4d4d4; }
 .k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-com { color: #6a9955; }
 
+.ds-viewer { background: #0d1117; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0;}
+.ds-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 6px 10px; background: #161b22; border-bottom: 1px solid var(--border-color); }
+.ds-content { padding: 10px; font-family: 'Consolas', monospace; font-size: 12px; color: var(--text-color); white-space: pre-wrap; overflow-y: auto; max-height: 120px; }
+.ds-key { color: var(--accent-color); } .ds-val { color: var(--success-color); }
+
 /* CENTER PANEL (GRAPH) */
 .center-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
 .svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; }
@@ -114,6 +119,10 @@ svg { width: 100%; height: 100%; }
           <div class="var-title">Call Stack Depth</div>
           <div class="var-val" id="var-stack" style="color:var(--purple)">0</div>
         </div>
+      </div>
+      <div class="ds-viewer" id="ds-viewer">
+        <div class="ds-title">Adjacency List (adj)</div>
+        <div class="ds-content" id="var-adj">{}</div>
       </div>
       <div class="code-block" id="code">
 <div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">findItinerary</span>(tickets):</div></div>
@@ -191,42 +200,52 @@ svg { width: 100%; height: 100%; }
 // Edges Mapping: 0: JFK->SFO, 1: JFK->ATL, 2: SFO->ATL, 3: ATL->JFK, 4: ATL->SFO
 
 const states = [
-  { line: 3, curr: "-", res: "[]", stack: 0, log: { t: "Initialization: Sorted tickets and built adjacency list.", c: "" }, edgeStates: {}, activeNode: null },
-  { line: 13, curr: "JFK", res: "[]", stack: 1, log: { t: "Starting DFS from JFK.", c: "log-hl" }, edgeStates: {}, activeNode: "JFK" },
+  { line: 3, curr: "-", res: "[]", stack: 0, log: { t: "Initialization: Sorted tickets and built adjacency list.", c: "" }, edgeStates: {}, activeNode: null, adj: { ATL: ["SFO", "JFK"], JFK: ["SFO", "ATL"], SFO: ["ATL"] } },
+  { line: 13, curr: "JFK", res: "[]", stack: 1, log: { t: "Starting DFS from JFK.", c: "log-hl" }, edgeStates: {}, activeNode: "JFK", adj: { ATL: ["SFO", "JFK"], JFK: ["SFO", "ATL"], SFO: ["ATL"] } },
   
-  { line: 8, curr: "JFK", res: "[]", stack: 1, log: { t: "adj['JFK'] has ['SFO', 'ATL'].", c: "" }, edgeStates: {}, activeNode: "JFK" },
-  { line: 9, curr: "JFK", res: "[]", stack: 1, log: { t: "Popped 'ATL' from adj['JFK'] (lexicographically smallest).", c: "log-purple" }, edgeStates: {1: "edge-active"}, activeNode: "JFK" },
-  { line: 10, curr: "ATL", res: "[]", stack: 2, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL" },
+  { line: 8, curr: "JFK", res: "[]", stack: 1, log: { t: "adj['JFK'] has ['SFO', 'ATL'].", c: "" }, edgeStates: {}, activeNode: "JFK", adj: { ATL: ["SFO", "JFK"], JFK: ["SFO", "ATL"], SFO: ["ATL"] } },
+  { line: 9, curr: "JFK", res: "[]", stack: 1, log: { t: "Popped 'ATL' from adj['JFK'] (lexicographically smallest).", c: "log-purple" }, edgeStates: {1: "edge-active"}, activeNode: "JFK", adj: { ATL: ["SFO", "JFK"], JFK: ["SFO"], SFO: ["ATL"] } },
+  { line: 10, curr: "ATL", res: "[]", stack: 2, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL", adj: { ATL: ["SFO", "JFK"], JFK: ["SFO"], SFO: ["ATL"] } },
   
-  { line: 8, curr: "ATL", res: "[]", stack: 2, log: { t: "adj['ATL'] has ['SFO', 'JFK'].", c: "" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL" },
-  { line: 9, curr: "ATL", res: "[]", stack: 2, log: { t: "Popped 'JFK' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-active"}, activeNode: "ATL" },
-  { line: 10, curr: "JFK", res: "[]", stack: 3, log: { t: "Recursive call -> DFS('JFK')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK" },
+  { line: 8, curr: "ATL", res: "[]", stack: 2, log: { t: "adj['ATL'] has ['SFO', 'JFK'].", c: "" }, edgeStates: {1: "edge-consumed"}, activeNode: "ATL", adj: { ATL: ["SFO", "JFK"], JFK: ["SFO"], SFO: ["ATL"] } },
+  { line: 9, curr: "ATL", res: "[]", stack: 2, log: { t: "Popped 'JFK' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-active"}, activeNode: "ATL", adj: { ATL: ["SFO"], JFK: ["SFO"], SFO: ["ATL"] } },
+  { line: 10, curr: "JFK", res: "[]", stack: 3, log: { t: "Recursive call -> DFS('JFK')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK", adj: { ATL: ["SFO"], JFK: ["SFO"], SFO: ["ATL"] } },
   
-  { line: 8, curr: "JFK", res: "[]", stack: 3, log: { t: "adj['JFK'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK" },
-  { line: 9, curr: "JFK", res: "[]", stack: 3, log: { t: "Popped 'SFO' from adj['JFK'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-active"}, activeNode: "JFK" },
-  { line: 10, curr: "SFO", res: "[]", stack: 4, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO" },
+  { line: 8, curr: "JFK", res: "[]", stack: 3, log: { t: "adj['JFK'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed"}, activeNode: "JFK", adj: { ATL: ["SFO"], JFK: ["SFO"], SFO: ["ATL"] } },
+  { line: 9, curr: "JFK", res: "[]", stack: 3, log: { t: "Popped 'SFO' from adj['JFK'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-active"}, activeNode: "JFK", adj: { ATL: ["SFO"], JFK: [], SFO: ["ATL"] } },
+  { line: 10, curr: "SFO", res: "[]", stack: 4, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO", adj: { ATL: ["SFO"], JFK: [], SFO: ["ATL"] } },
   
-  { line: 8, curr: "SFO", res: "[]", stack: 4, log: { t: "adj['SFO'] has ['ATL'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO" },
-  { line: 9, curr: "SFO", res: "[]", stack: 4, log: { t: "Popped 'ATL' from adj['SFO'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-active"}, activeNode: "SFO" },
-  { line: 10, curr: "ATL", res: "[]", stack: 5, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL" },
+  { line: 8, curr: "SFO", res: "[]", stack: 4, log: { t: "adj['SFO'] has ['ATL'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed"}, activeNode: "SFO", adj: { ATL: ["SFO"], JFK: [], SFO: ["ATL"] } },
+  { line: 9, curr: "SFO", res: "[]", stack: 4, log: { t: "Popped 'ATL' from adj['SFO'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-active"}, activeNode: "SFO", adj: { ATL: ["SFO"], JFK: [], SFO: [] } },
+  { line: 10, curr: "ATL", res: "[]", stack: 5, log: { t: "Recursive call -> DFS('ATL')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL", adj: { ATL: ["SFO"], JFK: [], SFO: [] } },
   
-  { line: 8, curr: "ATL", res: "[]", stack: 5, log: { t: "adj['ATL'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL" },
-  { line: 9, curr: "ATL", res: "[]", stack: 5, log: { t: "Popped 'SFO' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-active"}, activeNode: "ATL" },
-  { line: 10, curr: "SFO", res: "[]", stack: 6, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  { line: 8, curr: "ATL", res: "[]", stack: 5, log: { t: "adj['ATL'] has ['SFO'].", c: "" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed"}, activeNode: "ATL", adj: { ATL: ["SFO"], JFK: [], SFO: [] } },
+  { line: 9, curr: "ATL", res: "[]", stack: 5, log: { t: "Popped 'SFO' from adj['ATL'].", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-active"}, activeNode: "ATL", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 10, curr: "SFO", res: "[]", stack: 6, log: { t: "Recursive call -> DFS('SFO')", c: "log-hl" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO", adj: { ATL: [], JFK: [], SFO: [] } },
   
-  { line: 8, curr: "SFO", res: "[]", stack: 6, log: { t: "adj['SFO'] is empty! (Dead end reached).", c: "log-danger" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
-  { line: 11, curr: "SFO", res: "['SFO']", stack: 6, log: { t: "Appending 'SFO' to result array.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
+  { line: 8, curr: "SFO", res: "[]", stack: 6, log: { t: "adj['SFO'] is empty! (Dead end reached).", c: "log-danger" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 11, curr: "SFO", res: "['SFO']", stack: 6, log: { t: "Appending 'SFO' to result array.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO", adj: { ATL: [], JFK: [], SFO: [] } },
   
-  { line: 11, curr: "ATL", res: "['SFO', 'ATL']", stack: 5, log: { t: "Backtracked to ATL. adj['ATL'] is empty. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL" },
-  { line: 11, curr: "SFO", res: "['SFO', 'ATL', 'SFO']", stack: 4, log: { t: "Backtracked to SFO. adj['SFO'] is empty. Appending 'SFO'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO" },
-  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK']", stack: 3, log: { t: "Backtracked to JFK. adj['JFK'] is empty. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK" },
-  { line: 11, curr: "ATL", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL']", stack: 2, log: { t: "Backtracked to ATL. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL" },
-  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL', 'JFK']", stack: 1, log: { t: "Backtracked to JFK. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK" },
+  { line: 11, curr: "ATL", res: "['SFO', 'ATL']", stack: 5, log: { t: "Backtracked to ATL. adj['ATL'] is empty. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 11, curr: "SFO", res: "['SFO', 'ATL', 'SFO']", stack: 4, log: { t: "Backtracked to SFO. adj['SFO'] is empty. Appending 'SFO'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "SFO", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK']", stack: 3, log: { t: "Backtracked to JFK. adj['JFK'] is empty. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 11, curr: "ATL", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL']", stack: 2, log: { t: "Backtracked to ATL. Appending 'ATL'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "ATL", adj: { ATL: [], JFK: [], SFO: [] } },
+  { line: 11, curr: "JFK", res: "['SFO', 'ATL', 'SFO', 'JFK', 'ATL', 'JFK']", stack: 1, log: { t: "Backtracked to JFK. Appending 'JFK'.", c: "log-success" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: "JFK", adj: { ATL: [], JFK: [], SFO: [] } },
   
-  { line: 14, curr: "-", res: "['JFK', 'ATL', 'JFK', 'SFO', 'ATL', 'SFO']", stack: 0, log: { t: "Returning reversed result array! Itinerary complete.", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: null },
+  { line: 14, curr: "-", res: "['JFK', 'ATL', 'JFK', 'SFO', 'ATL', 'SFO']", stack: 0, log: { t: "Returning reversed result array! Itinerary complete.", c: "log-purple" }, edgeStates: {1: "edge-consumed", 3: "edge-consumed", 0: "edge-consumed", 2: "edge-consumed", 4: "edge-consumed"}, activeNode: null, adj: { ATL: [], JFK: [], SFO: [] } },
 ];
 
 let curStep = -1;
+
+function formatAdj(adjObj) {
+    let out = "{\n";
+    for (const [k, v] of Object.entries(adjObj)) {
+        let vals = v.map(val => `<span class="ds-val">'${val}'</span>`).join(", ");
+        out += `  <span class="ds-key">'${k}'</span>: [${vals}],\n`;
+    }
+    out += "}";
+    return out;
+}
 
 function updateUI() {
     const s = states[curStep];
@@ -236,6 +255,9 @@ function updateUI() {
     document.getElementById('var-curr').innerText = s.curr;
     document.getElementById('var-res').innerText = s.res;
     document.getElementById('var-stack').innerText = s.stack;
+    if (document.getElementById('var-adj')) {
+        document.getElementById('var-adj').innerHTML = formatAdj(s.adj);
+    }
     
     // Highlight Code
     document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
@@ -291,6 +313,9 @@ function reset() {
     document.getElementById('var-curr').innerText = '-';
     document.getElementById('var-res').innerText = '[]';
     document.getElementById('var-stack').innerText = '0';
+    if (document.getElementById('var-adj')) {
+        document.getElementById('var-adj').innerHTML = '{}';
+    }
     
     document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.node-group').forEach(el => el.classList.remove('node-active'));
