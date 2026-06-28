@@ -107,7 +107,7 @@ def test_minimumCost():
     print("Testing minimumCost (#1135):")
     cases = [
         ((3, [[1,2,5],[1,3,6],[2,3,1]]),   6,  "canonical 3 cities"),
-        ((4, [[1,2,3],[3,4,4],[1,4,3],[1,3,1],[2,4,1]]),  6, "4 cities dense"),
+        ((4, [[1,2,3],[3,4,4],[1,4,3],[1,3,1],[2,4,1]]),  5, "4 cities dense"),
         ((3, [[1,2,1],[2,3,2]]),            3,  "chain, both edges needed"),
         ((4, [[1,2,1],[2,3,2]]),           -1,  "city 4 unreachable"),
         ((2, [[1,2,100]]),               100,  "two cities one edge"),

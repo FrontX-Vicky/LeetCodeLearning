@@ -15,7 +15,19 @@ class UnionFind:
     def find(self, x):
         if self.parent[x] != x:
             self.parent[x] = self.find(self.parent[x])    # path compression 
-        return self.parent
+        return self.parent[x]
+
+    def union(self, x, y):
+        py, px = self.find(x), self.find(y)
+        if px == py:
+            return False
+        if self.rank[px] < self.rank[py]:
+            px, py = py, px
+        self.parent[py] = px
+        if self.rank[px] == self.rank[py]:
+            self.rank[px] += 1
+        return True
+
 
 # ============================================================
 # PROBLEM 1: MIN COST TO CONNECT ALL POINTS
@@ -69,8 +81,17 @@ def minimumSpanningTree(n: int, edges: List[List[int]]) -> int:
     """
     # TODO: Implement Kruskal's with Union-Find
     edges.sort(key=lambda e: e[2])
-    uf = 
+    uf = UnionFind(n)
+    total, count = 0,0
 
+    for u, v, w in edges:
+        if uf.union(u, v):
+            total += w
+            count += 1
+            if count == n - 1:
+                return total
+    
+    return total if count == n - 1 else -1
 
 # ============================================================
 # PROBLEM 3: OPTIMIZE WATER DISTRIBUTION IN A VILLAGE
@@ -89,7 +110,21 @@ def minCostToSupplyWater(n: int, wells: List[int], pipes: List[List[int]]) -> in
     - Run Kruskal's on all edges (pipes + virtual well edges)
     """
     # TODO: Add virtual node and run Kruskal's MST
-    pass
+    all_edges = []
+    for i, cost in enumerate(wells):
+        all_edges.append((cost, 0, i + 1))
+    for h1, h2, cost in pipes:
+        all_edges.append((cost, h1, h2))
+
+    all_edges.sort()
+    uf = UnionFind(n + 1)
+    total = 0
+
+    for cost, u, v in all_edges:
+        if uf.union(u, v):
+            total += cost
+    
+    return total
 
 
 # ============================================================
@@ -111,7 +146,37 @@ def findCriticalAndPseudoCriticalEdges(
     - Pseudo-critical: force edge i in → MST weight stays the same
     """
     # TODO: Implement edge classification with Kruskal's
-    pass
+    indexed = sorted(enumerate(edges), key=lambda x: x[1][2])
+
+    def krushkal(skip=-1, force=-1):
+        uf = UnionFind(n)
+        total, count = 0,0
+        if force != -1:
+            orig_idx = indexed[force][0]
+            u, v, w = edges[orig_idx]
+            uf.union(u, v)
+            total += w
+            count += 1
+
+        for i, (orig_idx, (u, v, w)) in enumerate(indexed):
+            if i == skip:
+                continue
+            if uf.union(u, v):
+                total += w
+                count += 1
+        return total if count == n - 1 else float('inf')
+
+    baseline = krushkal()
+    critical, pseudo = [], []
+
+    for i in range(len(indexed)):
+        orig_idx = indexed[i][0]
+        if krushkal(skip = i) > baseline:
+            critical.append(orig_idx)
+        elif krushkal(force = i) == baseline:
+            pseudo.append(orig_idx)
+        
+    return [sorted(critical), sorted(pseudo)]
 
 
 # ============================================================
@@ -131,7 +196,18 @@ def minimumCost(n: int, connections: List[List[int]]) -> int:
     - Need exactly n-1 edges for n cities
     """
     # TODO: Implement Kruskal's MST, return -1 if not fully connected
-    pass
+    connections.sort(key=lambda e: e[2])
+    uf = UnionFind(n + 1)
+    total, count = 0, 0
+
+    for u, v, w in connections:
+        if uf.union(u, v):
+            total += w
+            count += 1
+            if count == n - 1:
+                return total
+    
+    return -1
 
 
 # ============================================================
