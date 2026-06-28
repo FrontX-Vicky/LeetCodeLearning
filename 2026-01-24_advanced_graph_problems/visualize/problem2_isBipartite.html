@@ -3,38 +3,420 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LC #785 Is Graph Bipartite? — Visualizer</title>
+<title>LC #785 Is Bipartite — Unified Visualizer</title>
 <style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+    --color-red: #f85149; --color-blue: #58a6ff;
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--muted:#8b949e;--text:#c9d1d9;--head:#f0f6fc;--blue:#58a6ff;--orange:#d29922;--green:#3fb950;--purple:#bc8cff;--red:#f85149}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.header{background:var(--panel);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
-.header-left h1{font-size:15px;font-weight:600;color:var(--head)}
-.main{display:flex;flex:1;padding:20px;justify-content:center;align-items:center;flex-direction:column;gap:20px;text-align:center}
-.info-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:600px}
-.prob-nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; align-items:center;}
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px; gap: 4px; }
+.top-panels { display: flex; flex: 2; min-height: 0; gap: 4px; }
+.bottom-panel { flex: 1; min-height: 150px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL (CODE + VARIABLES) */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 80px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.ds-viewer { background: #0d1117; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0;}
+.ds-title { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 6px 10px; background: #161b22; border-bottom: 1px solid var(--border-color); }
+.ds-content { padding: 10px; font-family: 'Consolas', monospace; font-size: 12px; color: var(--text-color); white-space: pre-wrap; overflow-y: auto; max-height: 120px; }
+.ds-key { color: var(--purple); } .ds-val { color: var(--success-color); }
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e;}
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-com { color: #6a9955; } .k-num { color: #b5cea8; }
+
+/* CENTER PANEL (GRAPH) */
+.center-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative;}
+svg { width: 100%; height: 100%; max-height: 400px; max-width: 400px; }
+
+.node-circle { fill: #21262d; stroke: #30363d; stroke-width: 2; transition: all 0.3s; }
+.node-text { fill: var(--text-color); font-family: sans-serif; font-size: 14px; font-weight: 600; text-anchor: middle; dominant-baseline: central; pointer-events: none;}
+.node-red .node-circle { fill: rgba(248, 81, 73, 0.2); stroke: var(--color-red); }
+.node-blue .node-circle { fill: rgba(88, 166, 255, 0.2); stroke: var(--color-blue); }
+.node-active .node-circle { stroke-width: 4; stroke-dasharray: 4; animation: spin 4s linear infinite; }
+.node-nei .node-circle { stroke-width: 4; stroke: var(--warning-color); }
+
+.edge-path { fill: none; stroke: #484f58; stroke-width: 2; transition: all 0.3s; }
+.edge-active { stroke: var(--warning-color); stroke-width: 3; }
+.edge-conflict { stroke: var(--danger-color); stroke-width: 4; box-shadow: 0 0 10px var(--danger-color); }
+
+@keyframes spin { 100% { stroke-dashoffset: 24; } }
+
+/* BOTTOM PANEL (LOGS) */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-danger { color: var(--danger-color); font-weight: bold; border-left-color: var(--danger-color); background: rgba(248, 81, 73, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+.log-warn { color: var(--warning-color); font-weight: bold; border-left-color: var(--warning-color); background: rgba(210, 153, 34, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* RESIZERS */
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
 </style>
 </head>
 <body>
+
 <div class="header">
   <select class="prob-nav" onchange="window.location.href=this.value">
-    <option value="problem1_findItinerary.html" >P1 · findItinerary</option>
+    <option value="problem1_findItinerary.html">P1 · findItinerary</option>
     <option value="problem2_isBipartite.html" selected>P2 · isBipartite</option>
-    <option value="problem3_ladderLength.html" >P3 · ladderLength</option>
-    <option value="problem4_criticalConnections.html" >P4 · criticalConnections</option>
+    <option value="problem3_ladderLength.html">P3 · ladderLength</option>
+    <option value="problem4_criticalConnections.html">P4 · criticalConnections</option>
   </select>
   <div class="header-left">
-    <h1>Is Graph Bipartite? &nbsp;<span style="color:var(--muted);font-weight:400;font-size:12px">LC #785</span></h1>
+    <h1>Is Graph Bipartite? &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #785</span></h1>
+    <p>Graph Coloring using BFS</p>
+  </div>
+  <div class="controls">
+    <select id="tc-select" onchange="loadTestCase()" style="background:#21262d; border:1px solid #30363d; color:#c9d1d9; border-radius:4px; padding:4px 8px; margin-right: 10px;">
+        <option value="tc1">TC1: Even Cycle (Bipartite)</option>
+        <option value="tc2">TC2: Odd Cycle (Not Bipartite)</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
   </div>
 </div>
-<div class="main">
-  <div class="info-box">
-    <h2 style="color:var(--blue);margin-bottom:10px;">Visualizer Under Construction 🚧</h2>
-    <p style="color:var(--muted);line-height:1.5;font-size:14px;">
-      The interactive step-by-step visualizer for <strong>Is Graph Bipartite?</strong> is currently being developed. 
-      Because this is an advanced graph algorithm, the execution state-machine requires custom mapping.
-    </p>
+
+<div class="main-wrapper">
+  <div class="top-panels">
+    
+    <div class="left-panel">
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">Current Node</div>
+          <div class="var-val" id="var-curr" style="color:var(--warning-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">Neighbor Node</div>
+          <div class="var-val" id="var-nei" style="color:var(--purple)">-</div>
+        </div>
+      </div>
+      <div class="ds-viewer">
+        <div class="ds-title">Data Structures State</div>
+        <div class="ds-content" id="var-ds">
+            <div><span class="ds-key">Queue:</span> <span id="ds-q" class="ds-val">[]</span></div>
+            <div style="margin-top: 5px;"><span class="ds-key">Colors:</span> <span id="ds-colors" class="ds-val">[0, 0, 0, 0]</span></div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">isBipartite</span>(graph):</div></div>
+<div class="code-line" id="line-2"><div class="ln">2</div><div class="lt">    n = <span class="k-fn">len</span>(graph)</div></div>
+<div class="code-line" id="line-3"><div class="ln">3</div><div class="lt">    colors = [<span class="k-num">0</span>] * n</div></div>
+<div class="code-line" id="line-4"><div class="ln">4</div><div class="lt">    <span class="k-kw">for</span> i <span class="k-kw">in</span> <span class="k-fn">range</span>(n):</div></div>
+<div class="code-line" id="line-5"><div class="ln">5</div><div class="lt">        <span class="k-kw">if</span> colors[i] != <span class="k-num">0</span>: <span class="k-kw">continue</span></div></div>
+<div class="code-line" id="line-6"><div class="ln">6</div><div class="lt">        q = collections.deque([i])</div></div>
+<div class="code-line" id="line-7"><div class="ln">7</div><div class="lt">        colors[i] = <span class="k-num">1</span></div></div>
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">        <span class="k-kw">while</span> q:</div></div>
+<div class="code-line" id="line-9"><div class="ln">9</div><div class="lt">            node = q.popleft()</div></div>
+<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">            <span class="k-kw">for</span> nei <span class="k-kw">in</span> graph[node]:</div></div>
+<div class="code-line" id="line-11"><div class="ln">11</div><div class="lt">                <span class="k-kw">if</span> colors[nei] == colors[node]:</div></div>
+<div class="code-line" id="line-12"><div class="ln">12</div><div class="lt">                    <span class="k-kw">return False</span></div></div>
+<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">                <span class="k-kw">if</span> colors[nei] == <span class="k-num">0</span>:</div></div>
+<div class="code-line" id="line-14"><div class="ln">14</div><div class="lt">                    colors[nei] = -colors[node]</div></div>
+<div class="code-line" id="line-15"><div class="ln">15</div><div class="lt">                    q.append(nei)</div></div>
+<div class="code-line" id="line-16"><div class="ln">16</div><div class="lt">    <span class="k-kw">return True</span></div></div>
+      </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <div class="center-panel">
+      <div class="panel-title">Graph Visualization</div>
+      <div class="svg-wrap">
+        
+        <!-- TEST CASE 1: SQUARE -->
+        <svg id="svg-tc1" viewBox="0 0 400 400" style="display:none;">
+          <!-- Edges -->
+          <g id="edges-tc1">
+            <line class="edge-path" id="e1-0-1" x1="100" y1="100" x2="300" y2="100" />
+            <line class="edge-path" id="e1-1-2" x1="300" y1="100" x2="300" y2="300" />
+            <line class="edge-path" id="e1-2-3" x1="300" y1="300" x2="100" y2="300" />
+            <line class="edge-path" id="e1-3-0" x1="100" y1="300" x2="100" y2="100" />
+          </g>
+          <!-- Nodes -->
+          <g id="n1-0" class="node-group" transform="translate(100, 100)"><circle class="node-circle" r="22" /><text class="node-text">0</text></g>
+          <g id="n1-1" class="node-group" transform="translate(300, 100)"><circle class="node-circle" r="22" /><text class="node-text">1</text></g>
+          <g id="n1-2" class="node-group" transform="translate(300, 300)"><circle class="node-circle" r="22" /><text class="node-text">2</text></g>
+          <g id="n1-3" class="node-group" transform="translate(100, 300)"><circle class="node-circle" r="22" /><text class="node-text">3</text></g>
+        </svg>
+
+        <!-- TEST CASE 2: TRIANGLE -->
+        <svg id="svg-tc2" viewBox="0 0 400 400" style="display:none;">
+          <!-- Edges -->
+          <g id="edges-tc2">
+            <line class="edge-path" id="e2-0-1" x1="200" y1="100" x2="100" y2="280" />
+            <line class="edge-path" id="e2-1-2" x1="100" y1="280" x2="300" y2="280" />
+            <line class="edge-path" id="e2-2-0" x1="300" y1="280" x2="200" y2="100" />
+          </g>
+          <!-- Nodes -->
+          <g id="n2-0" class="node-group" transform="translate(200, 100)"><circle class="node-circle" r="22" /><text class="node-text">0</text></g>
+          <g id="n2-1" class="node-group" transform="translate(100, 280)"><circle class="node-circle" r="22" /><text class="node-text">1</text></g>
+          <g id="n2-2" class="node-group" transform="translate(300, 280)"><circle class="node-circle" r="22" /><text class="node-text">2</text></g>
+        </svg>
+
+      </div>
+    </div>
+    
+  </div>
+
+  <div class="resizer-h" id="resizer-h"></div>
+  
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
   </div>
 </div>
+
+<script>
+// Test Case 1: Square [[1,3], [0,2], [1,3], [0,2]]
+const tc1_states = [
+  { l:3, c:"-", n:"-", q:"[]", colors:"[0, 0, 0, 0]", nodeColors:{}, active:null, nei:null, edge:null, log:{ t:"Initialize colors array to 0 for all nodes.", c:"" } },
+  { l:4, c:"-", n:"-", q:"[]", colors:"[0, 0, 0, 0]", nodeColors:{}, active:null, nei:null, edge:null, log:{ t:"Looping through all unvisited components. Starting at i=0.", c:"" } },
+  { l:6, c:"-", n:"-", q:"[0]", colors:"[0, 0, 0, 0]", nodeColors:{}, active:null, nei:null, edge:null, log:{ t:"Initialize BFS queue with node 0.", c:"log-hl" } },
+  { l:7, c:"-", n:"-", q:"[0]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:null, nei:null, edge:null, log:{ t:"Color node 0 Red (1).", c:"log-purple" } },
+  { l:8, c:"-", n:"-", q:"[0]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:null, nei:null, edge:null, log:{ t:"While queue is not empty...", c:"" } },
+  
+  { l:9, c:"0", n:"-", q:"[]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:null, edge:null, log:{ t:"Pop node 0 from queue to process its neighbors.", c:"log-hl" } },
+  { l:10, c:"0", n:"1", q:"[]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:1, edge:"e1-0-1", log:{ t:"Checking neighbor 1 of node 0.", c:"" } },
+  { l:11, c:"0", n:"1", q:"[]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:1, edge:"e1-0-1", log:{ t:"Color of neighbor 1 is 0. No conflict.", c:"" } },
+  { l:13, c:"0", n:"1", q:"[]", colors:"[1, 0, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:1, edge:"e1-0-1", log:{ t:"Neighbor 1 is uncolored.", c:"" } },
+  { l:14, c:"0", n:"1", q:"[]", colors:"[1, -1, 0, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:1, edge:"e1-0-1", log:{ t:"Coloring neighbor 1 Blue (-1) (opposite of node 0).", c:"log-purple" } },
+  { l:15, c:"0", n:"1", q:"[1]", colors:"[1, -1, 0, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:1, edge:"e1-0-1", log:{ t:"Appended neighbor 1 to queue.", c:"" } },
+  
+  { l:10, c:"0", n:"3", q:"[1]", colors:"[1, -1, 0, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:3, edge:"e1-3-0", log:{ t:"Checking neighbor 3 of node 0.", c:"" } },
+  { l:11, c:"0", n:"3", q:"[1]", colors:"[1, -1, 0, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:3, edge:"e1-3-0", log:{ t:"Color of neighbor 3 is 0. No conflict.", c:"" } },
+  { l:14, c:"0", n:"3", q:"[1]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:0, nei:3, edge:"e1-3-0", log:{ t:"Coloring neighbor 3 Blue (-1) (opposite of node 0).", c:"log-purple" } },
+  { l:15, c:"0", n:"3", q:"[1, 3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:0, nei:3, edge:"e1-3-0", log:{ t:"Appended neighbor 3 to queue.", c:"" } },
+  
+  { l:8, c:"-", n:"-", q:"[1, 3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:null, nei:null, edge:null, log:{ t:"Queue is [1, 3]. Continuing loop.", c:"" } },
+  { l:9, c:"1", n:"-", q:"[3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:1, nei:null, edge:null, log:{ t:"Pop node 1 from queue.", c:"log-hl" } },
+  { l:10, c:"1", n:"0", q:"[3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:1, nei:0, edge:"e1-0-1", log:{ t:"Checking neighbor 0.", c:"" } },
+  { l:11, c:"1", n:"0", q:"[3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:1, nei:0, edge:"e1-0-1", log:{ t:"Colors are different (-1 != 1). OK.", c:"log-success" } },
+  { l:10, c:"1", n:"2", q:"[3]", colors:"[1, -1, 0, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue"}, active:1, nei:2, edge:"e1-1-2", log:{ t:"Checking neighbor 2.", c:"" } },
+  { l:14, c:"1", n:"2", q:"[3]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:1, nei:2, edge:"e1-1-2", log:{ t:"Coloring neighbor 2 Red (1).", c:"log-purple" } },
+  { l:15, c:"1", n:"2", q:"[3, 2]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:1, nei:2, edge:"e1-1-2", log:{ t:"Appended 2 to queue.", c:"" } },
+  
+  { l:9, c:"3", n:"-", q:"[2]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:3, nei:null, edge:null, log:{ t:"Pop node 3 from queue.", c:"log-hl" } },
+  { l:11, c:"3", n:"0", q:"[2]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:3, nei:0, edge:"e1-3-0", log:{ t:"Checking neighbor 0. Already colored 1. OK.", c:"log-success" } },
+  { l:11, c:"3", n:"2", q:"[2]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:3, nei:2, edge:"e1-2-3", log:{ t:"Checking neighbor 2. Already colored 1. OK.", c:"log-success" } },
+
+  { l:9, c:"2", n:"-", q:"[]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:2, nei:null, edge:null, log:{ t:"Pop node 2 from queue.", c:"log-hl" } },
+  { l:11, c:"2", n:"1", q:"[]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:2, nei:1, edge:"e1-1-2", log:{ t:"Checking neighbor 1. Already colored -1. OK.", c:"log-success" } },
+  { l:11, c:"2", n:"3", q:"[]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:2, nei:3, edge:"e1-2-3", log:{ t:"Checking neighbor 3. Already colored -1. OK.", c:"log-success" } },
+
+  { l:16, c:"-", n:"-", q:"[]", colors:"[1, -1, 1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 3:"node-blue", 2:"node-red"}, active:null, nei:null, edge:null, log:{ t:"Finished checking all nodes. Graph is Bipartite! Returning True.", c:"log-success" } }
+];
+
+// Test Case 2: Triangle [[1,2], [0,2], [0,1]]
+const tc2_states = [
+  { l:3, c:"-", n:"-", q:"[]", colors:"[0, 0, 0]", nodeColors:{}, active:null, nei:null, edge:null, log:{ t:"Initialize colors array to 0 for all 3 nodes.", c:"" } },
+  { l:6, c:"-", n:"-", q:"[0]", colors:"[0, 0, 0]", nodeColors:{}, active:null, nei:null, edge:null, log:{ t:"Initialize BFS queue with node 0.", c:"log-hl" } },
+  { l:7, c:"-", n:"-", q:"[0]", colors:"[1, 0, 0]", nodeColors:{0:"node-red"}, active:null, nei:null, edge:null, log:{ t:"Color node 0 Red (1).", c:"log-purple" } },
+  
+  { l:9, c:"0", n:"-", q:"[]", colors:"[1, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:null, edge:null, log:{ t:"Pop node 0 from queue.", c:"log-hl" } },
+  { l:10, c:"0", n:"1", q:"[]", colors:"[1, 0, 0]", nodeColors:{0:"node-red"}, active:0, nei:1, edge:"e2-0-1", log:{ t:"Checking neighbor 1 of node 0.", c:"" } },
+  { l:14, c:"0", n:"1", q:"[]", colors:"[1, -1, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:1, edge:"e2-0-1", log:{ t:"Coloring neighbor 1 Blue (-1).", c:"log-purple" } },
+  { l:15, c:"0", n:"1", q:"[1]", colors:"[1, -1, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:1, edge:"e2-0-1", log:{ t:"Appended 1 to queue.", c:"" } },
+  
+  { l:10, c:"0", n:"2", q:"[1]", colors:"[1, -1, 0]", nodeColors:{0:"node-red", 1:"node-blue"}, active:0, nei:2, edge:"e2-2-0", log:{ t:"Checking neighbor 2 of node 0.", c:"" } },
+  { l:14, c:"0", n:"2", q:"[1]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:0, nei:2, edge:"e2-2-0", log:{ t:"Coloring neighbor 2 Blue (-1).", c:"log-purple" } },
+  { l:15, c:"0", n:"2", q:"[1, 2]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:0, nei:2, edge:"e2-2-0", log:{ t:"Appended 2 to queue.", c:"" } },
+  
+  { l:9, c:"1", n:"-", q:"[2]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:1, nei:null, edge:null, log:{ t:"Pop node 1 from queue.", c:"log-hl" } },
+  { l:11, c:"1", n:"0", q:"[2]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:1, nei:0, edge:"e2-0-1", log:{ t:"Checking neighbor 0. Colors different (-1 != 1). OK.", c:"log-success" } },
+  { l:10, c:"1", n:"2", q:"[2]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:1, nei:2, edge:"e2-1-2", log:{ t:"Checking neighbor 2 of node 1.", c:"" } },
+  { l:12, c:"1", n:"2", q:"[2]", colors:"[1, -1, -1]", nodeColors:{0:"node-red", 1:"node-blue", 2:"node-blue"}, active:1, nei:2, edge:"e2-1-2", log:{ t:"CONFLICT! Node 1 is Blue(-1) and neighbor 2 is ALSO Blue(-1). Graph is NOT bipartite!", c:"log-danger" }, edgeConflict: "e2-1-2" }
+];
+
+let curStep = -1;
+let currentMode = 'tc1';
+let states = tc1_states;
+
+function loadTestCase() {
+    const sel = document.getElementById('tc-select').value;
+    currentMode = sel;
+    states = sel === 'tc1' ? tc1_states : tc2_states;
+    
+    document.getElementById('svg-tc1').style.display = sel === 'tc1' ? 'block' : 'none';
+    document.getElementById('svg-tc2').style.display = sel === 'tc2' ? 'block' : 'none';
+    
+    reset();
+}
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Update variables
+    document.getElementById('var-curr').innerText = s.c;
+    document.getElementById('var-nei').innerText = s.n;
+    document.getElementById('ds-q').innerText = s.q;
+    document.getElementById('ds-colors').innerText = s.colors;
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById(`line-${s.l}`).classList.add('active');
+    
+    // Reset SVG Nodes & Edges
+    const pfx = currentMode === 'tc1' ? '1' : '2';
+    document.querySelectorAll(`#svg-tc${pfx} .node-group`).forEach(el => {
+        el.className.baseVal = 'node-group';
+    });
+    document.querySelectorAll(`#svg-tc${pfx} .edge-path`).forEach(el => {
+        el.classList.remove('edge-active', 'edge-conflict');
+    });
+    
+    // Apply Node Colors
+    for (const [nodeId, className] of Object.entries(s.nodeColors)) {
+        document.getElementById(`n${pfx}-${nodeId}`).classList.add(className);
+    }
+    
+    // Apply Active / Nei Node states
+    if (s.active !== null) {
+        document.getElementById(`n${pfx}-${s.active}`).classList.add('node-active');
+    }
+    if (s.nei !== null) {
+        document.getElementById(`n${pfx}-${s.nei}`).classList.add('node-nei');
+    }
+    
+    // Apply Edge states
+    if (s.edge) {
+        document.getElementById(s.edge).classList.add('edge-active');
+    }
+    if (s.edgeConflict) {
+        document.getElementById(s.edgeConflict).classList.add('edge-conflict');
+    }
+    
+    // Update Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Button States
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    
+    document.getElementById('var-curr').innerText = '-';
+    document.getElementById('var-nei').innerText = '-';
+    document.getElementById('ds-q').innerText = '[]';
+    
+    // Set colors default based on TC
+    document.getElementById('ds-colors').innerText = currentMode === 'tc1' ? '[0, 0, 0, 0]' : '[0, 0, 0]';
+    
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    
+    const pfx = currentMode === 'tc1' ? '1' : '2';
+    document.querySelectorAll(`#svg-tc${pfx} .node-group`).forEach(el => {
+        el.className.baseVal = 'node-group';
+    });
+    document.querySelectorAll(`#svg-tc${pfx} .edge-path`).forEach(el => {
+        el.classList.remove('edge-active', 'edge-conflict');
+    });
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+
+// Initial load
+loadTestCase();
+
+// Resizer Logic
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.querySelector('.left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.querySelector('.top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+if (resizerV) {
+    resizerV.addEventListener('mousedown', (e) => {
+        isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+        document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+    });
+}
+if (resizerH) {
+    resizerH.addEventListener('mousedown', (e) => {
+        isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+        document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+    });
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); }
+});
+</script>
 </body>
 </html>
