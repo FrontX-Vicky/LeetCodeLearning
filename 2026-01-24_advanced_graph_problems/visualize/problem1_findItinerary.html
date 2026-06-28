@@ -27,8 +27,8 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
 .btn.primary:hover:not(:disabled) { background: #2ea043; }
 
 /* MAIN LAYOUT */
-.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px; gap: 10px; }
-.top-panels { display: flex; flex: 2; min-height: 0; gap: 10px; }
+.main-wrapper { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 10px; gap: 4px; }
+.top-panels { display: flex; flex: 2; min-height: 0; gap: 4px; }
 .bottom-panel { flex: 1; min-height: 150px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
 
 /* LEFT PANEL (CODE + VARIABLES) */
@@ -69,6 +69,11 @@ svg { width: 100%; height: 100%; }
 .log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
 
 @keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; border-radius: 3px; z-index: 10; flex-shrink: 0; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
 </style>
 </head>
 <body>
@@ -128,6 +133,8 @@ svg { width: 100%; height: 100%; }
       </div>
     </div>
 
+    <div class="resizer-v" id="resizer-v"></div>
+
     <div class="center-panel">
       <div class="panel-title">Graph Visualization</div>
       <div class="svg-wrap">
@@ -165,6 +172,8 @@ svg { width: 100%; height: 100%; }
     </div>
     
   </div>
+
+  <div class="resizer-h" id="resizer-h"></div>
   
   <div class="bottom-panel">
     <div class="panel-title">Execution Logs</div>
@@ -292,6 +301,44 @@ function reset() {
     document.getElementById('btn-prev').disabled = true;
     document.getElementById('btn-next').disabled = false;
 }
+
+// Resizer Logic
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.querySelector('.left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.querySelector('.top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+if (resizerV) {
+    resizerV.addEventListener('mousedown', (e) => {
+        isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+        document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+    });
+}
+if (resizerH) {
+    resizerH.addEventListener('mousedown', (e) => {
+        isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+        document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+    });
+}
+
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); }
+});
 </script>
 </body>
 </html>
