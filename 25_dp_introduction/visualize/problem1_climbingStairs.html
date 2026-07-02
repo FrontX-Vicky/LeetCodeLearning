@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #70 Climbing Stairs — DP Tabulation</title>
+<style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; align-items:center;}
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; padding: 10px; gap: 4px; overflow: hidden; }
+.top-panels { display: flex; flex: 3; min-height: 0; gap: 4px; }
+.bottom-panel { flex: 1; min-height: 100px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.inputs-container { background: #0d1117; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between; background: #161b22;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 60px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e; min-height: 150px;}
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-num { color: #b5cea8; }
+
+/* CENTER PANEL */
+.center-panel { flex: 2; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative; padding: 20px; overflow: auto;}
+
+/* Array DP Visualization */
+.dp-array { display: flex; gap: 8px; align-items: flex-end; justify-content: center; min-width: max-content; }
+.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dp-index { font-size: 11px; color: #8b949e; font-family: monospace; }
+.dp-box { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 2px solid var(--border-color); background: #21262d; font-family: monospace; font-size: 16px; font-weight: bold; transition: all 0.3s; position: relative; }
+.dp-box.known { border-color: var(--success-color); background: rgba(63, 185, 80, 0.1); color: var(--success-color); }
+.dp-box.current { border-color: var(--accent-color); background: rgba(88, 166, 255, 0.1); color: var(--accent-color); transform: translateY(-5px); box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
+.dp-box.prev1 { border-color: var(--purple); background: rgba(188, 140, 255, 0.1); color: var(--purple); }
+.dp-box.prev2 { border-color: var(--warning-color); background: rgba(210, 153, 34, 0.1); color: var(--warning-color); }
+.dp-label { font-size: 10px; font-weight: bold; color: var(--border-color); margin-top: 4px; transition: color 0.3s;}
+.dp-label.a-lbl { color: var(--warning-color); }
+.dp-label.b-lbl { color: var(--purple); }
+
+/* SVG Arrows */
+.arrows-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.dp-arrow { fill: none; stroke-width: 2; stroke-dasharray: 4; opacity: 0; transition: opacity 0.3s; }
+.dp-arrow.show { opacity: 1; animation: dashMove 1s linear infinite; }
+@keyframes dashMove { to { stroke-dashoffset: -8; } }
+
+/* LOGS */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; border-left-color: var(--accent-color); background: rgba(88, 166, 255, 0.05); }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* RESIZERS */
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_climbingStairs.html" selected>P1 · Climbing Stairs (Tabulation)</option>
+    <option value="problem2_minCostClimbingStairs.html">P2 · Min Cost Climbing Stairs</option>
+  </select>
+  <div class="header-left">
+    <h1>Climbing Stairs &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #70</span></h1>
+    <p>1D Dynamic Programming Tabulation (Bottom-Up)</p>
+  </div>
+  <div class="controls">
+    <select id="tc-select" onchange="loadTestCase()" style="background:#21262d; border:1px solid #30363d; color:#c9d1d9; border-radius:4px; padding:4px 8px; margin-right: 10px;">
+        <option value="tc1">TC1: n = 5</option>
+        <option value="tc2">TC2: n = 8</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-container">
+        <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 4px 10px; background: #161b22; border-bottom: 1px solid var(--border-color);">Inputs</div>
+        <div style="padding: 6px 10px; font-family: monospace; font-size: 12px;"><span style="color:var(--purple)">n:</span> <span class="k-num" id="in-n">5</span></div>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">a (dp[i-2])</div>
+          <div class="var-val" id="var-a" style="color:var(--warning-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">b (dp[i-1])</div>
+          <div class="var-val" id="var-b" style="color:var(--purple)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">i</div>
+          <div class="var-val" id="var-i" style="color:var(--accent-color)">-</div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-31"><div class="ln">31</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">climbStairs</span>(n: <span class="k-fn">int</span>) -> <span class="k-fn">int</span>:</div></div>
+<div class="code-line" id="line-36"><div class="ln">36</div><div class="lt">    <span class="k-kw">if</span> n < <span class="k-num">2</span>:</div></div>
+<div class="code-line" id="line-37"><div class="ln">37</div><div class="lt">        <span class="k-kw">return</span> n</div></div>
+<div class="code-line" id="line-38"><div class="ln">38</div><div class="lt">    a, b = <span class="k-num">1</span>, <span class="k-num">2</span></div></div>
+<div class="code-line" id="line-39"><div class="ln">39</div><div class="lt">    <span class="k-kw">for</span> i <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">3</span>, n + <span class="k-num">1</span>):</div></div>
+<div class="code-line" id="line-40"><div class="ln">40</div><div class="lt">        a, b = b, a + b</div></div>
+<div class="code-line" id="line-41"><div class="ln">41</div><div class="lt">    <span class="k-kw">return</span> b</div></div>
+      </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <div class="center-panel">
+      <div class="panel-title">1D Tabulation Visualizer</div>
+      <div class="svg-wrap" id="svg-wrap">
+        <svg class="arrows-svg" id="arrows-layer">
+            <path id="arrow-a" class="dp-arrow" stroke="var(--warning-color)" />
+            <path id="arrow-b" class="dp-arrow" stroke="var(--purple)" />
+        </svg>
+        <div class="dp-array" id="dp-array">
+            <!-- Dynamically generated array cells -->
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <div class="resizer-h" id="resizer-h"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const climb_tc1 = [{"line": 31, "n": 5, "a": "-", "b": "-", "i": "-", "dp": [0, 0, 0, 0, 0, 0], "log": {"c": "log-hl", "t": "climbStairs(5) called."}}, {"line": 38, "n": 5, "a": 1, "b": 2, "i": "-", "dp": [0, 1, 2, 0, 0, 0], "log": {"c": "", "t": "Base cases set: a = 1 (step 1), b = 2 (step 2)."}}, {"line": 39, "n": 5, "a": 1, "b": 2, "i": 3, "dp": [0, 1, 2, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for step 3."}}, {"line": 40, "n": 5, "a": 2, "b": 3, "i": 3, "dp": [0, 1, 2, 3, 0, 0], "log": {"c": "log-success", "t": "Calculated step 3: 1 + 2 = 3. Shifted a to 2, b to 3."}}, {"line": 39, "n": 5, "a": 2, "b": 3, "i": 4, "dp": [0, 1, 2, 3, 0, 0], "log": {"c": "", "t": "Loop iteration for step 4."}}, {"line": 40, "n": 5, "a": 3, "b": 5, "i": 4, "dp": [0, 1, 2, 3, 5, 0], "log": {"c": "log-success", "t": "Calculated step 4: 2 + 3 = 5. Shifted a to 3, b to 5."}}, {"line": 39, "n": 5, "a": 3, "b": 5, "i": 5, "dp": [0, 1, 2, 3, 5, 0], "log": {"c": "", "t": "Loop iteration for step 5."}}, {"line": 40, "n": 5, "a": 5, "b": 8, "i": 5, "dp": [0, 1, 2, 3, 5, 8], "log": {"c": "log-success", "t": "Calculated step 5: 3 + 5 = 8. Shifted a to 5, b to 8."}}, {"line": 41, "n": 5, "a": 5, "b": 8, "i": "-", "dp": [0, 1, 2, 3, 5, 8], "log": {"c": "log-purple", "t": "Loop finished. Returning b = 8."}}];
+const climb_tc2 = [{"line": 31, "n": 8, "a": "-", "b": "-", "i": "-", "dp": [0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-hl", "t": "climbStairs(8) called."}}, {"line": 38, "n": 8, "a": 1, "b": 2, "i": "-", "dp": [0, 1, 2, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Base cases set: a = 1 (step 1), b = 2 (step 2)."}}, {"line": 39, "n": 8, "a": 1, "b": 2, "i": 3, "dp": [0, 1, 2, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for step 3."}}, {"line": 40, "n": 8, "a": 2, "b": 3, "i": 3, "dp": [0, 1, 2, 3, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 3: 1 + 2 = 3. Shifted a to 2, b to 3."}}, {"line": 39, "n": 8, "a": 2, "b": 3, "i": 4, "dp": [0, 1, 2, 3, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for step 4."}}, {"line": 40, "n": 8, "a": 3, "b": 5, "i": 4, "dp": [0, 1, 2, 3, 5, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 4: 2 + 3 = 5. Shifted a to 3, b to 5."}}, {"line": 39, "n": 8, "a": 3, "b": 5, "i": 5, "dp": [0, 1, 2, 3, 5, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for step 5."}}, {"line": 40, "n": 8, "a": 5, "b": 8, "i": 5, "dp": [0, 1, 2, 3, 5, 8, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 5: 3 + 5 = 8. Shifted a to 5, b to 8."}}, {"line": 39, "n": 8, "a": 5, "b": 8, "i": 6, "dp": [0, 1, 2, 3, 5, 8, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for step 6."}}, {"line": 40, "n": 8, "a": 8, "b": 13, "i": 6, "dp": [0, 1, 2, 3, 5, 8, 13, 0, 0], "log": {"c": "log-success", "t": "Calculated step 6: 5 + 8 = 13. Shifted a to 8, b to 13."}}, {"line": 39, "n": 8, "a": 8, "b": 13, "i": 7, "dp": [0, 1, 2, 3, 5, 8, 13, 0, 0], "log": {"c": "", "t": "Loop iteration for step 7."}}, {"line": 40, "n": 8, "a": 13, "b": 21, "i": 7, "dp": [0, 1, 2, 3, 5, 8, 13, 21, 0], "log": {"c": "log-success", "t": "Calculated step 7: 8 + 13 = 21. Shifted a to 13, b to 21."}}, {"line": 39, "n": 8, "a": 13, "b": 21, "i": 8, "dp": [0, 1, 2, 3, 5, 8, 13, 21, 0], "log": {"c": "", "t": "Loop iteration for step 8."}}, {"line": 40, "n": 8, "a": 21, "b": 34, "i": 8, "dp": [0, 1, 2, 3, 5, 8, 13, 21, 34], "log": {"c": "log-success", "t": "Calculated step 8: 13 + 21 = 34. Shifted a to 21, b to 34."}}, {"line": 41, "n": 8, "a": 21, "b": 34, "i": "-", "dp": [0, 1, 2, 3, 5, 8, 13, 21, 34], "log": {"c": "log-purple", "t": "Loop finished. Returning b = 34."}}];
+const mincost_tc1 = [{"line": 45, "i": "-", "cost": [10, 15, 20], "log": {"c": "log-hl", "t": "minCostClimbingStairs([10, 15, 20]) called."}}, {"line": 52, "i": 2, "cost": [10, 15, 20], "log": {"c": "", "t": "Evaluating step 2 (base cost 20)."}}, {"line": 53, "i": 2, "cost": [10, 15, 30], "log": {"c": "log-purple", "t": "cost[2] += min(15 [i-1], 10 [i-2]) -> 30."}}, {"line": 55, "i": "-", "cost": [10, 15, 30], "log": {"c": "log-hl", "t": "Loop finished. Returning min(30, 15)."}}];
+const mincost_tc2 = [{"line": 45, "i": "-", "cost": [1, 100, 1, 1, 1, 100, 1, 1, 100, 1], "log": {"c": "log-hl", "t": "minCostClimbingStairs([1, 100, 1, 1, 1, 100, 1, 1, 100, 1]) called."}}, {"line": 52, "i": 2, "cost": [1, 100, 1, 1, 1, 100, 1, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 2 (base cost 1)."}}, {"line": 53, "i": 2, "cost": [1, 100, 2, 1, 1, 100, 1, 1, 100, 1], "log": {"c": "log-purple", "t": "cost[2] += min(100 [i-1], 1 [i-2]) -> 2."}}, {"line": 52, "i": 3, "cost": [1, 100, 2, 1, 1, 100, 1, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 3 (base cost 1)."}}, {"line": 53, "i": 3, "cost": [1, 100, 2, 3, 1, 100, 1, 1, 100, 1], "log": {"c": "log-success", "t": "cost[3] += min(2 [i-1], 100 [i-2]) -> 3."}}, {"line": 52, "i": 4, "cost": [1, 100, 2, 3, 1, 100, 1, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 4 (base cost 1)."}}, {"line": 53, "i": 4, "cost": [1, 100, 2, 3, 3, 100, 1, 1, 100, 1], "log": {"c": "log-purple", "t": "cost[4] += min(3 [i-1], 2 [i-2]) -> 3."}}, {"line": 52, "i": 5, "cost": [1, 100, 2, 3, 3, 100, 1, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 5 (base cost 100)."}}, {"line": 53, "i": 5, "cost": [1, 100, 2, 3, 3, 103, 1, 1, 100, 1], "log": {"c": "log-success", "t": "cost[5] += min(3 [i-1], 3 [i-2]) -> 103."}}, {"line": 52, "i": 6, "cost": [1, 100, 2, 3, 3, 103, 1, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 6 (base cost 1)."}}, {"line": 53, "i": 6, "cost": [1, 100, 2, 3, 3, 103, 4, 1, 100, 1], "log": {"c": "log-purple", "t": "cost[6] += min(103 [i-1], 3 [i-2]) -> 4."}}, {"line": 52, "i": 7, "cost": [1, 100, 2, 3, 3, 103, 4, 1, 100, 1], "log": {"c": "", "t": "Evaluating step 7 (base cost 1)."}}, {"line": 53, "i": 7, "cost": [1, 100, 2, 3, 3, 103, 4, 5, 100, 1], "log": {"c": "log-success", "t": "cost[7] += min(4 [i-1], 103 [i-2]) -> 5."}}, {"line": 52, "i": 8, "cost": [1, 100, 2, 3, 3, 103, 4, 5, 100, 1], "log": {"c": "", "t": "Evaluating step 8 (base cost 100)."}}, {"line": 53, "i": 8, "cost": [1, 100, 2, 3, 3, 103, 4, 5, 104, 1], "log": {"c": "log-purple", "t": "cost[8] += min(5 [i-1], 4 [i-2]) -> 104."}}, {"line": 52, "i": 9, "cost": [1, 100, 2, 3, 3, 103, 4, 5, 104, 1], "log": {"c": "", "t": "Evaluating step 9 (base cost 1)."}}, {"line": 53, "i": 9, "cost": [1, 100, 2, 3, 3, 103, 4, 5, 104, 6], "log": {"c": "log-purple", "t": "cost[9] += min(104 [i-1], 5 [i-2]) -> 6."}}, {"line": 55, "i": "-", "cost": [1, 100, 2, 3, 3, 103, 4, 5, 104, 6], "log": {"c": "log-hl", "t": "Loop finished. Returning min(6, 104)."}}];
+
+let curStep = -1;
+let currentMode = 'tc1';
+let states = climb_tc1;
+let n = 5;
+
+function loadTestCase() {
+    currentMode = document.getElementById('tc-select').value;
+    states = currentMode === 'tc1' ? climb_tc1 : climb_tc2;
+    n = states[0].n;
+    document.getElementById('in-n').innerText = n;
+    
+    // Generate DP array UI
+    const arr = document.getElementById('dp-array');
+    arr.innerHTML = '';
+    for(let i=1; i<=n; i++) {
+        arr.innerHTML += `
+            <div class="dp-cell-container" id="cell-c-${i}">
+                <div class="dp-index">i=${i}</div>
+                <div class="dp-box" id="cell-${i}">?</div>
+                <div class="dp-label" id="lbl-${i}">-</div>
+            </div>
+        `;
+    }
+    reset();
+}
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Variables
+    document.getElementById('var-a').innerText = s.a;
+    document.getElementById('var-b').innerText = s.b;
+    document.getElementById('var-i').innerText = s.i;
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    if (document.getElementById(`line-${s.line}`)) {
+        document.getElementById(`line-${s.line}`).classList.add('active');
+    }
+    
+    // Array updating
+    for(let i=1; i<=n; i++) {
+        const box = document.getElementById(`cell-${i}`);
+        const lbl = document.getElementById(`lbl-${i}`);
+        box.className = 'dp-box';
+        lbl.className = 'dp-label';
+        lbl.innerText = '-';
+        
+        const val = s.dp[i];
+        if (val !== 0) {
+            box.innerText = val;
+            box.classList.add('known');
+        } else {
+            box.innerText = '?';
+        }
+    }
+    
+    // Apply current state
+    document.getElementById('arrow-a').classList.remove('show');
+    document.getElementById('arrow-b').classList.remove('show');
+    
+    if (s.line === 38 || s.line === 41) {
+        // Base case setup or end
+        let idxB = s.line === 38 ? 2 : n;
+        let idxA = s.line === 38 ? 1 : n-1;
+        document.getElementById(`cell-${idxB}`).classList.add('prev1');
+        document.getElementById(`lbl-${idxB}`).innerText = 'b';
+        document.getElementById(`lbl-${idxB}`).classList.add('b-lbl');
+        
+        document.getElementById(`cell-${idxA}`).classList.add('prev2');
+        document.getElementById(`lbl-${idxA}`).innerText = 'a';
+        document.getElementById(`lbl-${idxA}`).classList.add('a-lbl');
+    }
+    
+    if (s.line === 39 || s.line === 40) {
+        let i = s.i;
+        document.getElementById(`cell-${i}`).classList.add('current');
+        
+        // previous two
+        let a_idx = i - 2;
+        let b_idx = i - 1;
+        document.getElementById(`cell-${a_idx}`).classList.add('prev2');
+        document.getElementById(`lbl-${a_idx}`).innerText = 'a';
+        document.getElementById(`lbl-${a_idx}`).classList.add('a-lbl');
+        
+        document.getElementById(`cell-${b_idx}`).classList.add('prev1');
+        document.getElementById(`lbl-${b_idx}`).innerText = 'b';
+        document.getElementById(`lbl-${b_idx}`).classList.add('b-lbl');
+        
+        if (s.line === 40) {
+            // draw arrows
+            drawArrow(a_idx, i, 'arrow-a');
+            drawArrow(b_idx, i, 'arrow-b');
+            document.getElementById('arrow-a').classList.add('show');
+            document.getElementById('arrow-b').classList.add('show');
+        }
+    }
+    
+    // Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Buttons
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function drawArrow(fromIdx, toIdx, arrowId) {
+    const fromEl = document.getElementById(`cell-${fromIdx}`);
+    const toEl = document.getElementById(`cell-${toIdx}`);
+    const svg = document.getElementById('arrows-layer');
+    if(!fromEl || !toEl || !svg) return;
+    
+    const svgRect = svg.getBoundingClientRect();
+    const fRect = fromEl.getBoundingClientRect();
+    const tRect = toEl.getBoundingClientRect();
+    
+    const x1 = fRect.left + fRect.width/2 - svgRect.left;
+    const y1 = fRect.top - svgRect.top;
+    const x2 = tRect.left + tRect.width/2 - svgRect.left;
+    const y2 = tRect.top - svgRect.top;
+    
+    // draw arc
+    const midX = (x1 + x2)/2;
+    const midY = Math.min(y1, y2) - 30; // arch up
+    
+    const d = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+    document.getElementById(arrowId).setAttribute('d', d);
+}
+
+window.addEventListener('resize', () => {
+    if (curStep >= 0) {
+        const s = states[curStep];
+        if (s.line === 40) {
+            drawArrow(s.i - 2, s.i, 'arrow-a');
+            drawArrow(s.i - 1, s.i, 'arrow-b');
+        }
+    }
+});
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    document.getElementById('var-a').innerText = '-';
+    document.getElementById('var-b').innerText = '-';
+    document.getElementById('var-i').innerText = '-';
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById('arrow-a').classList.remove('show');
+    document.getElementById('arrow-b').classList.remove('show');
+    
+    for(let i=1; i<=n; i++) {
+        document.getElementById(`cell-${i}`).className = 'dp-box';
+        document.getElementById(`cell-${i}`).innerText = '?';
+        document.getElementById(`lbl-${i}`).className = 'dp-label';
+        document.getElementById(`lbl-${i}`).innerText = '-';
+    }
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+
+loadTestCase();
+
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.getElementById('left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.getElementById('top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+resizerV.addEventListener('mousedown', (e) => {
+    isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+    document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+});
+resizerH.addEventListener('mousedown', (e) => {
+    isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+    document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+});
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    if (isDraggingH) topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+});
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+});
+</script>
+</body>
+</html>

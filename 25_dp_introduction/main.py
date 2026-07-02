@@ -10,8 +10,13 @@ def fib(n: int) -> int:
     F(n) = F(n - 1) + F(n - 2), for n > 1.
     Given n, calculate F(n).
     """
-    pass
-
+    
+    if n < 2:
+        return n
+    a, b = 0, 1
+    for _ in range(2, n + 1):
+        a, b = b, a + b
+    return b
 
 # LeetCode #70 - Easy
 # ============================================================
@@ -20,8 +25,12 @@ def climbStairs(n: int) -> int:
     You are climbing a staircase. It takes n steps to reach the top.
     Each time you can either climb 1 or 2 steps. In how many distinct ways can you climb to the top?
     """
-    pass
-
+    if n < 2:
+        return n
+    a, b = 1, 2
+    for _ in range(3, n + 1):
+        a, b = b, a + b
+    return b
 
 # LeetCode #746 - Easy
 # ============================================================
@@ -32,7 +41,10 @@ def minCostClimbingStairs(cost: List[int]) -> int:
     You can either start from the step with index 0, or the step with index 1.
     Return the minimum cost to reach the top of the floor.
     """
-    pass
+    for i in range(2, len(cost)):
+        cost[i] += min(cost[i - 1], cost[i - 2])
+    
+    return min(cost[-1], cost[-2])
 
 
 def main():
