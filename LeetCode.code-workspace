@@ -14,7 +14,7 @@
 		"LEETCODE"
 	],
 	"chat.tools.terminal.autoApprove": {
-		"/^cd C:\\\\Users\\\\pc\\\\Documents\\\\tutorials\\\\LeetCode\\\\2026-01-13_recursion_basics; python test_cases\\.py$/": {
+		"/^cd C:\\\\Users\\\\pc\\\\Documents\\\\tutorials\\\\LeetCode\\\\13_recursion_basics; python test_cases\\.py$/": {
 			"approve": true,
 			"matchCommandLine": true
 		}

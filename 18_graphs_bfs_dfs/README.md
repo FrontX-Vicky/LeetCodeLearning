@@ -199,7 +199,7 @@ directions = [(0,1), (0,-1), (1,0), (-1,0),
 ## 🚀 Getting Started
 
 ```bash
-cd 2026-01-18_graphs_bfs_dfs
+cd 18_graphs_bfs_dfs
 python main.py          # Quick smoke test
 python test_cases.py    # Full test suite
 ```

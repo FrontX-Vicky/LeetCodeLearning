@@ -60,8 +60,8 @@ Use a **sliding window with frequency maps** to find the shortest substring cont
 ## How to Run & Test
 From repo root:
 ```bash
-python 2026-01-04_advanced_sliding_window/main.py
-python 2026-01-04_advanced_sliding_window/test_cases.py
+python 04_advanced_sliding_window/main.py
+python 04_advanced_sliding_window/test_cases.py
 ```
 
 ---

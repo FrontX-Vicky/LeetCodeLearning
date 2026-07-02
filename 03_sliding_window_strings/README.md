@@ -59,8 +59,8 @@ When you encounter a duplicate:
 ## How to Run & Test
 From repo root:
 ```bash
-python 2026-01-03_sliding_window_strings/main.py
-python 2026-01-03_sliding_window_strings/test_cases.py
+python 03_sliding_window_strings/main.py
+python 03_sliding_window_strings/test_cases.py
 ```
 
 ---

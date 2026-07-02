@@ -151,7 +151,7 @@ max_val = -heapq.heappop(max_heap)
 ## 🚀 Getting Started
 
 ```bash
-cd 2026-01-17_heap_priority_queue
+cd 17_heap_priority_queue
 python main.py          # Quick smoke test
 python test_cases.py    # Full test suite
 ```

@@ -473,7 +473,7 @@
 
 ---
 
-### **Day 14: Binary Tree Basics** 📅 *2026-01-14*
+### **Day 14: Binary Tree Basics** 📅 *Day 14*
 
 **Main Problem**:
 - Binary Tree Traversals: Preorder, Inorder, Postorder
@@ -512,7 +512,7 @@
 
 ---
 
-### **Day 15: Binary Search Trees** 📅 *2026-01-15*
+### **Day 15: Binary Search Trees** 📅 *Day 15*
 
 **Main Problems**:
 - Search in BST (recursive & iterative)
@@ -554,7 +554,7 @@
 
 ---
 
-### **Day 16: Tree DFS & BFS** 📅 *2026-01-16* ✅ **COMPLETED**
+### **Day 16: Tree DFS & BFS** 📅 *Day 16* ✅ **COMPLETED**
 
 **Main Problems**:
 - Maximum Depth of Binary Tree (DFS recursive & BFS iterative)
@@ -604,7 +604,7 @@
 
 ---
 
-### **Day 17: Heap & Priority Queue** 📅 *2026-01-17* ✅ **COMPLETED**
+### **Day 17: Heap & Priority Queue** 📅 *Day 17* ✅ **COMPLETED**
 
 **Main Problems**:
 - Kth Largest Element in Array (min heap of size k)
@@ -656,7 +656,7 @@
 
 ---
 
-### **Day 18: Graphs BFS & DFS** 📅 *2026-01-18* ✅ **COMPLETED**
+### **Day 18: Graphs BFS & DFS** 📅 *Day 18* ✅ **COMPLETED**
 
 **Problems Solved** (6 graph traversal problems):
 1. **Number of Islands** - DFS/BFS island counting in grid
@@ -716,7 +716,7 @@
 
 ---
 
-### **Day 19: Trie (Prefix Tree)** 📅 *2026-01-19* ✅ **COMPLETED**
+### **Day 19: Trie (Prefix Tree)** 📅 *Day 19* ✅ **COMPLETED**
 
 **Problems Solved** (6 trie problems):
 1. **Implement Trie** - insert, search, startsWith (LeetCode #208)
@@ -766,7 +766,7 @@
 
 ---
 
-### **Day 20: Union Find (Disjoint Set Union)** 📅 *2026-01-20* ✅ **COMPLETED**
+### **Day 20: Union Find (Disjoint Set Union)** 📅 *Day 20* ✅ **COMPLETED**
 
 **Problems Solved** (5 union-find problems):
 1. **Number of Provinces** - connected components from adjacency matrix (LeetCode #547)
@@ -809,7 +809,7 @@
 
 ---
 
-### **Day 21: Topological Sort** 📅 *2026-01-21* ✅ **COMPLETED**
+### **Day 21: Topological Sort** 📅 *Day 21* ✅ **COMPLETED**
 
 **Problems Solved** (5 topological sort problems):
 1. **Course Schedule** - Kahn's cycle detection (LeetCode #207)
@@ -844,7 +844,7 @@
 
 ---
 
-### **Day 22: Dijkstra's Shortest Path** 📅 *2026-01-22* ✅ **COMPLETED**
+### **Day 22: Dijkstra's Shortest Path** 📅 *Day 22* ✅ **COMPLETED**
 
 **Problems Solved** (5 shortest-path problems):
 1. **Network Delay Time** - Dijkstra single-source, return max dist (LeetCode #743)
@@ -880,7 +880,7 @@
 
 ---
 
-### **Day 23: Minimum Spanning Tree** 📅 *2026-01-23* ✅ **COMPLETED**
+### **Day 23: Minimum Spanning Tree** 📅 *Day 23* ✅ **COMPLETED**
 
 **Problems Solved** (5 MST problems):
 1. **Min Cost to Connect All Points** - Prim's Algorithm (LeetCode #1584)

@@ -60,8 +60,8 @@ Use **two pointers** starting from both ends and move inward, always shrinking t
 ## How to Run & Test
 From repo root:
 ```bash
-python 2026-01-05_two_pointers/main.py
-python 2026-01-05_two_pointers/test_cases.py
+python 05_two_pointers/main.py
+python 05_two_pointers/test_cases.py
 ```
 
 ---

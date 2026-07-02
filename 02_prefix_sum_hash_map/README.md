@@ -47,8 +47,8 @@ For each position `i`, we have `prefix[i] - prefix[j] = k` ⇒ we need to know h
 ## How to Run & Test
 From repo root:
 ```bash
-python 2026-01-02_prefix_sum_hash_map/main.py
-python 2026-01-02_prefix_sum_hash_map/test_cases.py
+python 02_prefix_sum_hash_map/main.py
+python 02_prefix_sum_hash_map/test_cases.py
 ```
 
 ---
