@@ -1016,6 +1016,24 @@
 
 ---
 
+### Day 26: DP - Climbing Stairs Variations ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **N-th Tribonacci Number** (LeetCode #1137)
+2. **Decode Ways** (LeetCode #91)
+
+**Topics Covered**:
+- 1D DP Tabulation with multiple states
+- Space Optimization using sliding windows
+- Conditional DP Branching
+
+**Key Concepts Learned**:
+- DP Tabulation isn't strictly limited to 2 variables; Tribonacci scales it to 3 seamlessly.
+- Decode Ways proves that DP transitions can be strictly conditional (e.g., `if 10 <= val <= 26`), which dynamically enables or chokes subproblem branches.
+- `prev_prev` and `prev` are standard variables for tracking state in sequence-based parsing.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1060,8 +1078,8 @@
 ### **Phase 6: Dynamic Programming** (Days 25-32) 🔄 **IN PROGRESS**
 **Focus**: Optimization and overlapping subproblems
 - Day 25: DP Introduction (1D Problems) ✅
-- Day 26: DP - Climbing Stairs Variations 🎯 **NEXT**
-- Day 27: DP - House Robber Pattern
+- Day 26: DP - Climbing Stairs Variations ✅
+- Day 27: DP - House Robber Pattern 🎯 **NEXT**
 - Day 28: DP - 2D Grid Problems
 - Day 29: DP - Knapsack Problems
 - Day 30: DP - Longest Common Subsequence
@@ -1093,10 +1111,10 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 1/8 (12.5%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 2/8 (25.0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 25/40 days complete (62.5%)
+**Overall Progress**: 26/40 days complete (65.0%)
 
 ---
