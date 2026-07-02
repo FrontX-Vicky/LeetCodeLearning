@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #1137 N-th Tribonacci Number</title>
+<style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; align-items:center;}
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; padding: 10px; gap: 4px; overflow: hidden; }
+.top-panels { display: flex; flex: 3; min-height: 0; gap: 4px; }
+.bottom-panel { flex: 1; min-height: 100px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.inputs-container { background: #0d1117; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between; background: #161b22;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 50px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e; min-height: 150px;}
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-num { color: #b5cea8; }
+
+/* CENTER PANEL */
+.center-panel { flex: 2; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative; padding: 20px; overflow: auto;}
+
+/* Array DP Visualization */
+.dp-array { display: flex; gap: 8px; align-items: flex-end; justify-content: center; min-width: max-content; }
+.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.dp-index { font-size: 11px; color: #8b949e; font-family: monospace; }
+.dp-box { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 2px solid var(--border-color); background: #21262d; font-family: monospace; font-size: 16px; font-weight: bold; transition: all 0.3s; position: relative; }
+.dp-box.known { border-color: var(--success-color); background: rgba(63, 185, 80, 0.1); color: var(--success-color); }
+.dp-box.current { border-color: var(--accent-color); background: rgba(88, 166, 255, 0.1); color: var(--accent-color); transform: translateY(-5px); box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
+.dp-box.prev1 { border-color: var(--success-color); background: rgba(63, 185, 80, 0.1); color: var(--success-color); }
+.dp-box.prev2 { border-color: var(--purple); background: rgba(188, 140, 255, 0.1); color: var(--purple); }
+.dp-box.prev3 { border-color: var(--warning-color); background: rgba(210, 153, 34, 0.1); color: var(--warning-color); }
+.dp-label { font-size: 10px; font-weight: bold; color: var(--border-color); margin-top: 4px; transition: color 0.3s;}
+.dp-label.t0-lbl { color: var(--warning-color); }
+.dp-label.t1-lbl { color: var(--purple); }
+.dp-label.t2-lbl { color: var(--success-color); }
+
+/* SVG Arrows */
+.arrows-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.dp-arrow { fill: none; stroke-width: 2; stroke-dasharray: 4; opacity: 0; transition: opacity 0.3s; }
+.dp-arrow.show { opacity: 1; animation: dashMove 1s linear infinite; }
+@keyframes dashMove { to { stroke-dashoffset: -8; } }
+
+/* LOGS */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; border-left-color: var(--accent-color); background: rgba(88, 166, 255, 0.05); }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+.log-danger { color: var(--danger-color); font-weight: bold; border-left-color: var(--danger-color); background: rgba(248, 81, 73, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* RESIZERS */
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_tribonacci.html" selected>P1 · N-th Tribonacci Number</option>
+    <option value="problem2_decodeWays.html">P2 · Decode Ways</option>
+  </select>
+  <div class="header-left">
+    <h1>N-th Tribonacci Number &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #1137</span></h1>
+    <p>1D DP Tabulation with 3-State Sliding Window</p>
+  </div>
+  <div class="controls">
+    <select id="tc-select" onchange="loadTestCase()" style="background:#21262d; border:1px solid #30363d; color:#c9d1d9; border-radius:4px; padding:4px 8px; margin-right: 10px;">
+        <option value="tc1">TC1: n = 5</option>
+        <option value="tc2">TC2: n = 10</option>
+        <option value="tc3">TC3: n = 20</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-container">
+        <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 4px 10px; background: #161b22; border-bottom: 1px solid var(--border-color);">Inputs</div>
+        <div style="padding: 6px 10px; font-family: monospace; font-size: 12px;"><span style="color:var(--purple)">n:</span> <span class="k-num" id="in-n"></span></div>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">t0</div>
+          <div class="var-val" id="var-t0" style="color:var(--warning-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">t1</div>
+          <div class="var-val" id="var-t1" style="color:var(--purple)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">t2</div>
+          <div class="var-val" id="var-t2" style="color:var(--success-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">i</div>
+          <div class="var-val" id="var-i" style="color:var(--accent-color)">-</div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">    <span class="k-kw">for</span> _ <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">3</span>, n + <span class="k-num">1</span>):</div></div>
+<div class="code-line" id="line-15"><div class="ln">15</div><div class="lt">    t0, t1, t2 = <span class="k-num">0</span>, <span class="k-num">1</span>, <span class="k-num">1</span></div></div>
+<div class="code-line" id="line-16"><div class="ln">16</div><div class="lt">    <span class="k-kw">for</span> i <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">3</span>, n + <span class="k-num">1</span>):</div></div>
+<div class="code-line" id="line-17"><div class="ln">17</div><div class="lt">        t0, t1, t2 = t1, t2, t0 + t1 + t2</div></div>
+<div class="code-line" id="line-19"><div class="ln">19</div><div class="lt">    <span class="k-kw">return</span> t2</div></div>
+      </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <div class="center-panel">
+      <div class="panel-title">1D Tabulation Visualizer</div>
+      <div class="svg-wrap" id="svg-wrap">
+        <svg class="arrows-svg" id="arrows-layer">
+            <path id="arrow-t0" class="dp-arrow" stroke="var(--warning-color)" />
+            <path id="arrow-t1" class="dp-arrow" stroke="var(--purple)" />
+            <path id="arrow-t2" class="dp-arrow" stroke="var(--success-color)" />
+        </svg>
+        <div class="dp-array" id="dp-array">
+            <!-- Dynamically generated array cells -->
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <div class="resizer-h" id="resizer-h"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const trib_tc1 = [{"line": 15, "n": 5, "t0": 0, "t1": 1, "t2": 1, "i": "-", "dp": [0, 1, 1, 0, 0, 0], "log": {"c": "", "t": "Base cases set: t0=0, t1=1, t2=1."}}, {"line": 16, "n": 5, "t0": 0, "t1": 1, "t2": 1, "i": 3, "dp": [0, 1, 1, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=3."}}, {"line": 17, "n": 5, "t0": 1, "t1": 1, "t2": 2, "i": 3, "dp": [0, 1, 1, 2, 0, 0], "log": {"c": "log-success", "t": "Calculated step 3: 0+1+1 = 2. Shifted window."}}, {"line": 16, "n": 5, "t0": 1, "t1": 1, "t2": 2, "i": 4, "dp": [0, 1, 1, 2, 0, 0], "log": {"c": "", "t": "Loop iteration for i=4."}}, {"line": 17, "n": 5, "t0": 1, "t1": 2, "t2": 4, "i": 4, "dp": [0, 1, 1, 2, 4, 0], "log": {"c": "log-success", "t": "Calculated step 4: 1+1+2 = 4. Shifted window."}}, {"line": 16, "n": 5, "t0": 1, "t1": 2, "t2": 4, "i": 5, "dp": [0, 1, 1, 2, 4, 0], "log": {"c": "", "t": "Loop iteration for i=5."}}, {"line": 17, "n": 5, "t0": 2, "t1": 4, "t2": 7, "i": 5, "dp": [0, 1, 1, 2, 4, 7], "log": {"c": "log-success", "t": "Calculated step 5: 1+2+4 = 7. Shifted window."}}, {"line": 19, "n": 5, "t0": 2, "t1": 4, "t2": 7, "i": "-", "dp": [0, 1, 1, 2, 4, 7], "log": {"c": "log-purple", "t": "Finished. Returning t2 = 7."}}];
+const trib_tc2 = [{"line": 15, "n": 10, "t0": 0, "t1": 1, "t2": 1, "i": "-", "dp": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Base cases set: t0=0, t1=1, t2=1."}}, {"line": 16, "n": 10, "t0": 0, "t1": 1, "t2": 1, "i": 3, "dp": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=3."}}, {"line": 17, "n": 10, "t0": 1, "t1": 1, "t2": 2, "i": 3, "dp": [0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 3: 0+1+1 = 2. Shifted window."}}, {"line": 16, "n": 10, "t0": 1, "t1": 1, "t2": 2, "i": 4, "dp": [0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=4."}}, {"line": 17, "n": 10, "t0": 1, "t1": 2, "t2": 4, "i": 4, "dp": [0, 1, 1, 2, 4, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 4: 1+1+2 = 4. Shifted window."}}, {"line": 16, "n": 10, "t0": 1, "t1": 2, "t2": 4, "i": 5, "dp": [0, 1, 1, 2, 4, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=5."}}, {"line": 17, "n": 10, "t0": 2, "t1": 4, "t2": 7, "i": 5, "dp": [0, 1, 1, 2, 4, 7, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 5: 1+2+4 = 7. Shifted window."}}, {"line": 16, "n": 10, "t0": 2, "t1": 4, "t2": 7, "i": 6, "dp": [0, 1, 1, 2, 4, 7, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=6."}}, {"line": 17, "n": 10, "t0": 4, "t1": 7, "t2": 13, "i": 6, "dp": [0, 1, 1, 2, 4, 7, 13, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 6: 2+4+7 = 13. Shifted window."}}, {"line": 16, "n": 10, "t0": 4, "t1": 7, "t2": 13, "i": 7, "dp": [0, 1, 1, 2, 4, 7, 13, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=7."}}, {"line": 17, "n": 10, "t0": 7, "t1": 13, "t2": 24, "i": 7, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 7: 4+7+13 = 24. Shifted window."}}, {"line": 16, "n": 10, "t0": 7, "t1": 13, "t2": 24, "i": 8, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=8."}}, {"line": 17, "n": 10, "t0": 13, "t1": 24, "t2": 44, "i": 8, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 0, 0], "log": {"c": "log-success", "t": "Calculated step 8: 7+13+24 = 44. Shifted window."}}, {"line": 16, "n": 10, "t0": 13, "t1": 24, "t2": 44, "i": 9, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 0, 0], "log": {"c": "", "t": "Loop iteration for i=9."}}, {"line": 17, "n": 10, "t0": 24, "t1": 44, "t2": 81, "i": 9, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 0], "log": {"c": "log-success", "t": "Calculated step 9: 13+24+44 = 81. Shifted window."}}, {"line": 16, "n": 10, "t0": 24, "t1": 44, "t2": 81, "i": 10, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 0], "log": {"c": "", "t": "Loop iteration for i=10."}}, {"line": 17, "n": 10, "t0": 44, "t1": 81, "t2": 149, "i": 10, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149], "log": {"c": "log-success", "t": "Calculated step 10: 24+44+81 = 149. Shifted window."}}, {"line": 19, "n": 10, "t0": 44, "t1": 81, "t2": 149, "i": "-", "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149], "log": {"c": "log-purple", "t": "Finished. Returning t2 = 149."}}];
+const trib_tc3 = [{"line": 15, "n": 20, "t0": 0, "t1": 1, "t2": 1, "i": "-", "dp": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Base cases set: t0=0, t1=1, t2=1."}}, {"line": 16, "n": 20, "t0": 0, "t1": 1, "t2": 1, "i": 3, "dp": [0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=3."}}, {"line": 17, "n": 20, "t0": 1, "t1": 1, "t2": 2, "i": 3, "dp": [0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 3: 0+1+1 = 2. Shifted window."}}, {"line": 16, "n": 20, "t0": 1, "t1": 1, "t2": 2, "i": 4, "dp": [0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=4."}}, {"line": 17, "n": 20, "t0": 1, "t1": 2, "t2": 4, "i": 4, "dp": [0, 1, 1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 4: 1+1+2 = 4. Shifted window."}}, {"line": 16, "n": 20, "t0": 1, "t1": 2, "t2": 4, "i": 5, "dp": [0, 1, 1, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=5."}}, {"line": 17, "n": 20, "t0": 2, "t1": 4, "t2": 7, "i": 5, "dp": [0, 1, 1, 2, 4, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 5: 1+2+4 = 7. Shifted window."}}, {"line": 16, "n": 20, "t0": 2, "t1": 4, "t2": 7, "i": 6, "dp": [0, 1, 1, 2, 4, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=6."}}, {"line": 17, "n": 20, "t0": 4, "t1": 7, "t2": 13, "i": 6, "dp": [0, 1, 1, 2, 4, 7, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 6: 2+4+7 = 13. Shifted window."}}, {"line": 16, "n": 20, "t0": 4, "t1": 7, "t2": 13, "i": 7, "dp": [0, 1, 1, 2, 4, 7, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=7."}}, {"line": 17, "n": 20, "t0": 7, "t1": 13, "t2": 24, "i": 7, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 7: 4+7+13 = 24. Shifted window."}}, {"line": 16, "n": 20, "t0": 7, "t1": 13, "t2": 24, "i": 8, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=8."}}, {"line": 17, "n": 20, "t0": 13, "t1": 24, "t2": 44, "i": 8, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 8: 7+13+24 = 44. Shifted window."}}, {"line": 16, "n": 20, "t0": 13, "t1": 24, "t2": 44, "i": 9, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=9."}}, {"line": 17, "n": 20, "t0": 24, "t1": 44, "t2": 81, "i": 9, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 9: 13+24+44 = 81. Shifted window."}}, {"line": 16, "n": 20, "t0": 24, "t1": 44, "t2": 81, "i": 10, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=10."}}, {"line": 17, "n": 20, "t0": 44, "t1": 81, "t2": 149, "i": 10, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 10: 24+44+81 = 149. Shifted window."}}, {"line": 16, "n": 20, "t0": 44, "t1": 81, "t2": 149, "i": 11, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=11."}}, {"line": 17, "n": 20, "t0": 81, "t1": 149, "t2": 274, "i": 11, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 11: 44+81+149 = 274. Shifted window."}}, {"line": 16, "n": 20, "t0": 81, "t1": 149, "t2": 274, "i": 12, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=12."}}, {"line": 17, "n": 20, "t0": 149, "t1": 274, "t2": 504, "i": 12, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 12: 81+149+274 = 504. Shifted window."}}, {"line": 16, "n": 20, "t0": 149, "t1": 274, "t2": 504, "i": 13, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=13."}}, {"line": 17, "n": 20, "t0": 274, "t1": 504, "t2": 927, "i": 13, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 13: 149+274+504 = 927. Shifted window."}}, {"line": 16, "n": 20, "t0": 274, "t1": 504, "t2": 927, "i": 14, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=14."}}, {"line": 17, "n": 20, "t0": 504, "t1": 927, "t2": 1705, "i": 14, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 14: 274+504+927 = 1705. Shifted window."}}, {"line": 16, "n": 20, "t0": 504, "t1": 927, "t2": 1705, "i": 15, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=15."}}, {"line": 17, "n": 20, "t0": 927, "t1": 1705, "t2": 3136, "i": 15, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 15: 504+927+1705 = 3136. Shifted window."}}, {"line": 16, "n": 20, "t0": 927, "t1": 1705, "t2": 3136, "i": 16, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=16."}}, {"line": 17, "n": 20, "t0": 1705, "t1": 3136, "t2": 5768, "i": 16, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 16: 927+1705+3136 = 5768. Shifted window."}}, {"line": 16, "n": 20, "t0": 1705, "t1": 3136, "t2": 5768, "i": 17, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 0, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=17."}}, {"line": 17, "n": 20, "t0": 3136, "t1": 5768, "t2": 10609, "i": 17, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 0, 0, 0], "log": {"c": "log-success", "t": "Calculated step 17: 1705+3136+5768 = 10609. Shifted window."}}, {"line": 16, "n": 20, "t0": 3136, "t1": 5768, "t2": 10609, "i": 18, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 0, 0, 0], "log": {"c": "", "t": "Loop iteration for i=18."}}, {"line": 17, "n": 20, "t0": 5768, "t1": 10609, "t2": 19513, "i": 18, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 0, 0], "log": {"c": "log-success", "t": "Calculated step 18: 3136+5768+10609 = 19513. Shifted window."}}, {"line": 16, "n": 20, "t0": 5768, "t1": 10609, "t2": 19513, "i": 19, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 0, 0], "log": {"c": "", "t": "Loop iteration for i=19."}}, {"line": 17, "n": 20, "t0": 10609, "t1": 19513, "t2": 35890, "i": 19, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 35890, 0], "log": {"c": "log-success", "t": "Calculated step 19: 5768+10609+19513 = 35890. Shifted window."}}, {"line": 16, "n": 20, "t0": 10609, "t1": 19513, "t2": 35890, "i": 20, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 35890, 0], "log": {"c": "", "t": "Loop iteration for i=20."}}, {"line": 17, "n": 20, "t0": 19513, "t1": 35890, "t2": 66012, "i": 20, "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 35890, 66012], "log": {"c": "log-success", "t": "Calculated step 20: 10609+19513+35890 = 66012. Shifted window."}}, {"line": 19, "n": 20, "t0": 19513, "t1": 35890, "t2": 66012, "i": "-", "dp": [0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136, 5768, 10609, 19513, 35890, 66012], "log": {"c": "log-purple", "t": "Finished. Returning t2 = 66012."}}];
+const dec_tc1 = [{"line": 31, "s": "226", "prev_prev": 1, "prev": 1, "current": "-", "i": "-", "dp": [1, 1, 0, 0], "log": {"c": "", "t": "Init: prev_prev=1 (i-2), prev=1 (i-1)"}}, {"line": 33, "s": "226", "prev_prev": 1, "prev": 1, "current": 0, "i": 1, "dp": [1, 1, 0, 0], "log": {"c": "", "t": "Processing char '2' at index 1."}}, {"line": 38, "s": "226", "prev_prev": 1, "prev": 1, "current": 1, "i": 1, "dp": [1, 1, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '2'. Add prev (1). current=1"}, "arrow1": true}, {"line": 43, "s": "226", "prev_prev": 1, "prev": 1, "current": 2, "i": 1, "dp": [1, 1, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '22'. Add prev_prev (1). current=2"}, "arrow2": true}, {"line": 46, "s": "226", "prev_prev": 1, "prev": 2, "current": "-", "i": 1, "dp": [1, 1, 2, 0], "log": {"c": "", "t": "Shifted: prev_prev = 1, prev = 2."}}, {"line": 33, "s": "226", "prev_prev": 1, "prev": 2, "current": 0, "i": 2, "dp": [1, 1, 2, 0], "log": {"c": "", "t": "Processing char '6' at index 2."}}, {"line": 38, "s": "226", "prev_prev": 1, "prev": 2, "current": 2, "i": 2, "dp": [1, 1, 2, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '6'. Add prev (2). current=2"}, "arrow1": true}, {"line": 43, "s": "226", "prev_prev": 1, "prev": 2, "current": 3, "i": 2, "dp": [1, 1, 2, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '26'. Add prev_prev (1). current=3"}, "arrow2": true}, {"line": 46, "s": "226", "prev_prev": 2, "prev": 3, "current": "-", "i": 2, "dp": [1, 1, 2, 3], "log": {"c": "", "t": "Shifted: prev_prev = 2, prev = 3."}}, {"line": 48, "s": "226", "prev_prev": 2, "prev": 3, "current": "-", "i": "-", "dp": [1, 1, 2, 3], "log": {"c": "log-hl", "t": "Finished. Returning prev = 3."}}];
+const dec_tc2 = [{"line": 31, "s": "12", "prev_prev": 1, "prev": 1, "current": "-", "i": "-", "dp": [1, 1, 0], "log": {"c": "", "t": "Init: prev_prev=1 (i-2), prev=1 (i-1)"}}, {"line": 33, "s": "12", "prev_prev": 1, "prev": 1, "current": 0, "i": 1, "dp": [1, 1, 0], "log": {"c": "", "t": "Processing char '2' at index 1."}}, {"line": 38, "s": "12", "prev_prev": 1, "prev": 1, "current": 1, "i": 1, "dp": [1, 1, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '2'. Add prev (1). current=1"}, "arrow1": true}, {"line": 43, "s": "12", "prev_prev": 1, "prev": 1, "current": 2, "i": 1, "dp": [1, 1, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '12'. Add prev_prev (1). current=2"}, "arrow2": true}, {"line": 46, "s": "12", "prev_prev": 1, "prev": 2, "current": "-", "i": 1, "dp": [1, 1, 2], "log": {"c": "", "t": "Shifted: prev_prev = 1, prev = 2."}}, {"line": 48, "s": "12", "prev_prev": 1, "prev": 2, "current": "-", "i": "-", "dp": [1, 1, 2], "log": {"c": "log-hl", "t": "Finished. Returning prev = 2."}}];
+const dec_tc3 = [{"line": 31, "s": "11111111111111", "prev_prev": 1, "prev": 1, "current": "-", "i": "-", "dp": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Init: prev_prev=1 (i-2), prev=1 (i-1)"}}, {"line": 33, "s": "11111111111111", "prev_prev": 1, "prev": 1, "current": 0, "i": 1, "dp": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 1."}}, {"line": 38, "s": "11111111111111", "prev_prev": 1, "prev": 1, "current": 1, "i": 1, "dp": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (1). current=1"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 1, "prev": 1, "current": 2, "i": 1, "dp": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (1). current=2"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 1, "prev": 2, "current": "-", "i": 1, "dp": [1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 1, prev = 2."}}, {"line": 33, "s": "11111111111111", "prev_prev": 1, "prev": 2, "current": 0, "i": 2, "dp": [1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 2."}}, {"line": 38, "s": "11111111111111", "prev_prev": 1, "prev": 2, "current": 2, "i": 2, "dp": [1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (2). current=2"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 1, "prev": 2, "current": 3, "i": 2, "dp": [1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (1). current=3"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 2, "prev": 3, "current": "-", "i": 2, "dp": [1, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 2, prev = 3."}}, {"line": 33, "s": "11111111111111", "prev_prev": 2, "prev": 3, "current": 0, "i": 3, "dp": [1, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 3."}}, {"line": 38, "s": "11111111111111", "prev_prev": 2, "prev": 3, "current": 3, "i": 3, "dp": [1, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (3). current=3"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 2, "prev": 3, "current": 5, "i": 3, "dp": [1, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (2). current=5"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 3, "prev": 5, "current": "-", "i": 3, "dp": [1, 1, 2, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 3, prev = 5."}}, {"line": 33, "s": "11111111111111", "prev_prev": 3, "prev": 5, "current": 0, "i": 4, "dp": [1, 1, 2, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 4."}}, {"line": 38, "s": "11111111111111", "prev_prev": 3, "prev": 5, "current": 5, "i": 4, "dp": [1, 1, 2, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (5). current=5"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 3, "prev": 5, "current": 8, "i": 4, "dp": [1, 1, 2, 3, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (3). current=8"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 5, "prev": 8, "current": "-", "i": 4, "dp": [1, 1, 2, 3, 5, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 5, prev = 8."}}, {"line": 33, "s": "11111111111111", "prev_prev": 5, "prev": 8, "current": 0, "i": 5, "dp": [1, 1, 2, 3, 5, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 5."}}, {"line": 38, "s": "11111111111111", "prev_prev": 5, "prev": 8, "current": 8, "i": 5, "dp": [1, 1, 2, 3, 5, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (8). current=8"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 5, "prev": 8, "current": 13, "i": 5, "dp": [1, 1, 2, 3, 5, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (5). current=13"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 8, "prev": 13, "current": "-", "i": 5, "dp": [1, 1, 2, 3, 5, 8, 13, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 8, prev = 13."}}, {"line": 33, "s": "11111111111111", "prev_prev": 8, "prev": 13, "current": 0, "i": 6, "dp": [1, 1, 2, 3, 5, 8, 13, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 6."}}, {"line": 38, "s": "11111111111111", "prev_prev": 8, "prev": 13, "current": 13, "i": 6, "dp": [1, 1, 2, 3, 5, 8, 13, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (13). current=13"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 8, "prev": 13, "current": 21, "i": 6, "dp": [1, 1, 2, 3, 5, 8, 13, 0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (8). current=21"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 13, "prev": 21, "current": "-", "i": 6, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 13, prev = 21."}}, {"line": 33, "s": "11111111111111", "prev_prev": 13, "prev": 21, "current": 0, "i": 7, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 7."}}, {"line": 38, "s": "11111111111111", "prev_prev": 13, "prev": 21, "current": 21, "i": 7, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (21). current=21"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 13, "prev": 21, "current": 34, "i": 7, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (13). current=34"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 21, "prev": 34, "current": "-", "i": 7, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 21, prev = 34."}}, {"line": 33, "s": "11111111111111", "prev_prev": 21, "prev": 34, "current": 0, "i": 8, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 0, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 8."}}, {"line": 38, "s": "11111111111111", "prev_prev": 21, "prev": 34, "current": 34, "i": 8, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 0, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (34). current=34"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 21, "prev": 34, "current": 55, "i": 8, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 0, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (21). current=55"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 34, "prev": 55, "current": "-", "i": 8, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 34, prev = 55."}}, {"line": 33, "s": "11111111111111", "prev_prev": 34, "prev": 55, "current": 0, "i": 9, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 0, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 9."}}, {"line": 38, "s": "11111111111111", "prev_prev": 34, "prev": 55, "current": 55, "i": 9, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 0, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (55). current=55"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 34, "prev": 55, "current": 89, "i": 9, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 0, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (34). current=89"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 55, "prev": 89, "current": "-", "i": 9, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 0, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 55, prev = 89."}}, {"line": 33, "s": "11111111111111", "prev_prev": 55, "prev": 89, "current": 0, "i": 10, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 0, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 10."}}, {"line": 38, "s": "11111111111111", "prev_prev": 55, "prev": 89, "current": 89, "i": 10, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 0, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (89). current=89"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 55, "prev": 89, "current": 144, "i": 10, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 0, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (55). current=144"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 89, "prev": 144, "current": "-", "i": 10, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 0, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 89, prev = 144."}}, {"line": 33, "s": "11111111111111", "prev_prev": 89, "prev": 144, "current": 0, "i": 11, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 0, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 11."}}, {"line": 38, "s": "11111111111111", "prev_prev": 89, "prev": 144, "current": 144, "i": 11, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 0, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (144). current=144"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 89, "prev": 144, "current": 233, "i": 11, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 0, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (89). current=233"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 144, "prev": 233, "current": "-", "i": 11, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 0, 0], "log": {"c": "", "t": "Shifted: prev_prev = 144, prev = 233."}}, {"line": 33, "s": "11111111111111", "prev_prev": 144, "prev": 233, "current": 0, "i": 12, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 0, 0], "log": {"c": "", "t": "Processing char '1' at index 12."}}, {"line": 38, "s": "11111111111111", "prev_prev": 144, "prev": 233, "current": 233, "i": 12, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 0, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (233). current=233"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 144, "prev": 233, "current": 377, "i": 12, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (144). current=377"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 233, "prev": 377, "current": "-", "i": 12, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 0], "log": {"c": "", "t": "Shifted: prev_prev = 233, prev = 377."}}, {"line": 33, "s": "11111111111111", "prev_prev": 233, "prev": 377, "current": 0, "i": 13, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 0], "log": {"c": "", "t": "Processing char '1' at index 13."}}, {"line": 38, "s": "11111111111111", "prev_prev": 233, "prev": 377, "current": 377, "i": 13, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '1'. Add prev (377). current=377"}, "arrow1": true}, {"line": 43, "s": "11111111111111", "prev_prev": 233, "prev": 377, "current": 610, "i": 13, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '11'. Add prev_prev (233). current=610"}, "arrow2": true}, {"line": 46, "s": "11111111111111", "prev_prev": 377, "prev": 610, "current": "-", "i": 13, "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610], "log": {"c": "", "t": "Shifted: prev_prev = 377, prev = 610."}}, {"line": 48, "s": "11111111111111", "prev_prev": 377, "prev": 610, "current": "-", "i": "-", "dp": [1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610], "log": {"c": "log-hl", "t": "Finished. Returning prev = 610."}}];
+const dec_tc4 = [{"line": 31, "s": "206", "prev_prev": 1, "prev": 1, "current": "-", "i": "-", "dp": [1, 1, 0, 0], "log": {"c": "", "t": "Init: prev_prev=1 (i-2), prev=1 (i-1)"}}, {"line": 33, "s": "206", "prev_prev": 1, "prev": 1, "current": 0, "i": 1, "dp": [1, 1, 0, 0], "log": {"c": "", "t": "Processing char '0' at index 1."}}, {"line": 43, "s": "206", "prev_prev": 1, "prev": 1, "current": 1, "i": 1, "dp": [1, 1, 0, 0], "log": {"c": "log-purple", "t": "Valid 2-digit decode '20'. Add prev_prev (1). current=1"}, "arrow2": true}, {"line": 46, "s": "206", "prev_prev": 1, "prev": 1, "current": "-", "i": 1, "dp": [1, 1, 1, 0], "log": {"c": "", "t": "Shifted: prev_prev = 1, prev = 1."}}, {"line": 33, "s": "206", "prev_prev": 1, "prev": 1, "current": 0, "i": 2, "dp": [1, 1, 1, 0], "log": {"c": "", "t": "Processing char '6' at index 2."}}, {"line": 38, "s": "206", "prev_prev": 1, "prev": 1, "current": 1, "i": 2, "dp": [1, 1, 1, 0], "log": {"c": "log-success", "t": "Valid 1-digit decode '6'. Add prev (1). current=1"}, "arrow1": true}, {"line": 46, "s": "206", "prev_prev": 1, "prev": 1, "current": "-", "i": 2, "dp": [1, 1, 1, 1], "log": {"c": "", "t": "Shifted: prev_prev = 1, prev = 1."}}, {"line": 48, "s": "206", "prev_prev": 1, "prev": 1, "current": "-", "i": "-", "dp": [1, 1, 1, 1], "log": {"c": "log-hl", "t": "Finished. Returning prev = 1."}}];
+
+let curStep = -1;
+let currentMode = 'tc1';
+let states = trib_tc1;
+let n = 5;
+
+function loadTestCase() {
+    currentMode = document.getElementById('tc-select').value;
+    states = currentMode === 'tc1' ? trib_tc1 : (currentMode === 'tc2' ? trib_tc2 : trib_tc3);
+    n = states[0].n;
+    document.getElementById('in-n').innerText = n;
+    
+    // Generate DP array UI
+    const arr = document.getElementById('dp-array');
+    arr.innerHTML = '';
+    for(let i=0; i<=n; i++) {
+        arr.innerHTML += `
+            <div class="dp-cell-container" id="cell-c-${i}">
+                <div class="dp-index">i=${i}</div>
+                <div class="dp-box" id="cell-${i}">?</div>
+                <div class="dp-label" id="lbl-${i}">-</div>
+            </div>
+        `;
+    }
+    reset();
+}
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Variables
+    document.getElementById('var-t0').innerText = s.t0 !== undefined ? s.t0 : '-';
+    document.getElementById('var-t1').innerText = s.t1 !== undefined ? s.t1 : '-';
+    document.getElementById('var-t2').innerText = s.t2 !== undefined ? s.t2 : '-';
+    document.getElementById('var-i').innerText = s.i !== undefined ? s.i : '-';
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    if (s.line && document.getElementById(`line-${s.line}`)) {
+        document.getElementById(`line-${s.line}`).classList.add('active');
+    }
+    
+    if (s.dp) {
+        for(let i=0; i<=n; i++) {
+            const box = document.getElementById(`cell-${i}`);
+            const lbl = document.getElementById(`lbl-${i}`);
+            box.className = 'dp-box';
+            lbl.className = 'dp-label';
+            lbl.innerText = '-';
+            
+            const val = s.dp[i];
+            if (val !== 0 || i === 0) {
+                // Because trib(0) is 0, we can just say if i <= 2 it's known initially, else check > 0.
+                if (i <= 2 || val > 0) {
+                    box.innerText = val;
+                    box.classList.add('known');
+                } else {
+                    box.innerText = '?';
+                }
+            } else {
+                box.innerText = '?';
+            }
+        }
+    }
+    
+    // Apply current state
+    document.getElementById('arrow-t0').classList.remove('show');
+    document.getElementById('arrow-t1').classList.remove('show');
+    document.getElementById('arrow-t2').classList.remove('show');
+    
+    if (s.line === 15 || s.line === 19) {
+        let i = s.line === 15 ? 3 : n + 1;
+        
+        let idxT2 = i - 1;
+        let idxT1 = i - 2;
+        let idxT0 = i - 3;
+        
+        document.getElementById(`cell-${idxT2}`).classList.add('prev1');
+        document.getElementById(`lbl-${idxT2}`).innerText = 't2';
+        document.getElementById(`lbl-${idxT2}`).classList.add('t2-lbl');
+        
+        document.getElementById(`cell-${idxT1}`).classList.add('prev2');
+        document.getElementById(`lbl-${idxT1}`).innerText = 't1';
+        document.getElementById(`lbl-${idxT1}`).classList.add('t1-lbl');
+        
+        document.getElementById(`cell-${idxT0}`).classList.add('prev3');
+        document.getElementById(`lbl-${idxT0}`).innerText = 't0';
+        document.getElementById(`lbl-${idxT0}`).classList.add('t0-lbl');
+    }
+    
+    if (s.line === 16 || s.line === 17) {
+        let i = s.i;
+        document.getElementById(`cell-${i}`).classList.add('current');
+        
+        let idxT2 = i - 1;
+        let idxT1 = i - 2;
+        let idxT0 = i - 3;
+        
+        document.getElementById(`cell-${idxT0}`).classList.add('prev3');
+        document.getElementById(`lbl-${idxT0}`).innerText = 't0';
+        document.getElementById(`lbl-${idxT0}`).classList.add('t0-lbl');
+        
+        document.getElementById(`cell-${idxT1}`).classList.add('prev2');
+        document.getElementById(`lbl-${idxT1}`).innerText = 't1';
+        document.getElementById(`lbl-${idxT1}`).classList.add('t1-lbl');
+        
+        document.getElementById(`cell-${idxT2}`).classList.add('prev1');
+        document.getElementById(`lbl-${idxT2}`).innerText = 't2';
+        document.getElementById(`lbl-${idxT2}`).classList.add('t2-lbl');
+        
+        if (s.line === 17) {
+            drawArrow(idxT0, i, 'arrow-t0');
+            drawArrow(idxT1, i, 'arrow-t1');
+            drawArrow(idxT2, i, 'arrow-t2');
+            document.getElementById('arrow-t0').classList.add('show');
+            document.getElementById('arrow-t1').classList.add('show');
+            document.getElementById('arrow-t2').classList.add('show');
+        }
+    }
+    
+    // Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Buttons
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function drawArrow(fromIdx, toIdx, arrowId) {
+    const fromEl = document.getElementById(`cell-${fromIdx}`);
+    const toEl = document.getElementById(`cell-${toIdx}`);
+    const svg = document.getElementById('arrows-layer');
+    if(!fromEl || !toEl || !svg) return;
+    
+    const svgRect = svg.getBoundingClientRect();
+    const fRect = fromEl.getBoundingClientRect();
+    const tRect = toEl.getBoundingClientRect();
+    
+    const x1 = fRect.left + fRect.width/2 - svgRect.left;
+    const y1 = fRect.top - svgRect.top;
+    const x2 = tRect.left + tRect.width/2 - svgRect.left;
+    const y2 = tRect.top - svgRect.top;
+    
+    const midX = (x1 + x2)/2;
+    // Arch up, farther back means higher arch so they don't perfectly overlap
+    const archHeight = 30 + (toIdx - fromIdx) * 10;
+    const midY = Math.min(y1, y2) - archHeight; 
+    
+    const d = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+    document.getElementById(arrowId).setAttribute('d', d);
+}
+
+window.addEventListener('resize', () => {
+    if (curStep >= 0) {
+        const s = states[curStep];
+        if (s.line === 17) {
+            drawArrow(s.i - 3, s.i, 'arrow-t0');
+            drawArrow(s.i - 2, s.i, 'arrow-t1');
+            drawArrow(s.i - 1, s.i, 'arrow-t2');
+        }
+    }
+});
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    document.getElementById('var-t0').innerText = '-';
+    document.getElementById('var-t1').innerText = '-';
+    document.getElementById('var-t2').innerText = '-';
+    document.getElementById('var-i').innerText = '-';
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById('arrow-t0').classList.remove('show');
+    document.getElementById('arrow-t1').classList.remove('show');
+    document.getElementById('arrow-t2').classList.remove('show');
+    
+    for(let i=0; i<=n; i++) {
+        document.getElementById(`cell-${i}`).className = 'dp-box';
+        document.getElementById(`cell-${i}`).innerText = '?';
+        document.getElementById(`lbl-${i}`).className = 'dp-label';
+        document.getElementById(`lbl-${i}`).innerText = '-';
+    }
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+
+loadTestCase();
+
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.getElementById('left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.getElementById('top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+resizerV.addEventListener('mousedown', (e) => {
+    isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+    document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+});
+resizerH.addEventListener('mousedown', (e) => {
+    isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+    document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+});
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
+});
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+});
+</script>
+</body>
+</html>
