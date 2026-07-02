@@ -978,6 +978,44 @@
 
 ---
 
+### Day 24: Advanced Graph Problems ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Reconstruct Itinerary** (LeetCode #332)
+2. **Word Ladder** (LeetCode #127)
+3. **Critical Connections in a Network** (LeetCode #1192)
+
+**Topics Covered**:
+- Eulerian Paths (Hierholzer's Algorithm)
+- BFS for Shortest Path in Unweighted Graphs
+- Tarjan's Bridge-Finding Algorithm
+
+**Key Concepts Learned**:
+- Eulerian Paths require post-order DFS to guarantee no dead ends trap us early.
+- Word Ladder is BFS on a massive implicit graph.
+- Tarjan's algorithm uses discovery and lowest times to spot back-edges (cycles).
+
+---
+
+### Day 25: DP Introduction (1D Problems) ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Fibonacci Number** (LeetCode #509)
+2. **Climbing Stairs** (LeetCode #70)
+3. **Min Cost Climbing Stairs** (LeetCode #746)
+
+**Topics Covered**:
+- 1D Dynamic Programming Tabulation
+- Top-Down Memoization vs Bottom-Up Tabulation
+- In-Place Space Optimization
+
+**Key Concepts Learned**:
+- DP is just recursion with caching (Memoization) or building from base cases iteratively (Tabulation).
+- State transitions like `dp[i] = dp[i-1] + dp[i-2]` can be space-optimized to O(1) by only tracking the last 2 variables.
+- The `min()` choice in tabulation allows us to implicitly evaluate overlapping subproblems simultaneously.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1021,8 +1059,8 @@
 
 ### **Phase 6: Dynamic Programming** (Days 25-32) 🔄 **IN PROGRESS**
 **Focus**: Optimization and overlapping subproblems
-- Day 25: DP Introduction (1D Problems) 🎯 **NEXT**
-- Day 26: DP - Climbing Stairs Variations
+- Day 25: DP Introduction (1D Problems) ✅
+- Day 26: DP - Climbing Stairs Variations 🎯 **NEXT**
 - Day 27: DP - House Robber Pattern
 - Day 28: DP - 2D Grid Problems
 - Day 29: DP - Knapsack Problems
@@ -1055,10 +1093,10 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 0/8 (0%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 1/8 (12.5%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 24/40 days complete (60.0%)
+**Overall Progress**: 25/40 days complete (62.5%)
 
 ---
