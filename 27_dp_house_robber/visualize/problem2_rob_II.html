@@ -58,8 +58,8 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
 .pass-indicator.done { border-color: var(--success-color); color: var(--success-color); box-shadow: 0 0 10px rgba(63, 185, 80, 0.2); }
 
 /* House Visuals */
-.dp-array { display: flex; gap: 16px; align-items: flex-end; justify-content: center; min-width: max-content; padding: 20px;}
-.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; flex-shrink: 0;}
+.dp-array { display: flex; gap: 32px; align-items: flex-end; justify-content: center; min-width: max-content; padding: 20px;}
+.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; flex-shrink: 0;}
 .dp-index { font-size: 11px; color: #8b949e; font-family: monospace; white-space: nowrap;}
 .house-shape { 
     width: 50px; height: 50px; flex-shrink: 0;
@@ -185,14 +185,19 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
         </div>
       </div>
       <div class="code-block" id="code">
-<div class="code-line" id="line-35"><div class="ln">35</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">helper</span>(sub_nums):</div></div>
-<div class="code-line" id="line-36"><div class="ln">36</div><div class="lt">        rob1, rob2 = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
-<div class="code-line" id="line-37"><div class="ln">37</div><div class="lt">        <span class="k-kw">for</span> n <span class="k-kw">in</span> sub_nums:</div></div>
-<div class="code-line" id="line-38"><div class="ln">38</div><div class="lt">            temp = <span class="k-fn">max</span>(rob1 + n, rob2)</div></div>
-<div class="code-line" id="line-39"><div class="ln">39</div><div class="lt">            rob1 = rob2</div></div>
-<div class="code-line" id="line-40"><div class="ln">40</div><div class="lt">            rob2 = temp</div></div>
-<div class="code-line" id="line-41"><div class="ln">41</div><div class="lt">        <span class="k-kw">return</span> rob2</div></div>
-<div class="code-line" id="line-43"><div class="ln">43</div><div class="lt">    <span class="k-kw">return</span> <span class="k-fn">max</span>(helper(nums[:-<span class="k-num">1</span>]), helper(nums[<span class="k-num">1</span>:]))</div></div>
+<div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">rob_II</span>(nums: List[<span class="k-fn">int</span>]) -> <span class="k-fn">int</span>:</div></div>
+<div class="code-line" id="line-2"><div class="ln">2</div><div class="lt">    <span class="k-kw">if</span> <span class="k-fn">len</span>(nums) == <span class="k-num">1</span>:</div></div>
+<div class="code-line" id="line-3"><div class="ln">3</div><div class="lt">        <span class="k-kw">return</span> nums[<span class="k-num">0</span>]</div></div>
+<div class="code-line" id="line-4"><div class="ln">4</div><div class="lt">        </div></div>
+<div class="code-line" id="line-5"><div class="ln">5</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">helper</span>(sub_nums):</div></div>
+<div class="code-line" id="line-6"><div class="ln">6</div><div class="lt">        rob1, rob2 = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
+<div class="code-line" id="line-7"><div class="ln">7</div><div class="lt">        <span class="k-kw">for</span> n <span class="k-kw">in</span> sub_nums:</div></div>
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">            temp = <span class="k-fn">max</span>(rob1 + n, rob2)</div></div>
+<div class="code-line" id="line-9"><div class="ln">9</div><div class="lt">            rob1 = rob2</div></div>
+<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">            rob2 = temp</div></div>
+<div class="code-line" id="line-11"><div class="ln">11</div><div class="lt">        <span class="k-kw">return</span> rob2</div></div>
+<div class="code-line" id="line-12"><div class="ln">12</div><div class="lt">        </div></div>
+<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">    <span class="k-kw">return</span> <span class="k-fn">max</span>(helper(nums[:-<span class="k-num">1</span>]), helper(nums[<span class="k-num">1</span>:]))</div></div>
       </div>
     </div>
 
@@ -304,9 +309,16 @@ function updateUI() {
     
     // Highlight Code
     document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active', 'active-p1'));
-    if (s.line && document.getElementById(`line-${s.line}`)) {
-        if (s.line === 43) document.getElementById(`line-${s.line}`).classList.add('active-p1');
-        else document.getElementById(`line-${s.line}`).classList.add('active');
+    
+    let highlightLine = 'line-13'; // max helper
+    if (s.line === 33) highlightLine = 'line-2'; // edge case
+    if (s.line === 37) highlightLine = 'line-7'; // loop
+    if (s.line === 38) highlightLine = 'line-8'; // decision
+    if (s.line === 40) highlightLine = 'line-9'; // shift
+    
+    if (highlightLine && document.getElementById(highlightLine)) {
+        if (highlightLine === 'line-13') document.getElementById(highlightLine).classList.add('active-p1');
+        else document.getElementById(highlightLine).classList.add('active');
     }
     
     // Reset House Shapes

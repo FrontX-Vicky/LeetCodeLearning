@@ -52,8 +52,8 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
 .svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative; padding: 20px; overflow: auto;}
 
 /* House Visuals */
-.dp-array { display: flex; gap: 16px; align-items: flex-end; justify-content: center; min-width: max-content; padding: 20px;}
-.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; flex-shrink: 0;}
+.dp-array { display: flex; gap: 32px; align-items: flex-end; justify-content: center; min-width: max-content; padding: 20px;}
+.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 20px; position: relative; flex-shrink: 0;}
 .dp-index { font-size: 11px; color: #8b949e; font-family: monospace; white-space: nowrap;}
 .house-shape { 
     width: 50px; height: 50px; flex-shrink: 0;
@@ -165,12 +165,15 @@ body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple
         </div>
       </div>
       <div class="code-block" id="code">
-<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">    rob1, rob2 = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
-<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">    <span class="k-kw">for</span> n <span class="k-kw">in</span> nums:</div></div>
-<div class="code-line" id="line-14"><div class="ln">14</div><div class="lt">        temp = <span class="k-fn">max</span>(rob1 + n, rob2)</div></div>
-<div class="code-line" id="line-16"><div class="ln">16</div><div class="lt">        rob1 = rob2</div></div>
-<div class="code-line" id="line-17"><div class="lt">        rob2 = temp</div></div>
-<div class="code-line" id="line-19"><div class="ln">19</div><div class="lt">    <span class="k-kw">return</span> rob2</div></div>
+<div class="code-line" id="line-1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">rob</span>(nums: List[<span class="k-fn">int</span>]) -> <span class="k-fn">int</span>:</div></div>
+<div class="code-line" id="line-2"><div class="ln">2</div><div class="lt">    rob1, rob2 = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
+<div class="code-line" id="line-3"><div class="ln">3</div><div class="lt">    </div></div>
+<div class="code-line" id="line-4"><div class="ln">4</div><div class="lt">    <span class="k-kw">for</span> n <span class="k-kw">in</span> nums:</div></div>
+<div class="code-line" id="line-5"><div class="ln">5</div><div class="lt">        temp = <span class="k-fn">max</span>(rob1 + n, rob2)</div></div>
+<div class="code-line" id="line-6"><div class="ln">6</div><div class="lt">        rob1 = rob2</div></div>
+<div class="code-line" id="line-7"><div class="ln">7</div><div class="lt">        rob2 = temp</div></div>
+<div class="code-line" id="line-8"><div class="ln">8</div><div class="lt">        </div></div>
+<div class="code-line" id="line-9"><div class="ln">9</div><div class="lt">    <span class="k-kw">return</span> rob2</div></div>
       </div>
     </div>
 
@@ -259,12 +262,12 @@ function updateUI() {
     // Highlight Code
     document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
     // Map lines based on states generator output
-    let highlightLine = 'line-13'; // fallback
-    if (s.line === 14) highlightLine = 'line-10';
-    if (s.line === 16) highlightLine = 'line-13';
-    if (s.line === 17) highlightLine = 'line-14';
-    if (s.line === 19) highlightLine = 'line-16'; // shifting
-    if (s.line === 21) highlightLine = 'line-19'; // return
+    let highlightLine = 'line-4'; // fallback
+    if (s.line === 14) highlightLine = 'line-2';
+    if (s.line === 16) highlightLine = 'line-4';
+    if (s.line === 17) highlightLine = 'line-5';
+    if (s.line === 19) highlightLine = 'line-6'; // shifting
+    if (s.line === 21) highlightLine = 'line-9'; // return
     
     const lnEl = document.getElementById(highlightLine);
     if (lnEl) lnEl.classList.add('active');
