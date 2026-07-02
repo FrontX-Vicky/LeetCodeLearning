@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #198 House Robber</title>
+<style>
+:root {
+    --bg-color: #0d1117; --text-color: #c9d1d9; --accent-color: #58a6ff;
+    --success-color: #3fb950; --danger-color: #f85149; --warning-color: #d29922;
+    --card-bg: #161b22; --border-color: #30363d; --purple: #bc8cff;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background-color:var(--bg-color);color:var(--text-color);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.header{background:var(--card-bg);border-bottom:1px solid var(--border-color);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc;margin:0}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+.prob-nav{background:#21262d;border:1px solid var(--border-color);color:var(--text-color);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:500;cursor:pointer;outline:none;}
+.controls { display: flex; gap: 8px; align-items:center;}
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #21262d; color: var(--text-color); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn:hover:not(:disabled) { border-color: var(--accent-color); color: var(--accent-color); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.primary { background: #238636; border-color: #2ea043; color: white; }
+.btn.primary:hover:not(:disabled) { background: #2ea043; }
+
+/* MAIN LAYOUT */
+.main-wrapper { display: flex; flex-direction: column; flex: 1; padding: 10px; gap: 4px; overflow: hidden; }
+.top-panels { display: flex; flex: 3; min-height: 0; gap: 4px; }
+.bottom-panel { flex: 1; min-height: 100px; background: #010409; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden;}
+
+/* LEFT PANEL */
+.left-panel { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; padding: 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+
+.inputs-container { background: #0d1117; border-bottom: 1px solid var(--border-color); flex-shrink: 0;}
+.vars-container { display: flex; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; justify-content: space-between; background: #161b22;}
+.var-box { background: #21262d; border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; text-align: center; flex: 1; min-width: 50px;}
+.var-title { font-size: 10px; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; }
+.var-val { font-size: 14px; font-weight: bold; color: var(--accent-color); font-family: monospace; word-break: break-all;}
+
+.code-block { flex: 1; overflow-y: auto; padding: 10px 0; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.6; background: #1e1e1e; min-height: 150px;}
+.code-line { display: flex; padding: 0 10px 0 0; border-left: 3px solid transparent; transition: all 0.2s;}
+.code-line.active { background-color: rgba(88, 166, 255, 0.15); border-left-color: var(--accent-color); }
+.ln { width: 30px; text-align: right; color: #858585; padding-right: 10px; user-select: none; flex-shrink: 0;}
+.lt { white-space: pre; color: #d4d4d4; }
+.k-kw { color: #569cd6; } .k-fn { color: #dcdcaa; } .k-str { color: #ce9178; } .k-num { color: #b5cea8; }
+
+/* CENTER PANEL */
+.center-panel { flex: 2; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.svg-wrap { flex: 1; display: flex; align-items: center; justify-content: center; background: #0d1117; position: relative; padding: 20px; overflow: auto;}
+
+/* House Visuals */
+.dp-array { display: flex; gap: 16px; align-items: flex-end; justify-content: center; min-width: max-content; }
+.dp-cell-container { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; }
+.dp-index { font-size: 11px; color: #8b949e; font-family: monospace; }
+.house-shape { 
+    width: 50px; height: 50px; 
+    background: #21262d; border: 2px solid var(--border-color); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; transition: all 0.3s;
+    font-family: monospace; font-size: 16px; font-weight: bold; color: var(--text-color);
+}
+.house-shape::before {
+    content: ''; position: absolute; top: -16px; left: -2px; border-left: 27px solid transparent; border-right: 27px solid transparent; border-bottom: 14px solid var(--border-color);
+    transition: all 0.3s;
+}
+.house-shape::after {
+    content: ''; position: absolute; top: -12px; left: 1px; border-left: 22px solid transparent; border-right: 22px solid transparent; border-bottom: 12px solid #21262d;
+    transition: all 0.3s;
+}
+
+/* Branch Highlight States */
+.house-shape.current { border-color: var(--accent-color); transform: translateY(-5px); box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2); }
+.house-shape.current::before { border-bottom-color: var(--accent-color); }
+
+.house-shape.rob1 { border-color: var(--success-color); background: rgba(63, 185, 80, 0.1); color: var(--success-color); }
+.house-shape.rob1::before { border-bottom-color: var(--success-color); }
+.house-shape.rob1::after { border-bottom-color: #16241a; } /* tinted roof */
+
+.house-shape.rob2 { border-color: var(--purple); background: rgba(188, 140, 255, 0.1); color: var(--purple); }
+.house-shape.rob2::before { border-bottom-color: var(--purple); }
+.house-shape.rob2::after { border-bottom-color: #241a30; }
+
+.dp-label { font-size: 10px; font-weight: bold; color: var(--border-color); margin-top: 4px; transition: color 0.3s;}
+.dp-label.r1-lbl { color: var(--success-color); }
+.dp-label.r2-lbl { color: var(--purple); }
+.dp-label.curr-lbl { color: var(--accent-color); }
+
+/* SVG Arrows */
+.arrows-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.dp-arrow { fill: none; stroke-width: 3; opacity: 0; transition: opacity 0.3s; }
+.dp-arrow.show { opacity: 1; }
+.dp-arrow.dashed { stroke-dasharray: 6; opacity: 0.3; }
+.dp-arrow.solid { animation: dashMove 1s linear infinite; stroke-dasharray: 6; }
+@keyframes dashMove { to { stroke-dashoffset: -12; } }
+
+/* LOGS */
+.log-container { flex: 1; padding: 12px; overflow-y: auto; font-family: monospace; font-size: 13px; line-height: 1.5; }
+.log-entry { margin-bottom: 6px; padding: 6px 10px; border-left: 3px solid var(--border-color); background: #0d1117; border-radius: 0 4px 4px 0; animation: fadeLeft 0.3s ease; }
+.log-hl { color: var(--accent-color); font-weight: bold; border-left-color: var(--accent-color); background: rgba(88, 166, 255, 0.05); }
+.log-success { color: var(--success-color); font-weight: bold; border-left-color: var(--success-color); background: rgba(63, 185, 80, 0.05); }
+.log-purple { color: var(--purple); font-weight: bold; border-left-color: var(--purple); background: rgba(188, 140, 255, 0.05); }
+.log-danger { color: var(--danger-color); font-weight: bold; border-left-color: var(--danger-color); background: rgba(248, 81, 73, 0.05); }
+.log-warning { color: var(--warning-color); font-weight: bold; border-left-color: var(--warning-color); background: rgba(210, 153, 34, 0.05); }
+
+@keyframes fadeLeft { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* RESIZERS */
+.resizer-v { width: 6px; cursor: col-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: 0 -1px;}
+.resizer-v:hover, .resizer-v.dragging { background: var(--accent-color); }
+.resizer-h { height: 6px; cursor: row-resize; background: transparent; transition: background 0.2s; z-index: 10; margin: -1px 0;}
+.resizer-h:hover, .resizer-h.dragging { background: var(--accent-color); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <select class="prob-nav" onchange="window.location.href=this.value">
+    <option value="problem1_rob.html" selected>P1 · House Robber I</option>
+    <option value="problem2_rob_II.html">P2 · House Robber II</option>
+  </select>
+  <div class="header-left">
+    <h1>House Robber &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #198</span></h1>
+    <p>1D max() DP Tabulation Decision</p>
+  </div>
+  <div class="controls">
+    <select id="tc-select" onchange="loadTestCase()" style="background:#21262d; border:1px solid #30363d; color:#c9d1d9; border-radius:4px; padding:4px 8px; margin-right: 10px;">
+        <option value="tc1">TC1: [1, 2, 3, 1]</option>
+        <option value="tc2">TC2: [2, 7, 9, 3, 1]</option>
+        <option value="tc3">TC3: [1, 20, 3, 40, ...]</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" id="btn-reset" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-container">
+        <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #8b949e; padding: 4px 10px; background: #161b22; border-bottom: 1px solid var(--border-color);">Inputs</div>
+        <div style="padding: 6px 10px; font-family: monospace; font-size: 12px;"><span style="color:var(--purple)">nums:</span> <span class="k-num" id="in-n"></span></div>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-container">
+        <div class="var-box">
+          <div class="var-title">rob1 (i-2)</div>
+          <div class="var-val" id="var-r1" style="color:var(--success-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">rob2 (i-1)</div>
+          <div class="var-val" id="var-r2" style="color:var(--purple)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">temp</div>
+          <div class="var-val" id="var-t" style="color:var(--accent-color)">-</div>
+        </div>
+        <div class="var-box">
+          <div class="var-title">i</div>
+          <div class="var-val" id="var-i" style="color:var(--text-color)">-</div>
+        </div>
+      </div>
+      <div class="code-block" id="code">
+<div class="code-line" id="line-10"><div class="ln">10</div><div class="lt">    rob1, rob2 = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
+<div class="code-line" id="line-13"><div class="ln">13</div><div class="lt">    <span class="k-kw">for</span> n <span class="k-kw">in</span> nums:</div></div>
+<div class="code-line" id="line-14"><div class="ln">14</div><div class="lt">        temp = <span class="k-fn">max</span>(rob1 + n, rob2)</div></div>
+<div class="code-line" id="line-16"><div class="ln">16</div><div class="lt">        rob1 = rob2</div></div>
+<div class="code-line" id="line-17"><div class="lt">        rob2 = temp</div></div>
+<div class="code-line" id="line-19"><div class="ln">19</div><div class="lt">    <span class="k-kw">return</span> rob2</div></div>
+      </div>
+    </div>
+
+    <div class="resizer-v" id="resizer-v"></div>
+
+    <div class="center-panel">
+      <div class="panel-title">Tabulation Visualizer</div>
+      <div class="svg-wrap" id="svg-wrap">
+        <svg class="arrows-svg" id="arrows-layer">
+            <path id="arrow-r1" class="dp-arrow" stroke="var(--success-color)" />
+            <path id="arrow-r2" class="dp-arrow" stroke="var(--purple)" />
+        </svg>
+        <div class="dp-array" id="dp-array">
+            <!-- Dynamically generated array cells -->
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  <div class="resizer-h" id="resizer-h"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const r1_tc1 = [{"line": 14, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 0, "temp": "-", "i": "-", "log": {"c": "", "t": "Init: rob1=0, rob2=0."}}, {"line": 16, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $1."}}, {"line": 17, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 0, "temp": 1, "i": 0, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 1) = 1 > rob2 (0). New max is 1."}}, {"line": 19, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 1, "temp": 1, "i": 0, "log": {"c": "", "t": "Shifted variables: rob1=0, rob2=1."}}, {"line": 16, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 1, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $2."}}, {"line": 17, "nums": [1, 2, 3, 1], "rob1": 0, "rob2": 1, "temp": 2, "i": 1, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 2) = 2 > rob2 (1). New max is 2."}}, {"line": 19, "nums": [1, 2, 3, 1], "rob1": 1, "rob2": 2, "temp": 2, "i": 1, "log": {"c": "", "t": "Shifted variables: rob1=1, rob2=2."}}, {"line": 16, "nums": [1, 2, 3, 1], "rob1": 1, "rob2": 2, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $3."}}, {"line": 17, "nums": [1, 2, 3, 1], "rob1": 1, "rob2": 2, "temp": 4, "i": 2, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 3) = 4 > rob2 (2). New max is 4."}}, {"line": 19, "nums": [1, 2, 3, 1], "rob1": 2, "rob2": 4, "temp": 4, "i": 2, "log": {"c": "", "t": "Shifted variables: rob1=2, rob2=4."}}, {"line": 16, "nums": [1, 2, 3, 1], "rob1": 2, "rob2": 4, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $1."}}, {"line": 17, "nums": [1, 2, 3, 1], "rob1": 2, "rob2": 4, "temp": 4, "i": 3, "branch": 2, "log": {"c": "log-purple", "t": "Skipping! rob2 (4) > (rob1 + 1) = 3. New max is 4."}}, {"line": 19, "nums": [1, 2, 3, 1], "rob1": 4, "rob2": 4, "temp": 4, "i": 3, "log": {"c": "", "t": "Shifted variables: rob1=4, rob2=4."}}, {"line": 21, "nums": [1, 2, 3, 1], "rob1": 4, "rob2": 4, "temp": "-", "i": "-", "log": {"c": "log-hl", "t": "Finished. Max loot is 4."}}];
+const r1_tc2 = [{"line": 14, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 0, "temp": "-", "i": "-", "log": {"c": "", "t": "Init: rob1=0, rob2=0."}}, {"line": 16, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $2."}}, {"line": 17, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 0, "temp": 2, "i": 0, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 2) = 2 > rob2 (0). New max is 2."}}, {"line": 19, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 2, "temp": 2, "i": 0, "log": {"c": "", "t": "Shifted variables: rob1=0, rob2=2."}}, {"line": 16, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 2, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $7."}}, {"line": 17, "nums": [2, 7, 9, 3, 1], "rob1": 0, "rob2": 2, "temp": 7, "i": 1, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 7) = 7 > rob2 (2). New max is 7."}}, {"line": 19, "nums": [2, 7, 9, 3, 1], "rob1": 2, "rob2": 7, "temp": 7, "i": 1, "log": {"c": "", "t": "Shifted variables: rob1=2, rob2=7."}}, {"line": 16, "nums": [2, 7, 9, 3, 1], "rob1": 2, "rob2": 7, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $9."}}, {"line": 17, "nums": [2, 7, 9, 3, 1], "rob1": 2, "rob2": 7, "temp": 11, "i": 2, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 9) = 11 > rob2 (7). New max is 11."}}, {"line": 19, "nums": [2, 7, 9, 3, 1], "rob1": 7, "rob2": 11, "temp": 11, "i": 2, "log": {"c": "", "t": "Shifted variables: rob1=7, rob2=11."}}, {"line": 16, "nums": [2, 7, 9, 3, 1], "rob1": 7, "rob2": 11, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $3."}}, {"line": 17, "nums": [2, 7, 9, 3, 1], "rob1": 7, "rob2": 11, "temp": 11, "i": 3, "branch": 2, "log": {"c": "log-purple", "t": "Skipping! rob2 (11) > (rob1 + 3) = 10. New max is 11."}}, {"line": 19, "nums": [2, 7, 9, 3, 1], "rob1": 11, "rob2": 11, "temp": 11, "i": 3, "log": {"c": "", "t": "Shifted variables: rob1=11, rob2=11."}}, {"line": 16, "nums": [2, 7, 9, 3, 1], "rob1": 11, "rob2": 11, "temp": "-", "i": 4, "log": {"c": "", "t": "At house 4 with loot $1."}}, {"line": 17, "nums": [2, 7, 9, 3, 1], "rob1": 11, "rob2": 11, "temp": 12, "i": 4, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 1) = 12 > rob2 (11). New max is 12."}}, {"line": 19, "nums": [2, 7, 9, 3, 1], "rob1": 11, "rob2": 12, "temp": 12, "i": 4, "log": {"c": "", "t": "Shifted variables: rob1=11, rob2=12."}}, {"line": 21, "nums": [2, 7, 9, 3, 1], "rob1": 11, "rob2": 12, "temp": "-", "i": "-", "log": {"c": "log-hl", "t": "Finished. Max loot is 12."}}];
+const r1_tc3 = [{"line": 14, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 0, "temp": "-", "i": "-", "log": {"c": "", "t": "Init: rob1=0, rob2=0."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $1."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 0, "temp": 1, "i": 0, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 1) = 1 > rob2 (0). New max is 1."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 1, "temp": 1, "i": 0, "log": {"c": "", "t": "Shifted variables: rob1=0, rob2=1."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 1, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $20."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 0, "rob2": 1, "temp": 20, "i": 1, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 20) = 20 > rob2 (1). New max is 20."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 1, "rob2": 20, "temp": 20, "i": 1, "log": {"c": "", "t": "Shifted variables: rob1=1, rob2=20."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 1, "rob2": 20, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $3."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 1, "rob2": 20, "temp": 20, "i": 2, "branch": 2, "log": {"c": "log-purple", "t": "Skipping! rob2 (20) > (rob1 + 3) = 4. New max is 20."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 20, "temp": 20, "i": 2, "log": {"c": "", "t": "Shifted variables: rob1=20, rob2=20."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 20, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $40."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 20, "temp": 60, "i": 3, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 40) = 60 > rob2 (20). New max is 60."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 60, "temp": 60, "i": 3, "log": {"c": "", "t": "Shifted variables: rob1=20, rob2=60."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 60, "temp": "-", "i": 4, "log": {"c": "", "t": "At house 4 with loot $5."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 20, "rob2": 60, "temp": 60, "i": 4, "branch": 2, "log": {"c": "log-purple", "t": "Skipping! rob2 (60) > (rob1 + 5) = 25. New max is 60."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 60, "temp": 60, "i": 4, "log": {"c": "", "t": "Shifted variables: rob1=60, rob2=60."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 60, "temp": "-", "i": 5, "log": {"c": "", "t": "At house 5 with loot $60."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 60, "temp": 120, "i": 5, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 60) = 120 > rob2 (60). New max is 120."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 120, "temp": 120, "i": 5, "log": {"c": "", "t": "Shifted variables: rob1=60, rob2=120."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 120, "temp": "-", "i": 6, "log": {"c": "", "t": "At house 6 with loot $7."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 60, "rob2": 120, "temp": 120, "i": 6, "branch": 2, "log": {"c": "log-purple", "t": "Skipping! rob2 (120) > (rob1 + 7) = 67. New max is 120."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 120, "rob2": 120, "temp": 120, "i": 6, "log": {"c": "", "t": "Shifted variables: rob1=120, rob2=120."}}, {"line": 16, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 120, "rob2": 120, "temp": "-", "i": 7, "log": {"c": "", "t": "At house 7 with loot $80."}}, {"line": 17, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 120, "rob2": 120, "temp": 200, "i": 7, "branch": 1, "log": {"c": "log-success", "t": "Robbing! (rob1 + 80) = 200 > rob2 (120). New max is 200."}}, {"line": 19, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 120, "rob2": 200, "temp": 200, "i": 7, "log": {"c": "", "t": "Shifted variables: rob1=120, rob2=200."}}, {"line": 21, "nums": [1, 20, 3, 40, 5, 60, 7, 80], "rob1": 120, "rob2": 200, "temp": "-", "i": "-", "log": {"c": "log-hl", "t": "Finished. Max loot is 200."}}];
+const r2_tc1 = [{"line": 43, "nums": [2, 3, 2], "pass_num": 1, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 1: Skipping the last house."}}, {"line": 37, "nums": [2, 3, 2], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $2."}}, {"line": 38, "nums": [2, 3, 2], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": 2, "i": 0, "log": {"c": "log-success", "t": "max(0+2, 0) = 2"}}, {"line": 40, "nums": [2, 3, 2], "pass_num": 1, "rob1": 0, "rob2": 2, "temp": 2, "i": 0, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [2, 3, 2], "pass_num": 1, "rob1": 0, "rob2": 2, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $3."}}, {"line": 38, "nums": [2, 3, 2], "pass_num": 1, "rob1": 0, "rob2": 2, "temp": 3, "i": 1, "log": {"c": "log-success", "t": "max(0+3, 2) = 3"}}, {"line": 40, "nums": [2, 3, 2], "pass_num": 1, "rob1": 2, "rob2": 3, "temp": 3, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [2, 3, 2], "pass_num": 2, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 2: Skipping the first house."}}, {"line": 37, "nums": [2, 3, 2], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $3."}}, {"line": 38, "nums": [2, 3, 2], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": 3, "i": 1, "log": {"c": "log-success", "t": "max(0+3, 0) = 3"}}, {"line": 40, "nums": [2, 3, 2], "pass_num": 2, "rob1": 0, "rob2": 3, "temp": 3, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [2, 3, 2], "pass_num": 2, "rob1": 0, "rob2": 3, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $2."}}, {"line": 38, "nums": [2, 3, 2], "pass_num": 2, "rob1": 0, "rob2": 3, "temp": 3, "i": 2, "log": {"c": "log-purple", "t": "max(0+2, 3) = 3"}}, {"line": 40, "nums": [2, 3, 2], "pass_num": 2, "rob1": 3, "rob2": 3, "temp": 3, "i": 2, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [2, 3, 2], "pass_num": 3, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "p1": 3, "p2": 3, "res": 3, "log": {"c": "log-hl", "t": "Done! Pass 1 max = 3, Pass 2 max = 3. Result = 3"}}];
+const r2_tc2 = [{"line": 43, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 1: Skipping the last house."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $1."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": 1, "i": 0, "log": {"c": "log-success", "t": "max(0+1, 0) = 1"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 0, "rob2": 1, "temp": 1, "i": 0, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 0, "rob2": 1, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $2."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 0, "rob2": 1, "temp": 2, "i": 1, "log": {"c": "log-success", "t": "max(0+2, 1) = 2"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 1, "rob2": 2, "temp": 2, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 1, "rob2": 2, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $3."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 1, "rob2": 2, "temp": 4, "i": 2, "log": {"c": "log-success", "t": "max(1+3, 2) = 4"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 1, "rob1": 2, "rob2": 4, "temp": 4, "i": 2, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 2: Skipping the first house."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $2."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": 2, "i": 1, "log": {"c": "log-success", "t": "max(0+2, 0) = 2"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 0, "rob2": 2, "temp": 2, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 0, "rob2": 2, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $3."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 0, "rob2": 2, "temp": 3, "i": 2, "log": {"c": "log-success", "t": "max(0+3, 2) = 3"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 2, "rob2": 3, "temp": 3, "i": 2, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 2, "rob2": 3, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $1."}}, {"line": 38, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 2, "rob2": 3, "temp": 3, "i": 3, "log": {"c": "log-purple", "t": "max(2+1, 3) = 3"}}, {"line": 40, "nums": [1, 2, 3, 1], "pass_num": 2, "rob1": 3, "rob2": 3, "temp": 3, "i": 3, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [1, 2, 3, 1], "pass_num": 3, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "p1": 4, "p2": 3, "res": 4, "log": {"c": "log-hl", "t": "Done! Pass 1 max = 4, Pass 2 max = 3. Result = 4"}}];
+const r2_tc3 = [{"line": 43, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 1: Skipping the last house."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": "-", "i": 0, "log": {"c": "", "t": "At house 0 with loot $10."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 0, "rob2": 0, "temp": 10, "i": 0, "log": {"c": "log-success", "t": "max(0+10, 0) = 10"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 0, "rob2": 10, "temp": 10, "i": 0, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 0, "rob2": 10, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $20."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 0, "rob2": 10, "temp": 20, "i": 1, "log": {"c": "log-success", "t": "max(0+20, 10) = 20"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 10, "rob2": 20, "temp": 20, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 10, "rob2": 20, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $30."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 10, "rob2": 20, "temp": 40, "i": 2, "log": {"c": "log-success", "t": "max(10+30, 20) = 40"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 20, "rob2": 40, "temp": 40, "i": 2, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 20, "rob2": 40, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $40."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 20, "rob2": 40, "temp": 60, "i": 3, "log": {"c": "log-success", "t": "max(20+40, 40) = 60"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 40, "rob2": 60, "temp": 60, "i": 3, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 40, "rob2": 60, "temp": "-", "i": 4, "log": {"c": "", "t": "At house 4 with loot $50."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 40, "rob2": 60, "temp": 90, "i": 4, "log": {"c": "log-success", "t": "max(40+50, 60) = 90"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 60, "rob2": 90, "temp": 90, "i": 4, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 60, "rob2": 90, "temp": "-", "i": 5, "log": {"c": "", "t": "At house 5 with loot $60."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 60, "rob2": 90, "temp": 120, "i": 5, "log": {"c": "log-success", "t": "max(60+60, 90) = 120"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 90, "rob2": 120, "temp": 120, "i": 5, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 90, "rob2": 120, "temp": "-", "i": 6, "log": {"c": "", "t": "At house 6 with loot $70."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 90, "rob2": 120, "temp": 160, "i": 6, "log": {"c": "log-success", "t": "max(90+70, 120) = 160"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 1, "rob1": 120, "rob2": 160, "temp": 160, "i": 6, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "log": {"c": "log-warning", "t": "Pass 2: Skipping the first house."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": "-", "i": 1, "log": {"c": "", "t": "At house 1 with loot $20."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 0, "rob2": 0, "temp": 20, "i": 1, "log": {"c": "log-success", "t": "max(0+20, 0) = 20"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 0, "rob2": 20, "temp": 20, "i": 1, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 0, "rob2": 20, "temp": "-", "i": 2, "log": {"c": "", "t": "At house 2 with loot $30."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 0, "rob2": 20, "temp": 30, "i": 2, "log": {"c": "log-success", "t": "max(0+30, 20) = 30"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 20, "rob2": 30, "temp": 30, "i": 2, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 20, "rob2": 30, "temp": "-", "i": 3, "log": {"c": "", "t": "At house 3 with loot $40."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 20, "rob2": 30, "temp": 60, "i": 3, "log": {"c": "log-success", "t": "max(20+40, 30) = 60"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 30, "rob2": 60, "temp": 60, "i": 3, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 30, "rob2": 60, "temp": "-", "i": 4, "log": {"c": "", "t": "At house 4 with loot $50."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 30, "rob2": 60, "temp": 80, "i": 4, "log": {"c": "log-success", "t": "max(30+50, 60) = 80"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 60, "rob2": 80, "temp": 80, "i": 4, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 60, "rob2": 80, "temp": "-", "i": 5, "log": {"c": "", "t": "At house 5 with loot $60."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 60, "rob2": 80, "temp": 120, "i": 5, "log": {"c": "log-success", "t": "max(60+60, 80) = 120"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 80, "rob2": 120, "temp": 120, "i": 5, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 80, "rob2": 120, "temp": "-", "i": 6, "log": {"c": "", "t": "At house 6 with loot $70."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 80, "rob2": 120, "temp": 150, "i": 6, "log": {"c": "log-success", "t": "max(80+70, 120) = 150"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 120, "rob2": 150, "temp": 150, "i": 6, "log": {"c": "", "t": "Shifted."}}, {"line": 37, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 120, "rob2": 150, "temp": "-", "i": 7, "log": {"c": "", "t": "At house 7 with loot $80."}}, {"line": 38, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 120, "rob2": 150, "temp": 200, "i": 7, "log": {"c": "log-success", "t": "max(120+80, 150) = 200"}}, {"line": 40, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 2, "rob1": 150, "rob2": 200, "temp": 200, "i": 7, "log": {"c": "", "t": "Shifted."}}, {"line": 43, "nums": [10, 20, 30, 40, 50, 60, 70, 80], "pass_num": 3, "rob1": "-", "rob2": "-", "temp": "-", "i": "-", "p1": 160, "p2": 200, "res": 200, "log": {"c": "log-hl", "t": "Done! Pass 1 max = 160, Pass 2 max = 200. Result = 200"}}];
+
+let curStep = -1;
+let currentMode = 'tc1';
+let states = r1_tc1;
+let nums = [];
+
+function loadTestCase() {
+    currentMode = document.getElementById('tc-select').value;
+    states = currentMode === 'tc1' ? r1_tc1 : (currentMode === 'tc2' ? r1_tc2 : r1_tc3);
+    nums = states[0].nums;
+    document.getElementById('in-n').innerText = '[' + nums.join(', ') + ']';
+    
+    // Generate DP array UI
+    const arr = document.getElementById('dp-array');
+    arr.innerHTML = '';
+    
+    // Virtual Base houses
+    arr.innerHTML += `
+        <div class="dp-cell-container" id="cell-c-m2">
+            <div class="dp-index">Base</div>
+            <div class="house-shape" id="cell-m2">0</div>
+            <div class="dp-label" id="lbl-m2">-</div>
+        </div>
+        <div class="dp-cell-container" id="cell-c-m1">
+            <div class="dp-index">Base</div>
+            <div class="house-shape" id="cell-m1">0</div>
+            <div class="dp-label" id="lbl-m1">-</div>
+        </div>
+    `;
+    
+    for(let i=0; i<nums.length; i++) {
+        arr.innerHTML += `
+            <div class="dp-cell-container" id="cell-c-${i}">
+                <div class="dp-index">i=${i}</div>
+                <div class="house-shape" id="cell-${i}">$${nums[i]}</div>
+                <div class="dp-label" id="lbl-${i}">-</div>
+            </div>
+        `;
+    }
+    reset();
+}
+
+function updateUI() {
+    const s = states[curStep];
+    if (!s) return;
+    
+    // Variables
+    document.getElementById('var-r1').innerText = s.rob1 !== undefined ? s.rob1 : '-';
+    document.getElementById('var-r2').innerText = s.rob2 !== undefined ? s.rob2 : '-';
+    document.getElementById('var-t').innerText = s.temp !== undefined ? s.temp : '-';
+    document.getElementById('var-i').innerText = s.i !== undefined ? s.i : '-';
+    
+    // Highlight Code
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    // Map lines based on states generator output
+    let highlightLine = 'line-13'; // fallback
+    if (s.line === 14) highlightLine = 'line-10';
+    if (s.line === 16) highlightLine = 'line-13';
+    if (s.line === 17) highlightLine = 'line-14';
+    if (s.line === 19) highlightLine = 'line-16'; // shifting
+    if (s.line === 21) highlightLine = 'line-19'; // return
+    
+    const lnEl = document.getElementById(highlightLine);
+    if (lnEl) lnEl.classList.add('active');
+    
+    // Reset House Shapes
+    document.querySelectorAll('.house-shape').forEach(el => el.className = 'house-shape');
+    document.querySelectorAll('.dp-label').forEach(el => { el.className = 'dp-label'; el.innerText = '-'; });
+    
+    // Apply current state pointer
+    document.getElementById('arrow-r1').classList.remove('show', 'dashed', 'solid');
+    document.getElementById('arrow-r2').classList.remove('show', 'dashed', 'solid');
+    
+    let i = s.i;
+    
+    if (i !== '-') {
+        document.getElementById(`cell-${i}`).classList.add('current');
+        document.getElementById(`lbl-${i}`).classList.add('curr-lbl');
+        document.getElementById(`lbl-${i}`).innerText = 'curr';
+        
+        let idxR2 = (i - 1) < 0 ? `m${Math.abs(i-1)}` : `${i - 1}`;
+        let idxR1 = (i - 2) < 0 ? `m${Math.abs(i-2)}` : `${i - 2}`;
+        
+        if (s.line === 16 || s.line === 17 || s.line === 19) {
+            document.getElementById(`cell-${idxR2}`).classList.add('rob2');
+            document.getElementById(`lbl-${idxR2}`).classList.add('r2-lbl');
+            document.getElementById(`lbl-${idxR2}`).innerText = 'rob2';
+            
+            document.getElementById(`cell-${idxR1}`).classList.add('rob1');
+            document.getElementById(`lbl-${idxR1}`).classList.add('r1-lbl');
+            document.getElementById(`lbl-${idxR1}`).innerText = 'rob1';
+        }
+        
+        if (s.line === 17) { // decision made
+            document.getElementById('arrow-r1').classList.add('show');
+            document.getElementById('arrow-r2').classList.add('show');
+            
+            drawArrow(`cell-${idxR1}`, `cell-${i}`, 'arrow-r1');
+            drawArrow(`cell-${idxR2}`, `cell-${i}`, 'arrow-r2');
+            
+            if (s.branch === 1) { // rob1 + n won
+                document.getElementById('arrow-r1').classList.add('solid');
+                document.getElementById('arrow-r2').classList.add('dashed');
+                document.getElementById(`cell-${i}`).innerText = s.temp; // show new total
+            } else if (s.branch === 2) { // rob2 won
+                document.getElementById('arrow-r2').classList.add('solid');
+                document.getElementById('arrow-r1').classList.add('dashed');
+                document.getElementById(`cell-${i}`).innerText = s.temp;
+            } else {
+                document.getElementById('arrow-r1').classList.add('solid');
+                document.getElementById('arrow-r2').classList.add('solid');
+                document.getElementById(`cell-${i}`).innerText = s.temp;
+            }
+        }
+        
+        if (s.line === 19) {
+            // we already shifted in log but we can just display the new values on the houses if we wanted, 
+            // but the state is waiting for the loop to repeat.
+            document.getElementById(`cell-${i}`).innerText = s.temp; 
+        }
+    }
+    
+    // Logs
+    const logContainer = document.getElementById('logs');
+    const logEl = document.createElement('div');
+    logEl.className = `log-entry ${s.log.c}`;
+    logEl.innerHTML = `<span style="color:#8b949e">[Step ${curStep+1}]</span> ${s.log.t}`;
+    logContainer.appendChild(logEl);
+    logContainer.scrollTop = logContainer.scrollHeight;
+    
+    // Buttons
+    document.getElementById('btn-prev').disabled = curStep === 0;
+    document.getElementById('btn-next').disabled = curStep === states.length - 1;
+}
+
+function drawArrow(fromId, toId, arrowId) {
+    const fromEl = document.getElementById(fromId);
+    const toEl = document.getElementById(toId);
+    const svg = document.getElementById('arrows-layer');
+    if(!fromEl || !toEl || !svg) return;
+    
+    const svgRect = svg.getBoundingClientRect();
+    const fRect = fromEl.getBoundingClientRect();
+    const tRect = toEl.getBoundingClientRect();
+    
+    const x1 = fRect.left + fRect.width/2 - svgRect.left;
+    const y1 = fRect.top - svgRect.top;
+    const x2 = tRect.left + tRect.width/2 - svgRect.left;
+    const y2 = tRect.top - svgRect.top;
+    
+    const midX = (x1 + x2)/2;
+    // Arch up
+    const isR2 = arrowId === 'arrow-r2';
+    const archHeight = isR2 ? 45 : 70;
+    const midY = Math.min(y1, y2) - archHeight; 
+    
+    const d = `M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}`;
+    document.getElementById(arrowId).setAttribute('d', d);
+}
+
+window.addEventListener('resize', () => {
+    if (curStep >= 0) {
+        const s = states[curStep];
+        if (s.line === 17) {
+            let i = s.i;
+            let idxR2 = (i - 1) < 0 ? `m${Math.abs(i-1)}` : `${i - 1}`;
+            let idxR1 = (i - 2) < 0 ? `m${Math.abs(i-2)}` : `${i - 2}`;
+            drawArrow(`cell-${idxR1}`, `cell-${i}`, 'arrow-r1');
+            drawArrow(`cell-${idxR2}`, `cell-${i}`, 'arrow-r2');
+        }
+    }
+});
+
+function step(dir) {
+    if (dir === 1 && curStep < states.length - 1) {
+        curStep++;
+        updateUI();
+    } else if (dir === -1 && curStep > 0) {
+        document.getElementById('logs').innerHTML = '';
+        const target = curStep - 1;
+        curStep = -1;
+        while (curStep < target) {
+            curStep++;
+            updateUI();
+        }
+    }
+}
+
+function reset() {
+    curStep = -1;
+    document.getElementById('logs').innerHTML = '';
+    document.getElementById('var-r1').innerText = '-';
+    document.getElementById('var-r2').innerText = '-';
+    document.getElementById('var-t').innerText = '-';
+    document.getElementById('var-i').innerText = '-';
+    document.querySelectorAll('.code-line').forEach(el => el.classList.remove('active'));
+    document.getElementById('arrow-r1').classList.remove('show');
+    document.getElementById('arrow-r2').classList.remove('show');
+    
+    for(let i=0; i<nums.length; i++) {
+        document.getElementById(`cell-${i}`).className = 'house-shape';
+        document.getElementById(`cell-${i}`).innerText = '$' + nums[i];
+        document.getElementById(`lbl-${i}`).className = 'dp-label';
+        document.getElementById(`lbl-${i}`).innerText = '-';
+    }
+    
+    document.getElementById('btn-prev').disabled = true;
+    document.getElementById('btn-next').disabled = false;
+}
+
+loadTestCase();
+
+const resizerV = document.getElementById('resizer-v');
+const leftPanel = document.getElementById('left-panel');
+const resizerH = document.getElementById('resizer-h');
+const topPanels = document.getElementById('top-panels');
+let isDraggingV = false;
+let isDraggingH = false;
+let startX, startY, startWidth, startHeight;
+
+resizerV.addEventListener('mousedown', (e) => {
+    isDraggingV = true; startX = e.clientX; startWidth = leftPanel.offsetWidth;
+    document.body.style.cursor = 'col-resize'; resizerV.classList.add('dragging');
+});
+resizerH.addEventListener('mousedown', (e) => {
+    isDraggingH = true; startY = e.clientY; startHeight = topPanels.offsetHeight;
+    document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
+});
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
+});
+document.addEventListener('mouseup', () => {
+    if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+    if (isDraggingH) { isDraggingH = false; document.body.style.cursor = 'default'; resizerH.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
+});
+</script>
+</body>
+</html>

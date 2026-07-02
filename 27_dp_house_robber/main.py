@@ -11,7 +11,14 @@ def rob(nums: List[int]) -> int:
     Given an integer array nums representing the amount of money of each house, 
     return the maximum amount of money you can rob tonight without alerting the police.
     """
-    pass
+    rob1, rob2 = 0, 0
+
+    for n in nums:
+        temp = max(rob1 + n, rob2)
+        rob1 = rob2
+        rob2 = temp
+
+    return rob2
 
 # LeetCode #213 - Medium
 # ============================================================
@@ -22,7 +29,18 @@ def rob_II(nums: List[int]) -> int:
     Given an integer array nums representing the amount of money of each house, 
     return the maximum amount of money you can rob tonight without alerting the police.
     """
-    pass
+    if len(nums) == 1:
+        return nums[0]
+
+    def helper(sub_nums):
+        rob1, rob2 = 0, 0
+        for n in sub_nums:
+            temp = max(rob1 + n, rob2)
+            rob1 = rob2
+            rob2 = temp
+        return rob2
+    
+    return max(helper(nums[:-1]), helper(nums[1:]))
 
 
 def main():
