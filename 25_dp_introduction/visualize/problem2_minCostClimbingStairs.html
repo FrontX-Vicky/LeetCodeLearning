@@ -364,8 +364,14 @@ resizerH.addEventListener('mousedown', (e) => {
     document.body.style.cursor = 'row-resize'; resizerH.classList.add('dragging');
 });
 document.addEventListener('mousemove', (e) => {
-    if (isDraggingV) leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
-    if (isDraggingH) topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    if (isDraggingV) {
+        leftPanel.style.flex = 'none';
+        leftPanel.style.width = Math.max(150, startWidth + (e.clientX - startX)) + 'px';
+    }
+    if (isDraggingH) {
+        topPanels.style.flex = 'none';
+        topPanels.style.height = Math.max(100, startHeight + (e.clientY - startY)) + 'px';
+    }
 });
 document.addEventListener('mouseup', () => {
     if (isDraggingV) { isDraggingV = false; document.body.style.cursor = 'default'; resizerV.classList.remove('dragging'); window.dispatchEvent(new Event('resize')); }
