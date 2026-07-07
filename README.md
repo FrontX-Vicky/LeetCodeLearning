@@ -997,6 +997,25 @@
 
 ---
 
+### Day 29: DP - Knapsack Problems ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Partition Equal Subset Sum** (LeetCode #416)
+2. **Target Sum** (LeetCode #494)
+
+**Topics Covered**:
+- 0/1 Knapsack Pattern
+- Space-Optimized 1D DP using Python Sets and Dicts
+- Subset Sum and Expression Evaluation
+
+**Key Concepts Learned**:
+- The 0/1 Knapsack pattern involves deciding whether to **include or exclude** an item to hit a target sum or maximize value.
+- Instead of using a 2D array, we can use a **Python Set** (for boolean reachability) or a **Python Dict** (for counting ways).
+- **CRITICAL**: When space-optimizing 0/1 Knapsack, you must conceptually iterate "backwards" or create a new temporary data structure at each step. This prevents using the same element multiple times (which would turn it into an Unbounded Knapsack problem).
+- `dp = {j + n for j in dp} | dp` is an elegant, pure-Python way to safely apply the current number to all previously reachable sums.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1044,8 +1063,8 @@
 - Day 26: DP - Climbing Stairs Variations ✅
 - Day 27: DP - House Robber Pattern ✅
 - Day 28: DP - 2D Grid Problems ✅
-- Day 29: DP - Knapsack Problems 🎯 **NEXT**
-- Day 30: DP - Longest Common Subsequence
+- Day 29: DP - Knapsack Problems ✅
+- Day 30: DP - Longest Common Subsequence 🎯 **NEXT**
 - Day 31: DP - String Problems
 - Day 32: DP - Advanced Patterns
 
@@ -1074,11 +1093,11 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 4/8 (50.0%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 5/8 (62.5%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 28/40 days complete (70.0%)
+**Overall Progress**: 29/40 days complete (72.5%)
 
 ---
 
