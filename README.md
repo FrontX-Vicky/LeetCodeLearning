@@ -903,78 +903,6 @@
 - Critical edges: removing them increases the MST cost. Pseudo-critical edges: forcing them keeps the MST cost the same.
 
 **Test Results**: 23/23 tests passed ✅
-- **Hash Maps**: Day 1, Day 2, Day 3, Day 4
-- **Arrays**: Day 1, Day 2, Day 5
-- **Prefix Sums**: Day 2
-- **Sliding Window**: Day 3, Day 4, Day 8
-- **Strings**: Day 3, Day 4
-- **Frequency Counting**: Day 4
-- **Two Pointers**: Day 5
-- **Greedy Algorithms**: Day 5
-- **Fast/Slow Pointers**: Day 6
-- **Linked Lists**: Day 6, Day 10
-- **Stack (LIFO)**: Day 7
-- **Queue (FIFO)**: Day 8
-- **BFS Foundation**: Day 8
-- **Monotonic Stack**: Day 9
-- **Next Greater Element Pattern**: Day 9
-- **Linked List Reversal**: Day 10
-- **Pointer Manipulation**: Day 6, Day 10
-- **Recursion vs Iteration**: Day 10, Day 13
-- **Binary Search**: Day 11, Day 12
-- **Divide & Conquer**: Day 11
-- **Binary Search Variations**: Day 12
-- **Boundary Finding**: Day 12
-- **Recursion Fundamentals**: Day 13
-- **Memoization**: Day 13
-- **Dynamic Programming**: Day 13
-- **Space Optimization**: Day 13
-- **Binary Trees**: Day 14
-- **Tree Traversals**: Day 14
-- **Preorder/Inorder/Postorder**: Day 14
-- **Binary Search Trees**: Day 15
-- **BST Operations**: Day 15
-- **Range Validation**: Day 15
-- **Inorder = Sorted**: Day 14, Day 15
-- **Tree DFS (Depth-First Search)**: Day 16
-- **Tree BFS (Breadth-First Search)**: Day 16
-- **Level Order Traversal**: Day 16
-- **Tree Path Problems**: Day 16
-- **Mirror Trees**: Day 16
-- **Queue-based Tree Traversal**: Day 8, Day 16
-- **Heap Data Structure**: Day 17
-- **Priority Queue**: Day 17
-- **Min Heap / Max Heap**: Day 17
-- **Top K Problems**: Day 17
-- **Two-Heap Technique**: Day 17
-- **Heapify Operations**: Day 17
-- **Graph Traversal**: Day 18
-- **DFS (Depth-First Search)**: Day 16, Day 18
-- **BFS (Breadth-First Search)**: Day 8, Day 16, Day 18
-- **Grid as Graph**: Day 18
-- **Cycle Detection**: Day 18
-- **Graph Cloning**: Day 18
-- **Multi-Source BFS**: Day 18
-- **Reverse DFS**: Day 18
-- **Topological Sort**: Day 18, Day 21
-- **Kahn's Algorithm**: Day 21
-- **Cycle Detection (Topo)**: Day 21
-- **Layered BFS**: Day 21
-- **Dijkstra's Algorithm**: Day 22
-- **Bellman-Ford**: Day 22
-- **Floyd-Warshall**: Day 22
-- **Minimax / Bottleneck Path**: Day 22
-- **Stale-check Guard**: Day 22
-- **Trie (Prefix Tree)**: Day 19
-- **Prefix Matching**: Day 19
-- **Wildcard DFS on Trie**: Day 19
-- **Trie + Board DFS**: Day 19
-- **Suffix-Prefix Encoding**: Day 19
-- **Union Find (DSU)**: Day 20
-- **Path Compression**: Day 20
-- **Union by Rank**: Day 20
-- **Connected Components (DSU)**: Day 20
-- **Cycle Detection (DSU)**: Day 20
 
 ---
 
@@ -1153,3 +1081,104 @@
 **Overall Progress**: 28/40 days complete (70.0%)
 
 ---
+
+## 🧠 Skills & Concepts Map
+
+A cross-reference of every technique learned, mapped to the days it was first introduced and reinforced.
+
+### Fundamentals
+| Skill | Days |
+|---|---|
+| **Hash Maps / Dictionaries** | 1, 2, 3, 4 |
+| **Arrays** | 1, 2, 5 |
+| **Prefix Sums** | 2 |
+| **Sliding Window** | 3, 4, 8 |
+| **String Manipulation** | 3, 4 |
+| **Frequency Counting** | 4 |
+| **Two Pointers** | 5 |
+| **Greedy Algorithms** | 5 |
+
+### Linked Lists & Stacks
+| Skill | Days |
+|---|---|
+| **Linked Lists** | 6, 10 |
+| **Fast/Slow Pointers** | 6 |
+| **Pointer Manipulation** | 6, 10 |
+| **Linked List Reversal** | 10 |
+| **Stack (LIFO)** | 7 |
+| **Monotonic Stack** | 9 |
+| **Next Greater Element Pattern** | 9 |
+| **Queue (FIFO)** | 8 |
+
+### Search & Divide
+| Skill | Days |
+|---|---|
+| **Binary Search** | 11, 12 |
+| **Divide & Conquer** | 11 |
+| **Binary Search Variations** | 12 |
+| **Boundary Finding** | 12 |
+
+### Recursion & Dynamic Programming
+| Skill | Days |
+|---|---|
+| **Recursion Fundamentals** | 13 |
+| **Recursion vs Iteration** | 10, 13 |
+| **Memoization (Top-Down DP)** | 13 |
+| **Dynamic Programming (Tabulation)** | 13, 25, 26, 27, 28, 29 |
+| **Space Optimization (O(1) DP)** | 13, 25, 26, 27 |
+| **1D DP Tabulation** | 25, 26, 27 |
+| **2D DP Tabulation** | 28 |
+| **In-Place Grid DP** | 28 |
+| **Circular Array DP Trick** | 27 |
+| **Conditional DP Branching** | 26 |
+| **0/1 Knapsack Pattern** | 29 |
+
+### Trees
+| Skill | Days |
+|---|---|
+| **Binary Trees** | 14 |
+| **Tree Traversals (Pre/In/Post)** | 14 |
+| **Binary Search Trees** | 15 |
+| **BST Operations** | 15 |
+| **Range Validation** | 15 |
+| **Inorder = Sorted** | 14, 15 |
+| **Tree DFS** | 16 |
+| **Tree BFS / Level Order** | 16 |
+| **Tree Path Problems** | 16 |
+| **Mirror Trees** | 16 |
+
+### Advanced Data Structures
+| Skill | Days |
+|---|---|
+| **Heap Data Structure** | 17 |
+| **Priority Queue** | 17 |
+| **Min/Max Heap** | 17 |
+| **Top K Problems** | 17 |
+| **Two-Heap Technique** | 17 |
+| **Trie (Prefix Tree)** | 19 |
+| **Wildcard DFS on Trie** | 19 |
+| **Word Search (Trie + DFS)** | 19 |
+| **Union Find (DSU)** | 20 |
+| **Path Compression** | 20 |
+| **Union by Rank** | 20 |
+
+### Graph Algorithms
+| Skill | Days |
+|---|---|
+| **Graph Traversal (DFS/BFS)** | 16, 18 |
+| **Grid as Graph** | 18 |
+| **Multi-Source BFS** | 18 |
+| **Cycle Detection** | 18, 20, 21 |
+| **Graph Cloning** | 18 |
+| **Topological Sort** | 18, 21 |
+| **Kahn's Algorithm** | 21 |
+| **Dijkstra's Algorithm** | 22 |
+| **Bellman-Ford** | 22 |
+| **Floyd-Warshall** | 22 |
+| **Minimax / Bottleneck Path** | 22 |
+| **Kruskal's Algorithm (MST)** | 23 |
+| **Prim's Algorithm (MST)** | 23 |
+| **Virtual Node Technique** | 23 |
+| **Eulerian Path (Hierholzer's)** | 24 |
+| **Tarjan's Bridge-Finding** | 24 |
+| **Word Ladder (BFS)** | 24 |
