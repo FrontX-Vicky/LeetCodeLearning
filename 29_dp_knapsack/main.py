@@ -16,8 +16,10 @@ def canPartition(nums: List[int]) -> bool:
 
     for n in nums:
         dp ={j + n for j in dp} | dp
+        if target in dp:
+            return True
     
-    return target in dp
+    return False
 
 # LeetCode #494 - Medium
 # ============================================================

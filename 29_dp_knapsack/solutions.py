@@ -11,10 +11,13 @@ def canPartition(nums: List[int]) -> bool:
     dp = {0}   # We can always form sum 0 (empty subset)
 
     for n in nums:
-        # Iterate in reverse to avoid using the same element twice!
+        # Create a new set to avoid using the current element 'n' multiple times,
+        # then union it with the existing reachable sums.
         dp = {j + n for j in dp} | dp
+        if target in dp:
+            return True
 
-    return target in dp
+    return False
 
 def findTargetSumWays(nums: List[int], target: int) -> int:
     # dp[s] = number of ways to reach sum s
