@@ -105,7 +105,7 @@ def num_islands(grid: List[List[str]]) -> int:
 # PROBLEM 2: CLONE GRAPH
 # ============================================================
 
-def clone_graph(node: Optional[Node]) -> Optional[Node]:
+def clone_graph_dfs(node: Optional[Node]) -> Optional[Node]:
     """
     Return a deep copy of an undirected graph.
     
