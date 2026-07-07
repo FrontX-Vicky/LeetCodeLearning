@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #62 Unique Paths</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:100px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:340px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;}
+.vars-row{display:flex;gap:10px;padding:10px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:8px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:4px;}
+.var-val{font-size:14px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-cm{color:#6a9955;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.grid-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:30px;}
+.dp-grid{display:inline-grid;gap:6px;}
+.cell{width:52px;height:52px;border:2px solid var(--border);border-radius:8px;background:#21262d;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;font-size:15px;font-weight:bold;color:#8b949e;transition:all .25s;position:relative;flex-shrink:0;}
+.cell .cidx{font-size:9px;color:#484f58;position:absolute;top:4px;left:5px;font-weight:400;}
+.cell.filled{color:var(--text);background:#21262d;border-color:var(--border);}
+.cell.current{border-color:var(--accent);background:rgba(88,166,255,.18);color:var(--accent);transform:scale(1.12);box-shadow:0 0 14px rgba(88,166,255,.35);}
+.cell.above{border-color:var(--green);background:rgba(63,185,80,.12);color:var(--green);}
+.cell.left-src{border-color:var(--purple);background:rgba(188,140,255,.12);color:var(--purple);}
+.cell.done{border-color:var(--green);background:rgba(63,185,80,.2);color:var(--green);}
+.cell.base-row{border-color:#3d4450;color:#6e7681;}
+.cell.base-col{border-color:#3d4450;color:#6e7681;}
+.log-container{flex:1;padding:12px;overflow-y:auto;font-family:monospace;font-size:13px;line-height:1.5;}
+.log-entry{margin-bottom:6px;padding:6px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-purple{color:var(--purple);font-weight:bold;border-left-color:var(--purple);background:rgba(188,140,255,.05);}
+.log-warning{color:var(--yellow);font-weight:bold;border-left-color:var(--yellow);background:rgba(210,153,34,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;margin:0 -1px;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;margin:-1px 0;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_uniquePaths.html" selected>P1 · Unique Paths</option>
+    <option value="problem2_minPathSum.html">P2 · Minimum Path Sum</option>
+  </select>
+  <div class="header-left">
+    <h1>Unique Paths &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #62</span></h1>
+    <p>2D DP Tabulation: dp[r][c] = dp[r-1][c] + dp[r][c-1]</p>
+  </div>
+  <div class="controls">
+    <select id="tc-sel" onchange="loadTC()" style="background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;">
+      <option value="tc1">TC1: 3×7</option>
+      <option value="tc2">TC2: 3×3</option>
+      <option value="tc3">TC3: 4×6</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar"><span style="color:var(--purple)">m:</span> <span id="in-m" style="color:var(--accent)"></span> &nbsp; <span style="color:var(--purple)">n:</span> <span id="in-n" style="color:var(--accent)"></span></div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">r</div><div class="var-val" id="v-r" style="color:var(--accent)">-</div></div>
+        <div class="var-box"><div class="var-title">c</div><div class="var-val" id="v-c" style="color:var(--purple)">-</div></div>
+        <div class="var-box"><div class="var-title">dp[r][c]</div><div class="var-val" id="v-val" style="color:var(--green)">-</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">uniquePaths</span>(m, n):</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    dp = [[<span class="k-num">1</span>] * n <span class="k-kw">for</span> _ <span class="k-kw">in</span> <span class="k-fn">range</span>(m)]</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">    <span class="k-cm"># row 0 & col 0 stay 1 (only 1 path)</span></div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">    <span class="k-kw">for</span> r <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">1</span>, m):</div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">        <span class="k-kw">for</span> c <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">1</span>, n):</div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">            dp[r][c] = dp[r-<span class="k-num">1</span>][c] + dp[r][c-<span class="k-num">1</span>]</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">    <span class="k-kw">return</span> dp[m-<span class="k-num">1</span>][n-<span class="k-num">1</span>]</div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">2D Grid Tabulation Visualizer</div>
+      <div class="grid-wrap" id="grid-wrap">
+        <div class="dp-grid" id="dp-grid"></div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_tc1 = [{"phase": "init", "r": -1, "c": -1, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "", "t": "Init: dp[3x7] all set to 1. (First row/col has only 1 path each.)"}}, {"phase": "fill", "r": 1, "c": 1, "above": 1, "left": 1, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][1] = dp[0][1](1) + dp[1][0](1) = 2"}}, {"phase": "fill", "r": 1, "c": 2, "above": 1, "left": 2, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][2] = dp[0][2](1) + dp[1][1](2) = 3"}}, {"phase": "fill", "r": 1, "c": 3, "above": 1, "left": 3, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][3] = dp[0][3](1) + dp[1][2](3) = 4"}}, {"phase": "fill", "r": 1, "c": 4, "above": 1, "left": 4, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 1, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][4] = dp[0][4](1) + dp[1][3](4) = 5"}}, {"phase": "fill", "r": 1, "c": 5, "above": 1, "left": 5, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 1], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][5] = dp[0][5](1) + dp[1][4](5) = 6"}}, {"phase": "fill", "r": 1, "c": 6, "above": 1, "left": 6, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][6] = dp[0][6](1) + dp[1][5](6) = 7"}}, {"phase": "fill", "r": 2, "c": 1, "above": 2, "left": 1, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][1] = dp[1][1](2) + dp[2][0](1) = 3"}}, {"phase": "fill", "r": 2, "c": 2, "above": 3, "left": 3, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][2] = dp[1][2](3) + dp[2][1](3) = 6"}}, {"phase": "fill", "r": 2, "c": 3, "above": 4, "left": 6, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][3] = dp[1][3](4) + dp[2][2](6) = 10"}}, {"phase": "fill", "r": 2, "c": 4, "above": 5, "left": 10, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 15, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][4] = dp[1][4](5) + dp[2][3](10) = 15"}}, {"phase": "fill", "r": 2, "c": 5, "above": 6, "left": 15, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 15, 21, 1]], "log": {"c": "log-hl", "t": "dp[2][5] = dp[1][5](6) + dp[2][4](15) = 21"}}, {"phase": "fill", "r": 2, "c": 6, "above": 7, "left": 21, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 15, 21, 28]], "log": {"c": "log-hl", "t": "dp[2][6] = dp[1][6](7) + dp[2][5](21) = 28"}}, {"phase": "done", "r": 2, "c": 6, "dp": [[1, 1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6, 7], [1, 3, 6, 10, 15, 21, 28]], "log": {"c": "log-success", "t": "Answer: dp[2][6] = 28 unique paths."}}];
+const p1_tc2 = [{"phase": "init", "r": -1, "c": -1, "dp": [[1, 1, 1], [1, 1, 1], [1, 1, 1]], "log": {"c": "", "t": "Init: dp[3x3] all set to 1. (First row/col has only 1 path each.)"}}, {"phase": "fill", "r": 1, "c": 1, "above": 1, "left": 1, "dp": [[1, 1, 1], [1, 2, 1], [1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][1] = dp[0][1](1) + dp[1][0](1) = 2"}}, {"phase": "fill", "r": 1, "c": 2, "above": 1, "left": 2, "dp": [[1, 1, 1], [1, 2, 3], [1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][2] = dp[0][2](1) + dp[1][1](2) = 3"}}, {"phase": "fill", "r": 2, "c": 1, "above": 2, "left": 1, "dp": [[1, 1, 1], [1, 2, 3], [1, 3, 1]], "log": {"c": "log-hl", "t": "dp[2][1] = dp[1][1](2) + dp[2][0](1) = 3"}}, {"phase": "fill", "r": 2, "c": 2, "above": 3, "left": 3, "dp": [[1, 1, 1], [1, 2, 3], [1, 3, 6]], "log": {"c": "log-hl", "t": "dp[2][2] = dp[1][2](3) + dp[2][1](3) = 6"}}, {"phase": "done", "r": 2, "c": 2, "dp": [[1, 1, 1], [1, 2, 3], [1, 3, 6]], "log": {"c": "log-success", "t": "Answer: dp[2][2] = 6 unique paths."}}];
+const p1_tc3 = [{"phase": "init", "r": -1, "c": -1, "dp": [[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "", "t": "Init: dp[4x6] all set to 1. (First row/col has only 1 path each.)"}}, {"phase": "fill", "r": 1, "c": 1, "above": 1, "left": 1, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][1] = dp[0][1](1) + dp[1][0](1) = 2"}}, {"phase": "fill", "r": 1, "c": 2, "above": 1, "left": 2, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 1, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][2] = dp[0][2](1) + dp[1][1](2) = 3"}}, {"phase": "fill", "r": 1, "c": 3, "above": 1, "left": 3, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 1, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][3] = dp[0][3](1) + dp[1][2](3) = 4"}}, {"phase": "fill", "r": 1, "c": 4, "above": 1, "left": 4, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 1], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][4] = dp[0][4](1) + dp[1][3](4) = 5"}}, {"phase": "fill", "r": 1, "c": 5, "above": 1, "left": 5, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[1][5] = dp[0][5](1) + dp[1][4](5) = 6"}}, {"phase": "fill", "r": 2, "c": 1, "above": 2, "left": 1, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][1] = dp[1][1](2) + dp[2][0](1) = 3"}}, {"phase": "fill", "r": 2, "c": 2, "above": 3, "left": 3, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 1, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][2] = dp[1][2](3) + dp[2][1](3) = 6"}}, {"phase": "fill", "r": 2, "c": 3, "above": 4, "left": 6, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 1, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][3] = dp[1][3](4) + dp[2][2](6) = 10"}}, {"phase": "fill", "r": 2, "c": 4, "above": 5, "left": 10, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 1], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][4] = dp[1][4](5) + dp[2][3](10) = 15"}}, {"phase": "fill", "r": 2, "c": 5, "above": 6, "left": 15, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 1, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[2][5] = dp[1][5](6) + dp[2][4](15) = 21"}}, {"phase": "fill", "r": 3, "c": 1, "above": 3, "left": 1, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 1, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[3][1] = dp[2][1](3) + dp[3][0](1) = 4"}}, {"phase": "fill", "r": 3, "c": 2, "above": 6, "left": 4, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 10, 1, 1, 1]], "log": {"c": "log-hl", "t": "dp[3][2] = dp[2][2](6) + dp[3][1](4) = 10"}}, {"phase": "fill", "r": 3, "c": 3, "above": 10, "left": 10, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 10, 20, 1, 1]], "log": {"c": "log-hl", "t": "dp[3][3] = dp[2][3](10) + dp[3][2](10) = 20"}}, {"phase": "fill", "r": 3, "c": 4, "above": 15, "left": 20, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 10, 20, 35, 1]], "log": {"c": "log-hl", "t": "dp[3][4] = dp[2][4](15) + dp[3][3](20) = 35"}}, {"phase": "fill", "r": 3, "c": 5, "above": 21, "left": 35, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 10, 20, 35, 56]], "log": {"c": "log-hl", "t": "dp[3][5] = dp[2][5](21) + dp[3][4](35) = 56"}}, {"phase": "done", "r": 3, "c": 5, "dp": [[1, 1, 1, 1, 1, 1], [1, 2, 3, 4, 5, 6], [1, 3, 6, 10, 15, 21], [1, 4, 10, 20, 35, 56]], "log": {"c": "log-success", "t": "Answer: dp[3][5] = 56 unique paths."}}];
+const p2_tc1 = [{"phase": "init", "r": -1, "c": -1, "src": [], "grid": [[1, 3, 1], [1, 5, 1], [4, 2, 1]], "log": {"c": "", "t": "Init: Grid loaded. Filling first row, then first column, then interior."}}, {"phase": "row0", "r": 0, "c": 1, "src": [[0, 0]], "grid": [[1, 4, 1], [1, 5, 1], [4, 2, 1]], "log": {"c": "log-purple", "t": "Row 0: grid[0][1] = orig + grid[0][0] = 4. (Only left neighbor.)"}}, {"phase": "row0", "r": 0, "c": 2, "src": [[0, 1]], "grid": [[1, 4, 5], [1, 5, 1], [4, 2, 1]], "log": {"c": "log-purple", "t": "Row 0: grid[0][2] = orig + grid[0][1] = 5. (Only left neighbor.)"}}, {"phase": "col0", "r": 1, "c": 0, "src": [[0, 0]], "grid": [[1, 4, 5], [2, 5, 1], [4, 2, 1]], "log": {"c": "log-warning", "t": "Col 0: grid[1][0] = orig + grid[0][0] = 2. (Only top neighbor.)"}}, {"phase": "col0", "r": 2, "c": 0, "src": [[1, 0]], "grid": [[1, 4, 5], [2, 5, 1], [6, 2, 1]], "log": {"c": "log-warning", "t": "Col 0: grid[2][0] = orig + grid[1][0] = 6. (Only top neighbor.)"}}, {"phase": "fill", "r": 1, "c": 1, "src": [[0, 1], [1, 0]], "best_src": [1, 0], "grid": [[1, 4, 5], [2, 7, 1], [6, 2, 1]], "log": {"c": "log-hl", "t": "grid[1][1] += min(4,2) \u2192 7. Best came from [1][0]."}}, {"phase": "fill", "r": 1, "c": 2, "src": [[0, 2], [1, 1]], "best_src": [0, 2], "grid": [[1, 4, 5], [2, 7, 6], [6, 2, 1]], "log": {"c": "log-hl", "t": "grid[1][2] += min(5,7) \u2192 6. Best came from [0][2]."}}, {"phase": "fill", "r": 2, "c": 1, "src": [[1, 1], [2, 0]], "best_src": [2, 0], "grid": [[1, 4, 5], [2, 7, 6], [6, 8, 1]], "log": {"c": "log-hl", "t": "grid[2][1] += min(7,6) \u2192 8. Best came from [2][0]."}}, {"phase": "fill", "r": 2, "c": 2, "src": [[1, 2], [2, 1]], "best_src": [1, 2], "grid": [[1, 4, 5], [2, 7, 6], [6, 8, 7]], "log": {"c": "log-hl", "t": "grid[2][2] += min(6,8) \u2192 7. Best came from [1][2]."}}, {"phase": "done", "r": 2, "c": 2, "grid": [[1, 4, 5], [2, 7, 6], [6, 8, 7]], "path": [[0, 0], [0, 1], [0, 2], [1, 2], [2, 2]], "log": {"c": "log-success", "t": "Answer: Minimum path sum = 7. Optimal path highlighted."}}];
+const p2_tc2 = [{"phase": "init", "r": -1, "c": -1, "src": [], "grid": [[1, 2, 3], [4, 5, 6]], "log": {"c": "", "t": "Init: Grid loaded. Filling first row, then first column, then interior."}}, {"phase": "row0", "r": 0, "c": 1, "src": [[0, 0]], "grid": [[1, 3, 3], [4, 5, 6]], "log": {"c": "log-purple", "t": "Row 0: grid[0][1] = orig + grid[0][0] = 3. (Only left neighbor.)"}}, {"phase": "row0", "r": 0, "c": 2, "src": [[0, 1]], "grid": [[1, 3, 6], [4, 5, 6]], "log": {"c": "log-purple", "t": "Row 0: grid[0][2] = orig + grid[0][1] = 6. (Only left neighbor.)"}}, {"phase": "col0", "r": 1, "c": 0, "src": [[0, 0]], "grid": [[1, 3, 6], [5, 5, 6]], "log": {"c": "log-warning", "t": "Col 0: grid[1][0] = orig + grid[0][0] = 5. (Only top neighbor.)"}}, {"phase": "fill", "r": 1, "c": 1, "src": [[0, 1], [1, 0]], "best_src": [0, 1], "grid": [[1, 3, 6], [5, 8, 6]], "log": {"c": "log-hl", "t": "grid[1][1] += min(3,5) \u2192 8. Best came from [0][1]."}}, {"phase": "fill", "r": 1, "c": 2, "src": [[0, 2], [1, 1]], "best_src": [0, 2], "grid": [[1, 3, 6], [5, 8, 12]], "log": {"c": "log-hl", "t": "grid[1][2] += min(6,8) \u2192 12. Best came from [0][2]."}}, {"phase": "done", "r": 1, "c": 2, "grid": [[1, 3, 6], [5, 8, 12]], "path": [[0, 0], [0, 1], [0, 2], [1, 2]], "log": {"c": "log-success", "t": "Answer: Minimum path sum = 12. Optimal path highlighted."}}];
+const p2_tc3 = [{"phase": "init", "r": -1, "c": -1, "src": [], "grid": [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]], "log": {"c": "", "t": "Init: Grid loaded. Filling first row, then first column, then interior."}}, {"phase": "row0", "r": 0, "c": 1, "src": [[0, 0]], "grid": [[1, 3, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]], "log": {"c": "log-purple", "t": "Row 0: grid[0][1] = orig + grid[0][0] = 3. (Only left neighbor.)"}}, {"phase": "row0", "r": 0, "c": 2, "src": [[0, 1]], "grid": [[1, 3, 6, 4], [5, 6, 7, 8], [9, 10, 11, 12]], "log": {"c": "log-purple", "t": "Row 0: grid[0][2] = orig + grid[0][1] = 6. (Only left neighbor.)"}}, {"phase": "row0", "r": 0, "c": 3, "src": [[0, 2]], "grid": [[1, 3, 6, 10], [5, 6, 7, 8], [9, 10, 11, 12]], "log": {"c": "log-purple", "t": "Row 0: grid[0][3] = orig + grid[0][2] = 10. (Only left neighbor.)"}}, {"phase": "col0", "r": 1, "c": 0, "src": [[0, 0]], "grid": [[1, 3, 6, 10], [6, 6, 7, 8], [9, 10, 11, 12]], "log": {"c": "log-warning", "t": "Col 0: grid[1][0] = orig + grid[0][0] = 6. (Only top neighbor.)"}}, {"phase": "col0", "r": 2, "c": 0, "src": [[1, 0]], "grid": [[1, 3, 6, 10], [6, 6, 7, 8], [15, 10, 11, 12]], "log": {"c": "log-warning", "t": "Col 0: grid[2][0] = orig + grid[1][0] = 15. (Only top neighbor.)"}}, {"phase": "fill", "r": 1, "c": 1, "src": [[0, 1], [1, 0]], "best_src": [0, 1], "grid": [[1, 3, 6, 10], [6, 9, 7, 8], [15, 10, 11, 12]], "log": {"c": "log-hl", "t": "grid[1][1] += min(3,6) \u2192 9. Best came from [0][1]."}}, {"phase": "fill", "r": 1, "c": 2, "src": [[0, 2], [1, 1]], "best_src": [0, 2], "grid": [[1, 3, 6, 10], [6, 9, 13, 8], [15, 10, 11, 12]], "log": {"c": "log-hl", "t": "grid[1][2] += min(6,9) \u2192 13. Best came from [0][2]."}}, {"phase": "fill", "r": 1, "c": 3, "src": [[0, 3], [1, 2]], "best_src": [0, 3], "grid": [[1, 3, 6, 10], [6, 9, 13, 18], [15, 10, 11, 12]], "log": {"c": "log-hl", "t": "grid[1][3] += min(10,13) \u2192 18. Best came from [0][3]."}}, {"phase": "fill", "r": 2, "c": 1, "src": [[1, 1], [2, 0]], "best_src": [1, 1], "grid": [[1, 3, 6, 10], [6, 9, 13, 18], [15, 19, 11, 12]], "log": {"c": "log-hl", "t": "grid[2][1] += min(9,15) \u2192 19. Best came from [1][1]."}}, {"phase": "fill", "r": 2, "c": 2, "src": [[1, 2], [2, 1]], "best_src": [1, 2], "grid": [[1, 3, 6, 10], [6, 9, 13, 18], [15, 19, 24, 12]], "log": {"c": "log-hl", "t": "grid[2][2] += min(13,19) \u2192 24. Best came from [1][2]."}}, {"phase": "fill", "r": 2, "c": 3, "src": [[1, 3], [2, 2]], "best_src": [1, 3], "grid": [[1, 3, 6, 10], [6, 9, 13, 18], [15, 19, 24, 30]], "log": {"c": "log-hl", "t": "grid[2][3] += min(18,24) \u2192 30. Best came from [1][3]."}}, {"phase": "done", "r": 2, "c": 3, "grid": [[1, 3, 6, 10], [6, 9, 13, 18], [15, 19, 24, 30]], "path": [[0, 0], [0, 1], [0, 2], [0, 3], [1, 3], [2, 3]], "log": {"c": "log-success", "t": "Answer: Minimum path sum = 30. Optimal path highlighted."}}];
+
+let states, cur=-1, M=0, N=0;
+
+function loadTC(){
+  const k=document.getElementById('tc-sel').value;
+  states = k==='tc1'?p1_tc1:k==='tc2'?p1_tc2:p1_tc3;
+  M=states[0].dp.length; N=states[0].dp[0].length;
+  document.getElementById('in-m').textContent=M;
+  document.getElementById('in-n').textContent=N;
+  buildGrid();
+  reset();
+}
+
+function buildGrid(){
+  const g=document.getElementById('dp-grid');
+  g.style.gridTemplateColumns=`repeat(${N},52px)`;
+  g.innerHTML='';
+  for(let r=0;r<M;r++)for(let c=0;c<N;c++){
+    const d=document.createElement('div');
+    d.className='cell';
+    d.id=`cell-${r}-${c}`;
+    d.innerHTML=`<span class="cidx">[${r},${c}]</span><span id="val-${r}-${c}">?</span>`;
+    g.appendChild(d);
+  }
+}
+
+function updateUI(){
+  const s=states[cur];
+  if(!s)return;
+
+  // vars
+  document.getElementById('v-r').textContent=s.r>=0?s.r:'-';
+  document.getElementById('v-c').textContent=s.c>=0?s.c:'-';
+  document.getElementById('v-val').textContent=(s.r>=0&&s.c>=0)?s.dp[s.r][s.c]:'-';
+
+  // code highlight
+  document.querySelectorAll('.code-line').forEach(e=>e.classList.remove('active'));
+  const lineMap={init:'L2',fill:'L6',done:'L7'};
+  const ln=document.getElementById(lineMap[s.phase]);
+  if(ln)ln.classList.add('active');
+
+  // render grid
+  for(let r=0;r<M;r++)for(let c=0;c<N;c++){
+    const cell=document.getElementById(`cell-${r}-${c}`);
+    const valEl=document.getElementById(`val-${r}-${c}`);
+    const v=s.dp[r][c];
+    cell.className='cell';
+    if(v!==1||r===0||c===0){
+      if(r===s.r&&c===s.c){
+        cell.classList.add(s.phase==='done'?'done':'current');
+        valEl.textContent=v;
+      } else if(r===s.r-1&&c===s.c&&s.phase==='fill'){
+        cell.classList.add('above'); valEl.textContent=v;
+      } else if(r===s.r&&c===s.c-1&&s.phase==='fill'){
+        cell.classList.add('left-src'); valEl.textContent=v;
+      } else if(v!==undefined&&(r<s.r||(r===s.r&&c<s.c))){
+        cell.classList.add('filled'); valEl.textContent=v;
+      } else { valEl.textContent='?'; }
+    } else {
+      // base cells (row0 / col0) with value 1
+      if(r===0&&c===0){ cell.classList.add('filled'); valEl.textContent=1; }
+      else if(r===0){ cell.classList.add('base-row'); valEl.textContent=1; }
+      else if(c===0){ cell.classList.add('base-col'); valEl.textContent=1; }
+      else { valEl.textContent='?'; }
+    }
+  }
+
+  if(s.phase==='fill'){
+    const cv=document.getElementById(`cell-${s.r}-${s.c}`);
+    cv.classList.add('current');
+    document.getElementById(`val-${s.r}-${s.c}`).textContent=s.dp[s.r][s.c];
+  }
+  if(s.phase==='done'){
+    for(let r=0;r<M;r++)for(let c=0;c<N;c++){
+      document.getElementById(`cell-${r}-${c}`).classList.add('filled');
+      document.getElementById(`val-${r}-${c}`).textContent=s.dp[r][c];
+    }
+    document.getElementById(`cell-${M-1}-${N-1}`).classList.remove('filled');
+    document.getElementById(`cell-${M-1}-${N-1}`).classList.add('done');
+  }
+
+  // log
+  const lc=document.getElementById('logs');
+  const le=document.createElement('div');
+  le.className=`log-entry ${s.log.c}`;
+  le.innerHTML=`<span style="color:#8b949e">[${cur+1}]</span> ${s.log.t}`;
+  lc.appendChild(le); lc.scrollTop=lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled=cur===0;
+  document.getElementById('btn-next').disabled=cur===states.length-1;
+}
+
+function step(d){
+  if(d===1&&cur<states.length-1){cur++;updateUI();}
+  else if(d===-1&&cur>0){
+    const t=cur-1; document.getElementById('logs').innerHTML='';
+    cur=-1; while(cur<t){cur++;updateUI();}
+  }
+}
+
+function reset(){
+  cur=-1;
+  document.getElementById('logs').innerHTML='';
+  document.getElementById('v-r').textContent='-';
+  document.getElementById('v-c').textContent='-';
+  document.getElementById('v-val').textContent='-';
+  document.querySelectorAll('.code-line').forEach(e=>e.classList.remove('active'));
+  for(let r=0;r<M;r++)for(let c=0;c<N;c++){
+    document.getElementById(`cell-${r}-${c}`).className='cell';
+    document.getElementById(`val-${r}-${c}`).textContent='?';
+  }
+  document.getElementById('btn-prev').disabled=true;
+  document.getElementById('btn-next').disabled=false;
+}
+
+loadTC();
+
+// Resizers
+const rv=document.getElementById('rv'), lp=document.getElementById('left-panel');
+const rh=document.getElementById('rh'), tp=document.getElementById('top-panels');
+let dragV=false,dragH=false,sx,sy,sw,sh;
+rv.addEventListener('mousedown',e=>{dragV=true;sx=e.clientX;sw=lp.offsetWidth;document.body.style.cursor='col-resize';rv.classList.add('dragging');});
+rh.addEventListener('mousedown',e=>{dragH=true;sy=e.clientY;sh=tp.offsetHeight;document.body.style.cursor='row-resize';rh.classList.add('dragging');});
+document.addEventListener('mousemove',e=>{
+  if(dragV){lp.style.flex='none';lp.style.width=Math.max(200,sw+(e.clientX-sx))+'px';}
+  if(dragH){tp.style.flex='none';tp.style.height=Math.max(100,sh+(e.clientY-sy))+'px';}
+});
+document.addEventListener('mouseup',()=>{
+  if(dragV){dragV=false;document.body.style.cursor='';rv.classList.remove('dragging');}
+  if(dragH){dragH=false;document.body.style.cursor='';rh.classList.remove('dragging');}
+});
+</script>
+</body></html>

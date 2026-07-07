@@ -9,7 +9,17 @@ def uniquePaths(m: int, n: int) -> int:
     The robot can only move either down or right at any point in time.
     Given the two integers m and n, return the number of possible unique paths that the robot can take to reach the bottom-right corner.
     """
-    pass
+    
+    dp = [[1] * n for _ in range(m)]
+
+    for r in range(1, m):
+        for c in range(1, n):
+            dp[r][c] = dp[r-1][c] + dp[r][c-1]
+
+    
+    return dp[m - 1][n - 1]
+
+
 
 # LeetCode #64 - Medium
 # ============================================================
@@ -19,7 +29,19 @@ def minPathSum(grid: List[List[int]]) -> int:
     which minimizes the sum of all numbers along its path.
     Note: You can only move either down or right at any point in time.
     """
-    pass
+    rows, cols = len(grid), len(grid[0])
+
+    for c in range(1, cols):
+        grid[0][c] += grid[0][c-1]
+    
+    for r in range(1, rows):
+        grid[r][0] += grid[r-1][0]
+    
+    for r in range(1, rows):
+        for c in range(1, cols):
+            grid[r][c] += min(grid[r-1][c], grid[r][c-1])
+        
+    return grid[-1][-1]
 
 
 def main():
