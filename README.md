@@ -1051,6 +1051,24 @@
 
 ---
 
+### Day 28: DP - 2D Grid Problems ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Unique Paths** (LeetCode #62)
+2. **Minimum Path Sum** (LeetCode #64)
+
+**Topics Covered**:
+- 2D DP Tabulation
+- In-Place Grid DP (O(1) auxiliary space)
+- Pathfinding with DP
+
+**Key Concepts Learned**:
+- Extending 1D DP to 2D: `dp[r][c] = dp[r-1][c] + dp[r][c-1]` is the natural extension of the Climbing Stairs pattern into a grid.
+- For `minPathSum`, the grid itself acts as the DP table — no extra memory needed! The first row and column are seeded first, then the interior is filled with `grid[r][c] += min(grid[r-1][c], grid[r][c-1])`.
+- The optimal path in `minPathSum` can be traced back from `grid[-1][-1]` by always greedily stepping to whichever neighbor has the lower accumulated cost.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1097,8 +1115,8 @@
 - Day 25: DP Introduction (1D Problems) ✅
 - Day 26: DP - Climbing Stairs Variations ✅
 - Day 27: DP - House Robber Pattern ✅
-- Day 28: DP - 2D Grid Problems 🎯 **NEXT**
-- Day 29: DP - Knapsack Problems
+- Day 28: DP - 2D Grid Problems ✅
+- Day 29: DP - Knapsack Problems 🎯 **NEXT**
 - Day 30: DP - Longest Common Subsequence
 - Day 31: DP - String Problems
 - Day 32: DP - Advanced Patterns
@@ -1128,10 +1146,10 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 3/8 (37.5%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 4/8 (50.0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 27/40 days complete (67.5%)
+**Overall Progress**: 28/40 days complete (70.0%)
 
 ---
