@@ -1034,6 +1034,23 @@
 
 ---
 
+### Day 27: DP - House Robber Pattern ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **House Robber** (LeetCode #198)
+2. **House Robber II** (LeetCode #213)
+
+**Topics Covered**:
+- 1D DP `max()` Decision Tabulation
+- Space Optimization (O(1))
+- Handling Circular Array Constraints in DP
+
+**Key Concepts Learned**:
+- DP isn't just about accumulating combinations (like Climbing Stairs), it's often about making an optimal choice: `max(rob_this_house, skip_this_house)`.
+- A circular array constraint can often be bypassed by simply running the linear DP algorithm twice (once excluding the last element, once excluding the first element) and taking the absolute max.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1079,8 +1096,8 @@
 **Focus**: Optimization and overlapping subproblems
 - Day 25: DP Introduction (1D Problems) ✅
 - Day 26: DP - Climbing Stairs Variations ✅
-- Day 27: DP - House Robber Pattern 🎯 **NEXT**
-- Day 28: DP - 2D Grid Problems
+- Day 27: DP - House Robber Pattern ✅
+- Day 28: DP - 2D Grid Problems 🎯 **NEXT**
 - Day 29: DP - Knapsack Problems
 - Day 30: DP - Longest Common Subsequence
 - Day 31: DP - String Problems
@@ -1111,10 +1128,10 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 2/8 (25.0%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 3/8 (37.5%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 26/40 days complete (65.0%)
+**Overall Progress**: 27/40 days complete (67.5%)
 
 ---
