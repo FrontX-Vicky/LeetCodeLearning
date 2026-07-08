@@ -1034,6 +1034,25 @@
 
 ---
 
+### Day 31: DP - String Problems (Palindromes) ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Longest Palindromic Substring** (LeetCode #5)
+2. **Palindromic Substrings** (LeetCode #647)
+
+**Topics Covered**:
+- Expand from Center Algorithm
+- O(1) Space Palindrome Checking
+- Odd vs. Even Length Palindrome Handling
+
+**Key Concepts Learned**:
+- While a 2D DP table (`dp[i][j] = (s[i]==s[j]) and dp[i+1][j-1]`) works in `O(N^2)` time and `O(N^2)` space, the **Expand from Center** approach achieves the same time complexity with only `O(1)` space — a strict upgrade.
+- You must always check **two types** of centers at each index: the character itself (for odd-length palindromes) and the gap between adjacent characters (for even-length palindromes).
+- **Optimization**: Avoid creating intermediate string slices inside the inner loop. Instead, track `res_start` and `res_len` as integers, and build the final string with a single slice at the end.
+- Both LC #5 and LC #647 use identical expansion logic — the only difference is the *goal*: track the longest vs. count every valid expansion.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1083,8 +1102,8 @@
 - Day 28: DP - 2D Grid Problems ✅
 - Day 29: DP - Knapsack Problems ✅
 - Day 30: DP - Longest Common Subsequence ✅
-- Day 31: DP - String Problems 🎯 **NEXT**
-- Day 32: DP - Advanced Patterns
+- Day 31: DP - String Problems ✅
+- Day 32: DP - Advanced Patterns 🎯 **NEXT**
 
 ### **Phase 7: Advanced Algorithms** (Days 33-36) 📋 **PLANNED**
 **Focus**: Complex algorithmic techniques
@@ -1111,11 +1130,11 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 6/8 (75.0%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 7/8 (87.5%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 30/40 days complete (75.0%)
+**Overall Progress**: 31/40 days complete (77.5%)
 
 ---
 
