@@ -1053,6 +1053,24 @@
 
 ---
 
+### Day 32: DP - Advanced Patterns ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Coin Change** (LeetCode #322)
+2. **Decode Ways** (LeetCode #91)
+
+**Topics Covered**:
+- Unbounded Knapsack
+- Conditional 1D DP
+- Base Cases for Impossible or Empty States
+
+**Key Concepts Learned**:
+- **Unbounded Knapsack** differs from 0/1 Knapsack by allowing unlimited reuse of items. The easiest way to code this is by placing the target loop (amount) on the *outside* and the choices (coins) on the *inside*. This lets you reach back into the same row over and over.
+- **Conditional DP** (like Decode Ways) uses the same structure as Climbing Stairs (`dp[i] = dp[i-1] + dp[i-2]`), but requires strict validation gates. You only add `dp[i-1]` if the last digit is valid, and you only add `dp[i-2]` if the last two digits form a valid number (10-26).
+- **Initialization is key**: `float('inf')` is perfect for minimizing problems (Coin Change), while `0` is standard for counting problems (Decode Ways). Proper base cases (`dp[0] = 0` or `dp[0] = 1`) are critical for the formulas to work.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1103,11 +1121,11 @@
 - Day 29: DP - Knapsack Problems ✅
 - Day 30: DP - Longest Common Subsequence ✅
 - Day 31: DP - String Problems ✅
-- Day 32: DP - Advanced Patterns 🎯 **NEXT**
+- Day 32: DP - Advanced Patterns ✅
 
-### **Phase 7: Advanced Algorithms** (Days 33-36) 📋 **PLANNED**
+### **Phase 7: Advanced Algorithms** (Days 33-36) 🔄 **IN PROGRESS**
 **Focus**: Complex algorithmic techniques
-- Day 33: Backtracking (Combinations/Permutations)
+- Day 33: Backtracking (Combinations/Permutations) 🎯 **NEXT**
 - Day 34: Greedy Algorithms Advanced
 - Day 35: Bit Manipulation
 - Day 36: Math & Number Theory
@@ -1130,11 +1148,11 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 7/8 (87.5%) |
-| Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
+| Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
+| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 31/40 days complete (77.5%)
+**Overall Progress**: 32/40 days complete (80.0%)
 
 ---
 

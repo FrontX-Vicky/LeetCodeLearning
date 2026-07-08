@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LC #322 Coin Change</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:330px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-cm{color:#6a9955;}.k-str{color:#ce9178;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:20px;gap:20px;}
+
+/* DP Array Area */
+.array-container{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:800px;}
+.cell{
+  width:44px;height:44px;border-radius:6px;border:2px solid var(--border);
+  background:#21262d;color:var(--text);font-family:monospace;font-size:14px;font-weight:bold;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .3s;position:relative;
+}
+.cell-index{
+  position:absolute;top:-20px;left:0;right:0;text-align:center;font-size:10px;color:#8b949e;
+}
+.cell.active-target{
+  border-color:var(--yellow);background:rgba(210,153,34,.2);color:var(--yellow);transform:scale(1.15);box-shadow:0 0 12px rgba(210,153,34,.4);z-index:2;
+}
+.cell.active-source{
+  border-color:var(--accent);background:rgba(88,166,255,.2);color:var(--accent);transform:scale(1.1);z-index:1;
+}
+.cell.updated{
+  border-color:var(--green);background:rgba(63,185,80,.25);color:var(--green);box-shadow:0 0 12px rgba(63,185,80,.4);transform:scale(1.15);z-index:2;
+}
+.cell.invalid-source{
+  border-color:var(--red);background:rgba(248,81,73,.15);color:var(--red);
+}
+
+/* stats bar */
+.stats-bar{display:flex;gap:20px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;margin:0 -1px;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;margin:-1px 0;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_coinChange.html" selected>P1 · Coin Change</option>
+    <option value="problem2_decodeWays.html">P2 · Decode Ways</option>
+  </select>
+  <div class="header-left">
+    <h1>Coin Change &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #322</span></h1>
+    <p>Unbounded Knapsack</p>
+  </div>
+  <div class="controls">
+    <select id="tc-sel" onchange="loadTC()" style="background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;">
+      <option value="sm">Small · coins=[1,5,10], amount=11</option>
+      <option value="md">Medium · coins=[2], amount=3</option>
+      <option value="lg">Large · coins=[1,2,5], amount=11</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">coins:</span> <span id="in-coins" style="color:var(--text);font-family:monospace"></span></span>
+        <span><span style="color:var(--purple)">amount:</span> <span id="in-amount" style="color:var(--text);font-family:monospace"></span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">Target (a)</div><div class="var-val" id="v-a" style="color:var(--yellow)">-</div></div>
+        <div class="var-box"><div class="var-title">Coin (c)</div><div class="var-val" id="v-c" style="color:var(--accent)">-</div></div>
+        <div class="var-box"><div class="var-title">Source (a-c)</div><div class="var-val" id="v-src" style="color:var(--text)">-</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">coinChange</span>(coins, amount):</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    dp = [<span class="k-fn">float</span>(<span class="k-str">'inf'</span>)] * (amount + <span class="k-num">1</span>)</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">    dp[<span class="k-num">0</span>] = <span class="k-num">0</span></div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">    <span class="k-kw">for</span> a <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-num">1</span>, amount + <span class="k-num">1</span>):</div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">        <span class="k-kw">for</span> c <span class="k-kw">in</span> coins:</div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">            <span class="k-kw">if</span> a - c >= <span class="k-num">0</span>:</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">                dp[a] = <span class="k-fn">min</span>(dp[a], <span class="k-num">1</span> + dp[a - c])</div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">    <span class="k-kw">return</span> dp[amount] <span class="k-kw">if</span> dp[amount] != <span class="k-fn">float</span>(<span class="k-str">'inf'</span>) <span class="k-kw">else</span> -<span class="k-num">1</span></div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">1D DP Array Visualizer</div>
+      <div class="viz-area" id="viz">
+        <div class="array-container" id="dp-arr"></div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div> Target Amount (a)</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--accent)"></div> Source Amount (a-c)</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div> Min Coins Updated</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_sm=[{"phase": "init", "coins": [1, 5, 10], "amount": 11, "a": -1, "c": -1, "dp": [0, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Init dp array of size 12 with 'inf', and dp[0] = 0."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 1, "c": -1, "dp": [0, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=1."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 1, "c": 1, "can_use": true, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[1] from inf to 1."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 1, "c": 5, "can_use": false, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 1 - 5 = -4 < 0. Cannot use this coin."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 1, "c": 10, "can_use": false, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 1 - 10 = -9 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 2, "c": -1, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=2."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 2, "c": 1, "can_use": true, "dp": [0, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[1] = 1 + 1 = 2. Update dp[2] from inf to 2."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 2, "c": 5, "can_use": false, "dp": [0, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 2 - 5 = -3 < 0. Cannot use this coin."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 2, "c": 10, "can_use": false, "dp": [0, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 2 - 10 = -8 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 3, "c": -1, "dp": [0, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=3."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 3, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[2] = 1 + 2 = 3. Update dp[3] from inf to 3."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 3, "c": 5, "can_use": false, "dp": [0, 1, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 3 - 5 = -2 < 0. Cannot use this coin."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 3, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 3 - 10 = -7 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 4, "c": -1, "dp": [0, 1, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=4."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 4, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[3] = 1 + 3 = 4. Update dp[4] from inf to 4."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 4, "c": 5, "can_use": false, "dp": [0, 1, 2, 3, 4, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 4 - 5 = -1 < 0. Cannot use this coin."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 4, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 4 - 10 = -6 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 5, "c": -1, "dp": [0, 1, 2, 3, 4, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=5."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 5, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 5, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[4] = 1 + 4 = 5. Update dp[5] from inf to 5."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 5, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=5. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[5] from 5 to 1."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 5, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, 1, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 5 - 10 = -5 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 6, "c": -1, "dp": [0, 1, 2, 3, 4, 1, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=6."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 6, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[5] = 1 + 1 = 2. Update dp[6] from inf to 2."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 6, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[1] = 1 + 1 = 2. Not strictly smaller than current dp[6]."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 6, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 6 - 10 = -4 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 7, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=7."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 7, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[6] = 1 + 2 = 3. Update dp[7] from inf to 3."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 7, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[2] = 1 + 2 = 3. Not strictly smaller than current dp[7]."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 7, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, 1, 2, 3, "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 7 - 10 = -3 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 8, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, 3, "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=8."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 8, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[7] = 1 + 3 = 4. Update dp[8] from inf to 4."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 8, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[3] = 1 + 3 = 4. Not strictly smaller than current dp[8]."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 8, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 8 - 10 = -2 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 9, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=9."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 9, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[8] = 1 + 4 = 5. Update dp[9] from inf to 5."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 9, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[4] = 1 + 4 = 5. Not strictly smaller than current dp[9]."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 9, "c": 10, "can_use": false, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=10. a - c = 9 - 10 = -1 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 10, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=10."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 10, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 6, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[9] = 1 + 5 = 6. Update dp[10] from inf to 6."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 10, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 2, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=5. Use coin. 1 + dp[5] = 1 + 1 = 2. Update dp[10] from 6 to 2."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 10, "c": 10, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=10. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[10] from 2 to 1."}}, {"phase": "outer", "coins": [1, 5, 10], "amount": 11, "a": 11, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=11."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 11, "c": 1, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[10] = 1 + 1 = 2. Update dp[11] from inf to 2."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 11, "c": 5, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[6] = 1 + 2 = 3. Not strictly smaller than current dp[11]."}}, {"phase": "inner", "coins": [1, 5, 10], "amount": 11, "a": 11, "c": 10, "can_use": true, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2], "updated": false, "log": {"c": "log-hl", "t": "Coin c=10. Use coin. 1 + dp[1] = 1 + 1 = 2. Not strictly smaller than current dp[11]."}}, {"phase": "done", "coins": [1, 5, 10], "amount": 11, "a": -1, "c": -1, "dp": [0, 1, 2, 3, 4, 1, 2, 3, 4, 5, 1, 2], "updated": false, "log": {"c": "log-success", "t": "Done! Minimum coins to make 11 is 2."}}];
+const p1_md=[{"phase": "init", "coins": [2], "amount": 3, "a": -1, "c": -1, "dp": [0, "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Init dp array of size 4 with 'inf', and dp[0] = 0."}}, {"phase": "outer", "coins": [2], "amount": 3, "a": 1, "c": -1, "dp": [0, "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=1."}}, {"phase": "inner", "coins": [2], "amount": 3, "a": 1, "c": 2, "can_use": false, "dp": [0, "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=2. a - c = 1 - 2 = -1 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [2], "amount": 3, "a": 2, "c": -1, "dp": [0, "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=2."}}, {"phase": "inner", "coins": [2], "amount": 3, "a": 2, "c": 2, "can_use": true, "dp": [0, "inf", 1, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=2. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[2] from inf to 1."}}, {"phase": "outer", "coins": [2], "amount": 3, "a": 3, "c": -1, "dp": [0, "inf", 1, "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=3."}}, {"phase": "inner", "coins": [2], "amount": 3, "a": 3, "c": 2, "can_use": true, "dp": [0, "inf", 1, "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[1] = 1 + inf = inf. Not strictly smaller than current dp[3]."}}, {"phase": "done", "coins": [2], "amount": 3, "a": -1, "c": -1, "dp": [0, "inf", 1, "inf"], "updated": false, "log": {"c": "log-success", "t": "Done! Minimum coins to make 3 is -1."}}];
+const p1_lg=[{"phase": "init", "coins": [1, 2, 5], "amount": 11, "a": -1, "c": -1, "dp": [0, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Init dp array of size 12 with 'inf', and dp[0] = 0."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 1, "c": -1, "dp": [0, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=1."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 1, "c": 1, "can_use": true, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[1] from inf to 1."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 1, "c": 2, "can_use": false, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=2. a - c = 1 - 2 = -1 < 0. Cannot use this coin."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 1, "c": 5, "can_use": false, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 1 - 5 = -4 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 2, "c": -1, "dp": [0, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 2, "c": 1, "can_use": true, "dp": [0, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[1] = 1 + 1 = 2. Update dp[2] from inf to 2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 2, "c": 2, "can_use": true, "dp": [0, 1, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=2. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[2] from 2 to 1."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 2, "c": 5, "can_use": false, "dp": [0, 1, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 2 - 5 = -3 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 3, "c": -1, "dp": [0, 1, 1, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 3, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[2] = 1 + 1 = 2. Update dp[3] from inf to 2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 3, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[1] = 1 + 1 = 2. Not strictly smaller than current dp[3]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 3, "c": 5, "can_use": false, "dp": [0, 1, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 3 - 5 = -2 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 4, "c": -1, "dp": [0, 1, 1, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=4."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 4, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[3] = 1 + 2 = 3. Update dp[4] from inf to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 4, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=2. Use coin. 1 + dp[2] = 1 + 1 = 2. Update dp[4] from 3 to 2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 4, "c": 5, "can_use": false, "dp": [0, 1, 1, 2, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-danger", "t": "Coin c=5. a - c = 4 - 5 = -1 < 0. Cannot use this coin."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 5, "c": -1, "dp": [0, 1, 1, 2, 2, "inf", "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=5."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 5, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[4] = 1 + 2 = 3. Update dp[5] from inf to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 5, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 3, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[3] = 1 + 2 = 3. Not strictly smaller than current dp[5]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 5, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=5. Use coin. 1 + dp[0] = 1 + 0 = 1. Update dp[5] from 3 to 1."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 6, "c": -1, "dp": [0, 1, 1, 2, 2, 1, "inf", "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=6."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 6, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[5] = 1 + 1 = 2. Update dp[6] from inf to 2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 6, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[4] = 1 + 2 = 3. Not strictly smaller than current dp[6]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 6, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[1] = 1 + 1 = 2. Not strictly smaller than current dp[6]."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 7, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, "inf", "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=7."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 7, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 3, "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[6] = 1 + 2 = 3. Update dp[7] from inf to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 7, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, "inf", "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=2. Use coin. 1 + dp[5] = 1 + 1 = 2. Update dp[7] from 3 to 2."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 7, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[2] = 1 + 1 = 2. Not strictly smaller than current dp[7]."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 8, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, 2, "inf", "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=8."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 8, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, "inf", "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[7] = 1 + 2 = 3. Update dp[8] from inf to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 8, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[6] = 1 + 2 = 3. Not strictly smaller than current dp[8]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 8, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, "inf", "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[3] = 1 + 2 = 3. Not strictly smaller than current dp[8]."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 9, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, "inf", "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=9."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 9, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 4, "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[8] = 1 + 3 = 4. Update dp[9] from inf to 4."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 9, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, "inf", "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=2. Use coin. 1 + dp[7] = 1 + 2 = 3. Update dp[9] from 4 to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 9, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, "inf", "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[4] = 1 + 2 = 3. Not strictly smaller than current dp[9]."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 10, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, "inf", "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=10."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 10, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 4, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[9] = 1 + 3 = 4. Update dp[10] from inf to 4."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 10, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 4, "inf"], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[8] = 1 + 3 = 4. Not strictly smaller than current dp[10]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 10, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, "inf"], "updated": true, "log": {"c": "log-success", "t": "Coin c=5. Use coin. 1 + dp[5] = 1 + 1 = 2. Update dp[10] from 4 to 2."}}, {"phase": "outer", "coins": [1, 2, 5], "amount": 11, "a": 11, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, "inf"], "updated": false, "log": {"c": "", "t": "Target amount a=11."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 11, "c": 1, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3], "updated": true, "log": {"c": "log-success", "t": "Coin c=1. Use coin. 1 + dp[10] = 1 + 2 = 3. Update dp[11] from inf to 3."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 11, "c": 2, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3], "updated": false, "log": {"c": "log-hl", "t": "Coin c=2. Use coin. 1 + dp[9] = 1 + 3 = 4. Not strictly smaller than current dp[11]."}}, {"phase": "inner", "coins": [1, 2, 5], "amount": 11, "a": 11, "c": 5, "can_use": true, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3], "updated": false, "log": {"c": "log-hl", "t": "Coin c=5. Use coin. 1 + dp[6] = 1 + 2 = 3. Not strictly smaller than current dp[11]."}}, {"phase": "done", "coins": [1, 2, 5], "amount": 11, "a": -1, "c": -1, "dp": [0, 1, 1, 2, 2, 1, 2, 2, 3, 3, 2, 3], "updated": false, "log": {"c": "log-success", "t": "Done! Minimum coins to make 11 is 3."}}];
+const p2_sm=[{"phase": "init", "s": "12", "i": -1, "dp": [1, 1, 0], "step": 0, "val": -1, "log": {"c": "", "t": "Init dp array of size 3. dp[0]=1 (base), dp[1]=1."}}, {"phase": "outer", "s": "12", "i": 2, "dp": [1, 1, 0], "step": 0, "val": -1, "log": {"c": "", "t": "i=2: Decoding first 2 characters."}}, {"phase": "inner", "s": "12", "i": 2, "dp": [1, 1, 1], "step": 1, "val": 2, "valid": true, "updated": true, "log": {"c": "log-success", "t": "1-digit check: '2' = 2. Valid. dp[2] += dp[1] (1). New dp[2] = 1."}}, {"phase": "inner", "s": "12", "i": 2, "dp": [1, 1, 2], "step": 2, "val": 12, "valid": true, "updated": true, "log": {"c": "log-success", "t": "2-digit check: '12' = 12. Valid (10-26). dp[2] += dp[0] (1). New dp[2] = 2."}}, {"phase": "done", "s": "12", "i": -1, "dp": [1, 1, 2], "step": 0, "val": -1, "log": {"c": "log-success", "t": "Done! Total ways to decode is 2."}}];
+const p2_md=[{"phase": "init", "s": "226", "i": -1, "dp": [1, 1, 0, 0], "step": 0, "val": -1, "log": {"c": "", "t": "Init dp array of size 4. dp[0]=1 (base), dp[1]=1."}}, {"phase": "outer", "s": "226", "i": 2, "dp": [1, 1, 0, 0], "step": 0, "val": -1, "log": {"c": "", "t": "i=2: Decoding first 2 characters."}}, {"phase": "inner", "s": "226", "i": 2, "dp": [1, 1, 1, 0], "step": 1, "val": 2, "valid": true, "updated": true, "log": {"c": "log-success", "t": "1-digit check: '2' = 2. Valid. dp[2] += dp[1] (1). New dp[2] = 1."}}, {"phase": "inner", "s": "226", "i": 2, "dp": [1, 1, 2, 0], "step": 2, "val": 22, "valid": true, "updated": true, "log": {"c": "log-success", "t": "2-digit check: '22' = 22. Valid (10-26). dp[2] += dp[0] (1). New dp[2] = 2."}}, {"phase": "outer", "s": "226", "i": 3, "dp": [1, 1, 2, 0], "step": 0, "val": -1, "log": {"c": "", "t": "i=3: Decoding first 3 characters."}}, {"phase": "inner", "s": "226", "i": 3, "dp": [1, 1, 2, 2], "step": 1, "val": 6, "valid": true, "updated": true, "log": {"c": "log-success", "t": "1-digit check: '6' = 6. Valid. dp[3] += dp[2] (2). New dp[3] = 2."}}, {"phase": "inner", "s": "226", "i": 3, "dp": [1, 1, 2, 3], "step": 2, "val": 26, "valid": true, "updated": true, "log": {"c": "log-success", "t": "2-digit check: '26' = 26. Valid (10-26). dp[3] += dp[1] (1). New dp[3] = 3."}}, {"phase": "done", "s": "226", "i": -1, "dp": [1, 1, 2, 3], "step": 0, "val": -1, "log": {"c": "log-success", "t": "Done! Total ways to decode is 3."}}];
+const p2_lg=[{"phase": "init", "s": "06", "i": -1, "dp": [1, 0, 0], "step": 0, "val": -1, "log": {"c": "", "t": "Init dp array of size 3. dp[0]=1 (base), dp[1]=0."}}, {"phase": "outer", "s": "06", "i": 2, "dp": [1, 0, 0], "step": 0, "val": -1, "log": {"c": "", "t": "i=2: Decoding first 2 characters."}}, {"phase": "inner", "s": "06", "i": 2, "dp": [1, 0, 0], "step": 1, "val": 6, "valid": true, "updated": true, "log": {"c": "log-success", "t": "1-digit check: '6' = 6. Valid. dp[2] += dp[1] (0). New dp[2] = 0."}}, {"phase": "inner", "s": "06", "i": 2, "dp": [1, 0, 0], "step": 2, "val": 6, "valid": false, "updated": false, "log": {"c": "log-danger", "t": "2-digit check: '06' = 6. Invalid (not in 10-26 range)."}}, {"phase": "done", "s": "06", "i": -1, "dp": [1, 0, 0], "step": 0, "val": -1, "log": {"c": "log-success", "t": "Done! Total ways to decode is 0."}}];
+
+let states, cur=-1, coins=[], amt=0;
+
+function loadTC(){
+  const k=document.getElementById('tc-sel').value;
+  states = k==='sm'?p1_sm:k==='md'?p1_md:p1_lg;
+  coins = states[0].coins; amt = states[0].amount;
+  document.getElementById('in-coins').textContent=`[${coins.join(', ')}]`;
+  document.getElementById('in-amount').textContent=`${amt}`;
+  
+  const ar = document.getElementById('dp-arr');
+  let html = '';
+  for(let i=0; i<=amt; i++){
+    let txt = i===0 ? '0' : '∞';
+    html += `<div class="cell" id="d-${i}">${txt}<div class="cell-index">${i}</div></div>`;
+  }
+  ar.innerHTML = html;
+
+  reset();
+}
+
+function updateUI(){
+  const s=states[cur]; if(!s)return;
+
+  // vars
+  document.getElementById('v-a').textContent=s.a>=0?s.a:'-';
+  document.getElementById('v-c').textContent=s.c>=0?s.c:'-';
+  
+  if(s.phase==='inner'){
+    document.getElementById('v-src').textContent = s.can_use ? (s.a - s.c) : 'Invalid';
+    document.getElementById('v-src').style.color = s.can_use ? 'var(--accent)' : 'var(--red)';
+  } else {
+    document.getElementById('v-src').textContent = '-';
+    document.getElementById('v-src').style.color = 'var(--text)';
+  }
+
+  // code highlight
+  document.querySelectorAll('.code-line').forEach(e=>e.classList.remove('active','active-green'));
+  let lm = 'L2';
+  if(s.phase==='outer') lm = 'L4';
+  else if(s.phase==='inner'){
+      lm = s.can_use ? (s.updated ? 'L7' : 'L6') : 'L5';
+  }
+  else if(s.phase==='done') lm = 'L8';
+  
+  const el=document.getElementById(lm);
+  if(el)el.classList.add(s.phase==='done'?'active-green':'active');
+
+  // Array update
+  document.querySelectorAll('.cell').forEach(el=>el.classList.remove('active-target','active-source','updated','invalid-source'));
+  
+  for(let i=0; i<=amt; i++){
+    document.getElementById(`d-${i}`).textContent = s.dp[i] === 'inf' ? '∞' : s.dp[i];
+  }
+  
+  if(s.a >= 0){
+    const tgt = document.getElementById(`d-${s.a}`);
+    if(tgt){
+        tgt.classList.add('active-target');
+        if(s.updated) tgt.classList.add('updated');
+    }
+  }
+
+  if(s.phase==='inner'){
+    const src = document.getElementById(`d-${s.a - s.c}`);
+    if(src) {
+        if(s.can_use) src.classList.add('active-source');
+        else src.classList.add('invalid-source');
+    }
+  }
+
+  // log
+  const lc=document.getElementById('logs');
+  const le=document.createElement('div');
+  le.className=`log-entry ${s.log.c}`;
+  le.innerHTML=`<span style="color:#8b949e">[${cur+1}]</span> ${s.log.t}`;
+  lc.appendChild(le); lc.scrollTop=lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled=cur===0;
+  document.getElementById('btn-next').disabled=cur===states.length-1;
+}
+
+function step(d){
+  if(d===1&&cur<states.length-1){cur++;updateUI();}
+  else if(d===-1&&cur>0){
+    const t=cur-1; document.getElementById('logs').innerHTML='';
+    cur=-1; while(cur<t){cur++;updateUI();}
+  }
+}
+
+function reset(){
+  cur=-1;
+  document.getElementById('logs').innerHTML='';
+  document.getElementById('v-a').textContent='-';
+  document.getElementById('v-c').textContent='-';
+  document.getElementById('v-src').textContent='-';
+  document.getElementById('v-src').style.color='var(--text)';
+  document.querySelectorAll('.code-line').forEach(e=>e.classList.remove('active','active-green'));
+  
+  document.querySelectorAll('.cell').forEach(el=>el.classList.remove('active-target','active-source','updated','invalid-source'));
+  
+  for(let i=0; i<=amt; i++){
+    document.getElementById(`d-${i}`).textContent = i===0 ? '0' : '∞';
+  }
+  
+  document.getElementById('btn-prev').disabled=true;
+  document.getElementById('btn-next').disabled=false;
+}
+
+loadTC();
+
+const rv=document.getElementById('rv'), lp=document.getElementById('left-panel');
+const rh=document.getElementById('rh'), tp=document.getElementById('top-panels');
+let dV=false,dH=false,sx,sy,sw,sh;
+rv.addEventListener('mousedown',e=>{dV=true;sx=e.clientX;sw=lp.offsetWidth;document.body.style.cursor='col-resize';rv.classList.add('dragging');});
+rh.addEventListener('mousedown',e=>{dH=true;sy=e.clientY;sh=tp.offsetHeight;document.body.style.cursor='row-resize';rh.classList.add('dragging');});
+document.addEventListener('mousemove',e=>{
+  if(dV){lp.style.flex='none';lp.style.width=Math.max(200,sw+(e.clientX-sx))+'px';}
+  if(dH){tp.style.flex='none';tp.style.height=Math.max(100,sh+(e.clientY-sy))+'px';}
+});
+document.addEventListener('mouseup',()=>{
+  if(dV){dV=false;document.body.style.cursor='';rv.classList.remove('dragging');}
+  if(dH){dH=false;document.body.style.cursor='';rh.classList.remove('dragging');}
+});
+</script>
+</body></html>
