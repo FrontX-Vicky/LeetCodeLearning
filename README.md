@@ -1016,6 +1016,24 @@
 
 ---
 
+### Day 30: DP - Longest Common Subsequence ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Longest Common Subsequence** (LeetCode #1143)
+2. **Longest Increasing Subsequence** (LeetCode #300)
+
+**Topics Covered**:
+- 2D DP Tabulation for Subsequences
+- 1D DP Tabulation for Subsequences
+- String matching and numerical extending
+
+**Key Concepts Learned**:
+- For 2D subsequence matching (like LCS), the table `dp[r][c]` tracks the best match up to index `r` in string1 and index `c` in string2. Matches extend the diagonal (`1 + dp[r-1][c-1]`), while mismatches pull the best historical value from top or left (`max(dp[r-1][c], dp[r][c-1])`).
+- For 1D single-array subsequences (like LIS), the array `dp[i]` tracks the longest valid sequence *ending exactly* at `i`. We compute this by looking back at all previous elements `j < i` and extending the best one that satisfies the condition.
+- The `O(N^2)` LIS solution provides a great foundational understanding of DP "lookbacks" before moving to the advanced `O(N log N)` binary search optimization.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1064,8 +1082,8 @@
 - Day 27: DP - House Robber Pattern ✅
 - Day 28: DP - 2D Grid Problems ✅
 - Day 29: DP - Knapsack Problems ✅
-- Day 30: DP - Longest Common Subsequence 🎯 **NEXT**
-- Day 31: DP - String Problems
+- Day 30: DP - Longest Common Subsequence ✅
+- Day 31: DP - String Problems 🎯 **NEXT**
 - Day 32: DP - Advanced Patterns
 
 ### **Phase 7: Advanced Algorithms** (Days 33-36) 📋 **PLANNED**
@@ -1093,11 +1111,11 @@
 | Phase 3: Recursion & Trees | 13-16 | ✅ Complete | 4/4 (100%) |
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
-| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 5/8 (62.5%) |
+| Phase 6: Dynamic Programming | 25-32 | 🔄 In Progress | 6/8 (75.0%) |
 | Phase 7: Advanced Algorithms | 33-36 | 📋 Planned | 0/4 (0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 29/40 days complete (72.5%)
+**Overall Progress**: 30/40 days complete (75.0%)
 
 ---
 
