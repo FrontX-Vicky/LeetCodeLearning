@@ -1112,7 +1112,34 @@
 - Day 23: Minimum Spanning Tree (Kruskal/Prim) ✅
 - Day 24: Advanced Graph Problems ✅
 
-### **Phase 6: Dynamic Programming** (Days 25-32) 🔄 **IN PROGRESS**
+---
+
+### Day 33: Backtracking (Combinations/Permutations) ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Permutations** (LeetCode #46)
+2. **Combination Sum** (LeetCode #39)
+
+**Topics Covered**:
+- Recursive Decision Trees
+- Backtracking (Choosing and Un-choosing)
+- Managing State with References (e.g. `path[:]`)
+
+**Key Concepts Learned**:
+- Backtracking relies on exploring a path by "Choosing" a candidate, recursing, and then "Un-choosing" (popping) the candidate to explore other branches.
+- Whenever you reach a valid base case, you must append a **copy** of your current path (`path[:]`) to the result array, otherwise subsequent `pop()` operations will erase the path you just stored.
+- For combination problems where you can reuse elements (like LC #39), the decision tree splits into: (1) Include the element and stay on the same index, or (2) Skip the element and move to the next index.
+
+---
+
+## 🗺️ Complete Learning Journey Roadmap
+
+### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
+**Focus**: Core data structures and basic patterns
+
+(The phases below are truncated for brevity, refer to Phase 4+ below)
+
+### **Phase 6: Dynamic Programming** (Days 25-32) ✅ **COMPLETE**
 **Focus**: Optimization and overlapping subproblems
 - Day 25: DP Introduction (1D Problems) ✅
 - Day 26: DP - Climbing Stairs Variations ✅
@@ -1125,8 +1152,8 @@
 
 ### **Phase 7: Advanced Algorithms** (Days 33-36) 🔄 **IN PROGRESS**
 **Focus**: Complex algorithmic techniques
-- Day 33: Backtracking (Combinations/Permutations) 🎯 **NEXT**
-- Day 34: Greedy Algorithms Advanced
+- Day 33: Backtracking (Combinations/Permutations) ✅
+- Day 34: Greedy Algorithms Advanced 🎯 **NEXT**
 - Day 35: Bit Manipulation
 - Day 36: Math & Number Theory
 
@@ -1149,10 +1176,10 @@
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
-| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 0/4 (0%) |
+| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 1/4 (25.0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 32/40 days complete (80.0%)
+**Overall Progress**: 33/40 days complete (82.5%)
 
 ---
 
