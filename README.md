@@ -1132,6 +1132,24 @@
 
 ---
 
+### Day 34: Greedy Algorithms Advanced ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Jump Game** (LeetCode #55)
+2. **Jump Game II** (LeetCode #45)
+
+**Topics Covered**:
+- Greedy Max-Reach Tracking
+- Implicit BFS with a Sliding Window
+- Early Exit Optimization
+
+**Key Concepts Learned**:
+- **Greedy vs DP**: A greedy algorithm is correct when the *locally optimal* choice always leads to the *globally optimal* solution. The Jump Game problems have this property — you never need to look back.
+- **canJump (LC #55)**: You don’t need to simulate each jump. Simply track `max_reach = max(max_reach, i + nums[i])`. If your current index `i` ever exceeds `max_reach`, you’re stuck — return `False`.
+- **jump (LC #45)**: Use three variables (`jumps`, `current_end`, `farthest`). Treat each jump range as a BFS level. `farthest` scouts the next level while you walk the current one. When `i == current_end`, you commit a jump and expand your window to `farthest`.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1153,8 +1171,8 @@
 ### **Phase 7: Advanced Algorithms** (Days 33-36) 🔄 **IN PROGRESS**
 **Focus**: Complex algorithmic techniques
 - Day 33: Backtracking (Combinations/Permutations) ✅
-- Day 34: Greedy Algorithms Advanced 🎯 **NEXT**
-- Day 35: Bit Manipulation
+- Day 34: Greedy Algorithms Advanced ✅
+- Day 35: Bit Manipulation 🎯 **NEXT**
 - Day 36: Math & Number Theory
 
 ### **Phase 8: System Design & Practice** (Days 37-40) 📋 **PLANNED**
@@ -1176,10 +1194,10 @@
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
-| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 1/4 (25.0%) |
+| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 2/4 (50.0%) |
 | Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
 
-**Overall Progress**: 33/40 days complete (82.5%)
+**Overall Progress**: 34/40 days complete (85.0%)
 
 ---
 
