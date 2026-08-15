@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #146 LRU Cache</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:330px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-op{color:#d4d4d4;font-weight:bold;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:20px;gap:40px;}
+
+/* DLL Visuals */
+.dll-container { display:flex; align-items:center; justify-content:center; gap:0; position:relative; }
+.dummy-node { width:60px; height:60px; border-radius:8px; background:#161b22; border:2px dashed var(--border); display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:12px; font-weight:bold; color:#8b949e; z-index:2; flex-shrink:0; }
+.dummy-node.head { border-color:var(--green); color:var(--green); }
+.dummy-node.tail { border-color:var(--red); color:var(--red); }
+
+.dll-link { flex:1; min-width:30px; height:4px; background:var(--border); display:flex; align-items:center; justify-content:space-between; position:relative; }
+.dll-link::before { content:''; position:absolute; left:0; width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-right:8px solid var(--border); }
+.dll-link::after { content:''; position:absolute; right:0; width:0; height:0; border-top:5px solid transparent; border-bottom:5px solid transparent; border-left:8px solid var(--border); }
+
+.real-nodes { display:flex; gap:0; align-items:center; }
+.cache-node { display:flex; border:2px solid var(--accent); border-radius:8px; overflow:hidden; background:#21262d; font-family:monospace; z-index:2; animation:slide-in .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.cn-key { padding:10px 15px; background:rgba(88,166,255,.15); color:var(--accent); border-right:2px solid var(--accent); display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.cn-val { padding:10px 15px; color:#f0f6fc; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:bold; font-size:16px; }
+.cn-label { font-size:9px; text-transform:uppercase; color:#8b949e; margin-bottom:2px; }
+
+@keyframes slide-in { 0%{transform:translateX(-20px);opacity:0} 100%{transform:translateX(0);opacity:1} }
+
+/* Map Visuals */
+.map-container { display:flex; gap:10px; background:#161b22; padding:15px; border-radius:8px; border:1px solid var(--border); min-width:300px; justify-content:center; flex-wrap:wrap; }
+.map-item { display:flex; border:1px solid var(--border); border-radius:6px; overflow:hidden; font-family:monospace; font-size:12px; }
+.mi-key { padding:6px 10px; background:#21262d; color:var(--purple); border-right:1px solid var(--border); font-weight:bold; }
+.mi-val { padding:6px 10px; background:#0d1117; color:#8b949e; }
+.map-title { position:absolute; top:-10px; left:15px; background:var(--card); padding:0 5px; font-size:10px; color:#8b949e; text-transform:uppercase; }
+
+.result-display { position:absolute; bottom:20px; right:20px; font-family:monospace; font-size:18px; font-weight:bold; padding:8px 16px; border-radius:6px; border:1px solid var(--border); background:#21262d; transition:all .4s; opacity:0; }
+.result-display.show { opacity:1; border-color:var(--green); color:var(--green); background:rgba(63,185,80,.1); }
+.result-display.fail { opacity:1; border-color:var(--red); color:var(--red); background:rgba(248,81,73,.1); }
+
+.stats-bar{display:flex;gap:16px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_minStack.html">P1 · Min Stack</option>
+    <option value="problem2_lruCache.html" selected>P2 · LRU Cache</option>
+  </select>
+  <div class="header-left">
+    <h1>LRU Cache &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #146</span></h1>
+    <p>Doubly Linked List + Hash Map</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">Op:</span> <span id="in-op" style="font-family:monospace;font-weight:bold;color:var(--accent)">-</span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">Capacity</div><div class="var-val" id="v-cap" style="color:var(--purple)">2</div></div>
+        <div class="var-box"><div class="var-title">Size</div><div class="var-val" id="v-sz" style="color:var(--yellow)">0</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">class</span> <span class="k-fn">LRUCache</span>:</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">__init__</span>(self, cap):</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">        self.cap = cap; self.cache = {}</div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">        self.head = Node(); self.tail = Node()</div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">        self.head.next = self.tail; self.tail.prev = self.head</div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">get</span>(self, key):</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">        <span class="k-kw">if</span> key <span class="k-kw">in</span> self.cache:</div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">            node = self.cache[key]</div></div>
+<div class="code-line" id="L9"><div class="ln">9</div><div class="lt">            self._remove(node); self._add(node)</div></div>
+<div class="code-line" id="L10"><div class="ln">10</div><div class="lt">            <span class="k-kw">return</span> node.val</div></div>
+<div class="code-line" id="L11"><div class="ln">11</div><div class="lt">        <span class="k-kw">return</span> -<span class="k-num">1</span></div></div>
+<div class="code-line" id="L12"><div class="ln">12</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">put</span>(self, key, value):</div></div>
+<div class="code-line" id="L13"><div class="ln">13</div><div class="lt">        <span class="k-kw">if</span> key <span class="k-kw">in</span> self.cache:</div></div>
+<div class="code-line" id="L14"><div class="ln">14</div><div class="lt">            node = self.cache[key]; self._remove(node)</div></div>
+<div class="code-line" id="L15"><div class="ln">15</div><div class="lt">            node.val = value; self._add(node)</div></div>
+<div class="code-line" id="L16"><div class="ln">16</div><div class="lt">        <span class="k-kw">else</span>:</div></div>
+<div class="code-line" id="L17"><div class="ln">17</div><div class="lt">            node = Node(key, value)</div></div>
+<div class="code-line" id="L18"><div class="ln">18</div><div class="lt">            self.cache[key] = node; self._add(node)</div></div>
+<div class="code-line" id="L19"><div class="ln">19</div><div class="lt">            <span class="k-kw">if</span> <span class="k-fn">len</span>(self.cache) &gt; self.cap:</div></div>
+<div class="code-line" id="L20"><div class="ln">20</div><div class="lt">                lru = self.tail.prev</div></div>
+<div class="code-line" id="L21"><div class="ln">21</div><div class="lt">                self._remove(lru); <span class="k-kw">del</span> self.cache[lru.key]</div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel" style="position:relative;">
+      <div class="panel-title">Doubly Linked List & Hash Map Visualizer</div>
+      <div class="viz-area">
+        
+        <!-- DLL Visual -->
+        <div style="width:100%;text-align:center;font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:2px;margin-bottom:-20px">Doubly Linked List (Order)</div>
+        <div class="dll-container" id="dll-container"></div>
+        
+        <!-- Map Visual -->
+        <div style="position:relative;margin-top:20px;">
+          <div class="map-title">self.cache (O(1) Access)</div>
+          <div class="map-container" id="map-container"></div>
+        </div>
+
+      </div>
+      <div class="result-display" id="result-display">-</div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div> Head (Most Recently Used)</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div> Tail (Least Recently Used)</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--purple)"></div> Hash Map Keys</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_states = [{"op": "init", "val": null, "stack": [], "msg": "Initialized empty MinStack."}, {"op": "push", "val": -2, "stack": [{"v": -2, "m": -2}], "msg": "Pushed -2. It's the first element, so new min is -2."}, {"op": "push", "val": 0, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "Pushed 0. current_min is -2. new_min = min(0, -2) = -2."}, {"op": "push", "val": -3, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}, {"v": -3, "m": -3}], "msg": "Pushed -3. current_min is -2. new_min = min(-3, -2) = -3."}, {"op": "getMin", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}, {"v": -3, "m": -3}], "msg": "getMin() called. Returns -3 (stored directly in top node!).", "ret": -3}, {"op": "pop", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "Popped top element -3 (which had min -3)."}, {"op": "top", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "top() called. Returns 0.", "ret": 0}, {"op": "getMin", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "getMin() called. Returns -2 (stored directly in top node!).", "ret": -2}];
+const p2_states = [{"op": "init", "k": null, "v": null, "cap": 2, "dll": [], "map": {}, "msg": "Init LRUCache with capacity 2."}, {"op": "put", "k": 1, "v": 1, "cap": 2, "dll": [{"k": 1, "v": 1}], "map": {"1": 1}, "msg": "put(1, 1): Inserted new node at MRU (front)."}, {"op": "put", "k": 2, "v": 2, "cap": 2, "dll": [{"k": 2, "v": 2}, {"k": 1, "v": 1}], "map": {"1": 1, "2": 2}, "msg": "put(2, 2): Inserted new node at MRU (front)."}, {"op": "get", "k": 1, "v": null, "cap": 2, "ret": 1, "dll": [{"k": 1, "v": 1}, {"k": 2, "v": 2}], "map": {"1": 1, "2": 2}, "msg": "get(1): Key found! Value is 1. Moved to MRU (front)."}, {"op": "put", "k": 3, "v": 3, "cap": 2, "dll": [{"k": 3, "v": 3}, {"k": 1, "v": 1}], "map": {"1": 1, "3": 3}, "msg": "Capacity full! Evicted LRU key 2. put(3, 3): Inserted new node at MRU (front)."}, {"op": "get", "k": 2, "v": null, "cap": 2, "ret": -1, "dll": [{"k": 3, "v": 3}, {"k": 1, "v": 1}], "map": {"1": 1, "3": 3}, "msg": "get(2): Key NOT found! Returns -1."}, {"op": "put", "k": 4, "v": 4, "cap": 2, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "Capacity full! Evicted LRU key 1. put(4, 4): Inserted new node at MRU (front)."}, {"op": "get", "k": 1, "v": null, "cap": 2, "ret": -1, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "get(1): Key NOT found! Returns -1."}, {"op": "get", "k": 3, "v": null, "cap": 2, "ret": 3, "dll": [{"k": 3, "v": 3}, {"k": 4, "v": 4}], "map": {"3": 3, "4": 4}, "msg": "get(3): Key found! Value is 3. Moved to MRU (front)."}, {"op": "get", "k": 4, "v": null, "cap": 2, "ret": 4, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "get(4): Key found! Value is 4. Moved to MRU (front)."}];
+
+let states = p2_states;
+let cur = 0;
+
+function buildDLL(dllData) {
+  const container = document.getElementById('dll-container');
+  let html = `<div class="dummy-node head">HEAD<br/><span style="font-size:9px;color:#8b949e">(MRU)</span></div>`;
+  
+  if (dllData.length > 0) html += `<div class="dll-link"></div>`;
+  
+  let midHtml = '';
+  dllData.forEach((node, idx) => {
+    midHtml += `<div class="cache-node">
+      <div class="cn-key"><div class="cn-label">Key</div><div>${node.k}</div></div>
+      <div class="cn-val"><div class="cn-label">Val</div><div>${node.v}</div></div>
+    </div>`;
+    if (idx < dllData.length - 1) {
+      midHtml += `<div class="dll-link"></div>`;
+    }
+  });
+  
+  html += `<div class="real-nodes">${midHtml}</div>`;
+  if (dllData.length > 0) html += `<div class="dll-link"></div>`;
+  else html += `<div class="dll-link" style="width:40px;flex:none"></div>`;
+  
+  html += `<div class="dummy-node tail">TAIL<br/><span style="font-size:9px;color:#8b949e">(LRU)</span></div>`;
+  
+  container.innerHTML = html;
+}
+
+function buildMap(mapData) {
+  const container = document.getElementById('map-container');
+  let html = '';
+  const keys = Object.keys(mapData);
+  if (keys.length === 0) {
+    html = `<div style="color:#8b949e;font-size:12px;padding:5px">{}</div>`;
+  } else {
+    keys.forEach(k => {
+      html += `<div class="map-item">
+        <div class="mi-key">${k}</div>
+        <div class="mi-val">Node(${k}, ${mapData[k]})</div>
+      </div>`;
+    });
+  }
+  container.innerHTML = html;
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  let opStr = s.op;
+  if (s.op === 'put') opStr += `(${s.k}, ${s.v})`;
+  else if (s.op === 'get') opStr += `(${s.k})`;
+  else opStr += '()';
+  
+  document.getElementById('in-op').textContent = opStr;
+  document.getElementById('v-cap').textContent = s.cap;
+  document.getElementById('v-sz').textContent = s.dll.length;
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-red', 'active-green'));
+  let lm = '';
+  if (s.op === 'put') {
+    if (s.msg.includes('Evicted')) { document.getElementById('L20').classList.add('active-red'); lm = 'L21'; }
+    else if (s.msg.includes('Key exists')) lm = 'L15';
+    else lm = 'L18';
+  } else if (s.op === 'get') {
+    if (s.ret !== -1) lm = 'L10';
+    else lm = 'L11';
+  } else {
+    lm = 'L5';
+  }
+  
+  if (lm) document.getElementById(lm).classList.add('active');
+
+  buildDLL(s.dll);
+  buildMap(s.map);
+
+  const rd = document.getElementById('result-display');
+  if (s.op === 'get') {
+    rd.textContent = `Returned: ${s.ret}`;
+    rd.className = 'result-display show ' + (s.ret === -1 ? 'fail' : '');
+  } else {
+    rd.className = 'result-display';
+  }
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  
+  let lcCls = 'log-hl';
+  if (s.op === 'get' && s.ret !== -1) lcCls = 'log-success';
+  if (s.msg.includes('Evicted')) lcCls = 'log-danger';
+  
+  le.className = `log-entry ${lcCls}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur}]</span> ${s.msg}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = 0; 
+    const initialS = states[0];
+    const lc = document.getElementById('logs');
+    lc.innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${initialS.msg}</div>`;
+    while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = 0;
+  document.getElementById('logs').innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${states[0].msg}</div>`;
+  updateUI();
+}
+
+reset();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>

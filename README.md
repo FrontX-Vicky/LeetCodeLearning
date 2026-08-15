@@ -1180,6 +1180,23 @@
 
 ---
 
+### Day 37: Design Problems ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Min Stack** (LeetCode #155)
+2. **LRU Cache** (LeetCode #146)
+
+**Topics Covered**:
+- Systems Design (Data Structures)
+- Object-Oriented Programming (Classes & Methods)
+- Linked Lists + Hash Maps integration
+
+**Key Concepts Learned**:
+- **Min Stack**: Instead of storing just values, store `(value, current_min)` tuples. This enables $O(1)$ minimum retrieval even after pops.
+- **LRU Cache**: A classic combination of a Doubly Linked List (for $O(1)$ add/remove from ends) and a Hash Map (for $O(1)$ node lookups). The key to simplifying DLL operations is using **dummy head and tail nodes**.
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1207,8 +1224,8 @@
 
 ### **Phase 8: System Design & Practice** (Days 37-40) 🔄 **IN PROGRESS**
 **Focus**: Integration and real-world applications
-- Day 37: Design Problems (LRU Cache, etc.) 🎯 **NEXT**
-- Day 38: Mixed Problem Practice
+- Day 37: Design Problems (LRU Cache, etc.) ✅
+- Day 38: Mixed Problem Practice 🎯 **NEXT**
 - Day 39: Hard Problems Marathon
 - Day 40: Review & Patterns Summary
 
@@ -1225,9 +1242,9 @@
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
 | Phase 7: Advanced Algorithms | 33-36 | ✅ Complete | 4/4 (100%) |
-| Phase 8: System Design | 37-40 | 🔄 In Progress | 0/4 (0%) |
+| Phase 8: System Design | 37-40 | 🔄 In Progress | 1/4 (25.0%) |
 
-**Overall Progress**: 36/40 days complete (90.0%)
+**Overall Progress**: 37/40 days complete (92.5%)
 
 ---
 

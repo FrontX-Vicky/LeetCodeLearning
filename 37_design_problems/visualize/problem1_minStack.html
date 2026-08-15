@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #155 Min Stack</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:330px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-op{color:#d4d4d4;font-weight:bold;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;background:#0d1117;overflow:auto;padding:20px;gap:0;}
+
+/* Stack visuals */
+.stack-container { width:240px; border:4px solid var(--border); border-top:none; border-radius:0 0 12px 12px; padding:10px; display:flex; flex-direction:column-reverse; gap:8px; position:relative; min-height:100px; max-height:400px; background:#161b22; }
+.stack-item { width:100%; display:flex; background:#21262d; border:2px solid var(--border); border-radius:8px; overflow:hidden; font-family:monospace; animation:pop-in .3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.stack-item.popping { animation:pop-out .3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
+
+.si-val { flex:1; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:2px solid var(--border); }
+.si-min { flex:1; padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(63,185,80,.1); color:var(--green); }
+.si-label { font-size:10px; text-transform:uppercase; color:#8b949e; letter-spacing:1px; margin-bottom:4px; }
+.si-num { font-size:18px; font-weight:bold; }
+
+.stack-item.top-elem { border-color:var(--accent); box-shadow:0 0 15px rgba(88,166,255,.2); }
+
+@keyframes pop-in { 0%{transform:translateY(-40px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+@keyframes pop-out { 0%{transform:translateY(0);opacity:1} 100%{transform:translateY(-40px);opacity:0} }
+
+.result-display { margin-top:30px; font-family:monospace; font-size:20px; font-weight:bold; padding:10px 24px; border-radius:8px; border:2px solid var(--border); background:#21262d; transition:all .4s; opacity:0; }
+.result-display.show { opacity:1; border-color:var(--accent); color:var(--accent); background:rgba(88,166,255,.1); box-shadow:0 0 20px rgba(88,166,255,.3); }
+
+.stats-bar{display:flex;gap:16px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_minStack.html" selected>P1 · Min Stack</option>
+    <option value="problem2_lruCache.html">P2 · LRU Cache</option>
+  </select>
+  <div class="header-left">
+    <h1>Min Stack &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #155</span></h1>
+    <p>O(1) push, pop, top, getMin</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">Op:</span> <span id="in-op" style="font-family:monospace;font-weight:bold;color:var(--accent)">-</span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">Size</div><div class="var-val" id="v-sz" style="color:var(--yellow)">0</div></div>
+        <div class="var-box"><div class="var-title">Top</div><div class="var-val" id="v-top" style="color:var(--accent)">-</div></div>
+        <div class="var-box"><div class="var-title">Global Min</div><div class="var-val" id="v-min" style="color:var(--green)">-</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">class</span> <span class="k-fn">MinStack</span>:</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">__init__</span>(self):</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">        self.stack = []</div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">push</span>(self, val):</div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">        cur_min = self.stack[-1][1] <span class="k-kw">if</span> self.stack <span class="k-kw">else</span> val</div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">        self.stack.append((val, min(val, cur_min)))</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">pop</span>(self):</div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">        self.stack.pop()</div></div>
+<div class="code-line" id="L9"><div class="ln">9</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">top</span>(self):</div></div>
+<div class="code-line" id="L10"><div class="ln">10</div><div class="lt">        <span class="k-kw">return</span> self.stack[-1][<span class="k-num">0</span>]</div></div>
+<div class="code-line" id="L11"><div class="ln">11</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">getMin</span>(self):</div></div>
+<div class="code-line" id="L12"><div class="ln">12</div><div class="lt">        <span class="k-kw">return</span> self.stack[-1][<span class="k-num">1</span>]</div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">Min Stack Tuple Visualizer</div>
+      <div class="viz-area">
+        <div class="stack-container" id="stack-container"></div>
+        <div class="result-display" id="result-display">Result = -</div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--border)"></div> Base Value</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div> Current Minimum</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--accent)"></div> Top of Stack</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_states = [{"op": "init", "val": null, "stack": [], "msg": "Initialized empty MinStack."}, {"op": "push", "val": -2, "stack": [{"v": -2, "m": -2}], "msg": "Pushed -2. It's the first element, so new min is -2."}, {"op": "push", "val": 0, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "Pushed 0. current_min is -2. new_min = min(0, -2) = -2."}, {"op": "push", "val": -3, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}, {"v": -3, "m": -3}], "msg": "Pushed -3. current_min is -2. new_min = min(-3, -2) = -3."}, {"op": "getMin", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}, {"v": -3, "m": -3}], "msg": "getMin() called. Returns -3 (stored directly in top node!).", "ret": -3}, {"op": "pop", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "Popped top element -3 (which had min -3)."}, {"op": "top", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "top() called. Returns 0.", "ret": 0}, {"op": "getMin", "val": null, "stack": [{"v": -2, "m": -2}, {"v": 0, "m": -2}], "msg": "getMin() called. Returns -2 (stored directly in top node!).", "ret": -2}];
+const p2_states = [{"op": "init", "k": null, "v": null, "cap": 2, "dll": [], "map": {}, "msg": "Init LRUCache with capacity 2."}, {"op": "put", "k": 1, "v": 1, "cap": 2, "dll": [{"k": 1, "v": 1}], "map": {"1": 1}, "msg": "put(1, 1): Inserted new node at MRU (front)."}, {"op": "put", "k": 2, "v": 2, "cap": 2, "dll": [{"k": 2, "v": 2}, {"k": 1, "v": 1}], "map": {"1": 1, "2": 2}, "msg": "put(2, 2): Inserted new node at MRU (front)."}, {"op": "get", "k": 1, "v": null, "cap": 2, "ret": 1, "dll": [{"k": 1, "v": 1}, {"k": 2, "v": 2}], "map": {"1": 1, "2": 2}, "msg": "get(1): Key found! Value is 1. Moved to MRU (front)."}, {"op": "put", "k": 3, "v": 3, "cap": 2, "dll": [{"k": 3, "v": 3}, {"k": 1, "v": 1}], "map": {"1": 1, "3": 3}, "msg": "Capacity full! Evicted LRU key 2. put(3, 3): Inserted new node at MRU (front)."}, {"op": "get", "k": 2, "v": null, "cap": 2, "ret": -1, "dll": [{"k": 3, "v": 3}, {"k": 1, "v": 1}], "map": {"1": 1, "3": 3}, "msg": "get(2): Key NOT found! Returns -1."}, {"op": "put", "k": 4, "v": 4, "cap": 2, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "Capacity full! Evicted LRU key 1. put(4, 4): Inserted new node at MRU (front)."}, {"op": "get", "k": 1, "v": null, "cap": 2, "ret": -1, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "get(1): Key NOT found! Returns -1."}, {"op": "get", "k": 3, "v": null, "cap": 2, "ret": 3, "dll": [{"k": 3, "v": 3}, {"k": 4, "v": 4}], "map": {"3": 3, "4": 4}, "msg": "get(3): Key found! Value is 3. Moved to MRU (front)."}, {"op": "get", "k": 4, "v": null, "cap": 2, "ret": 4, "dll": [{"k": 4, "v": 4}, {"k": 3, "v": 3}], "map": {"3": 3, "4": 4}, "msg": "get(4): Key found! Value is 4. Moved to MRU (front)."}];
+
+let states = p1_states;
+let cur = 0;
+
+function buildStack(stackData) {
+  const container = document.getElementById('stack-container');
+  let html = '';
+  stackData.forEach((item, idx) => {
+    const isTop = idx === stackData.length - 1;
+    const cls = isTop ? 'stack-item top-elem' : 'stack-item';
+    html = `<div class="${cls}" id="item-${idx}">
+      <div class="si-val"><div class="si-label">Value</div><div class="si-num">${item.v}</div></div>
+      <div class="si-min"><div class="si-label">Min</div><div class="si-num">${item.m}</div></div>
+    </div>` + html;
+  });
+  container.innerHTML = html;
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  const opStr = s.op + (s.val !== null ? `(${s.val})` : '()');
+  document.getElementById('in-op').textContent = opStr;
+  
+  const sz = s.stack.length;
+  document.getElementById('v-sz').textContent = sz;
+  document.getElementById('v-top').textContent = sz > 0 ? s.stack[sz-1].v : '-';
+  document.getElementById('v-min').textContent = sz > 0 ? s.stack[sz-1].m : '-';
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active'));
+  let lm = '';
+  if (s.op === 'push') lm = 'L6';
+  else if (s.op === 'pop') lm = 'L8';
+  else if (s.op === 'top') lm = 'L10';
+  else if (s.op === 'getMin') lm = 'L12';
+  else lm = 'L3';
+  
+  if (lm) document.getElementById(lm).classList.add('active');
+
+  buildStack(s.stack);
+
+  const rd = document.getElementById('result-display');
+  if (s.ret !== undefined) {
+    rd.textContent = `Returned: ${s.ret}`;
+    rd.classList.add('show');
+  } else {
+    rd.classList.remove('show');
+  }
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  le.className = `log-entry ${s.op === 'push' ? 'log-success' : s.op === 'pop' ? 'log-danger' : 'log-hl'}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur}]</span> ${s.msg}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = 0; 
+    const initialS = states[0];
+    const lc = document.getElementById('logs');
+    lc.innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${initialS.msg}</div>`;
+    while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = 0;
+  document.getElementById('logs').innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${states[0].msg}</div>`;
+  updateUI();
+}
+
+reset();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>
