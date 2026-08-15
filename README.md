@@ -1214,6 +1214,24 @@
 
 ---
 
+### Day 39: Hard Problems Marathon ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Trapping Rain Water** (LeetCode #42)
+2. **Find Median from Data Stream** (LeetCode #295)
+
+**Topics Covered**:
+- Extreme Optimization (Constant Space)
+- Two Pointers on arrays/maps
+- Heaps (Min/Max combination)
+- System Design for data streams
+
+**Key Concepts Learned**:
+- **Trapping Rain Water**: The water at any given index `i` is determined by `min(max_left, max_right) - height[i]`. We can dynamically track the left and right maximums using Two Pointers from both ends to achieve an elegant $O(N)$ time and $O(1)$ space solution.
+- **Median from Data Stream**: The median splits a sorted array perfectly in half. By maintaining a Max-Heap for the small half and a Min-Heap for the large half, you can keep the dataset perfectly balanced and extract the median in $O(1)$ time!
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1243,8 +1261,8 @@
 **Focus**: Integration and real-world applications
 - Day 37: Design Problems (LRU Cache, etc.) ✅
 - Day 38: Mixed Problem Practice ✅
-- Day 39: Hard Problems Marathon 🎯 **NEXT**
-- Day 40: Review & Patterns Summary
+- Day 39: Hard Problems Marathon ✅
+- Day 40: Review & Patterns Summary 🎯 **NEXT**
 
 ---
 
@@ -1259,9 +1277,9 @@
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
 | Phase 7: Advanced Algorithms | 33-36 | ✅ Complete | 4/4 (100%) |
-| Phase 8: System Design | 37-40 | 🔄 In Progress | 2/4 (50.0%) |
+| Phase 8: System Design | 37-40 | 🔄 In Progress | 3/4 (75.0%) |
 
-**Overall Progress**: 38/40 days complete (95.0%)
+**Overall Progress**: 39/40 days complete (97.5%)
 
 ---
 
