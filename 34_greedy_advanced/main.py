@@ -4,7 +4,20 @@ def canJump(nums: list[int]) -> bool:
     and each element in the array represents your maximum jump length at that position.
     Return true if you can reach the last index, or false otherwise.
     """
-    pass
+    max_reach = 0
+
+    for i in range(len(nums)):
+        if i > max_reach:
+            return False
+    
+        max_reach = max(max_reach, i + nums[i])
+
+        if max_reach >= len(nums) - 1:
+            return True
+    
+    return True
+
+        
 
 def jump(nums: list[int]) -> int:
     """
@@ -15,7 +28,22 @@ def jump(nums: list[int]) -> int:
     Return the minimum number of jumps to reach nums[n - 1].
     The test cases are generated such that you can reach nums[n - 1].
     """
-    pass
+    jumps = 0
+    current_end = 0
+    farthest = 0
+
+    for i in range(len(nums) - 1):
+
+        farthest = max(farthest, i + nums[i])
+
+        if i == current_end:
+            jumps += 1
+            current_end = farthest
+
+            if current_end >= len(nums) - 1:
+                break
+    
+    return jumps
 
 def main():
     print("Welcome to Day 34: Greedy Algorithms Advanced!")

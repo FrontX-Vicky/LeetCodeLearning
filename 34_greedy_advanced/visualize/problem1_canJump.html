@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #55 Jump Game</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:330px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:16px;align-items:center;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-cm{color:#6a9955;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:30px;gap:32px;}
+
+/* Jump Game Array */
+.array-track { display:flex; gap:6px; justify-content:center; flex-wrap: wrap; max-width: 700px; }
+.cell-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.cell {
+  width:52px; height:52px; border-radius:8px; border:2px solid var(--border);
+  background:#21262d; font-family:monospace; font-size:18px; font-weight:bold;
+  display:flex; align-items:center; justify-content:center; transition:all .3s; position:relative;
+}
+.cell-idx { font-size:10px; color:#8b949e; }
+.cell.current { border-color:var(--yellow); background:rgba(210,153,34,.2); color:var(--yellow); transform:scale(1.12); box-shadow:0 0 14px rgba(210,153,34,.4); z-index:2; }
+.cell.in-reach { border-color:var(--accent); background:rgba(88,166,255,.12); color:var(--accent); }
+.cell.stuck { border-color:var(--red); background:rgba(248,81,73,.15); color:var(--red); animation:shake .3s ease; }
+.cell.done { border-color:var(--green); background:rgba(63,185,80,.2); color:var(--green); }
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Reach bar */
+.reach-section { display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; max-width:600px; }
+.reach-label { font-size:12px; color:#8b949e; font-weight:600; }
+.reach-track { width:100%; height:28px; background:#161b22; border:1px solid var(--border); border-radius:6px; position:relative; overflow:hidden; }
+.reach-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--purple)); transition:width .4s ease; border-radius:6px; opacity:0.7; }
+.reach-text { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:12px; font-weight:bold; }
+
+.result-box { font-family:monospace; font-size:24px; font-weight:bold; padding:12px 28px; border-radius:8px; border:2px solid var(--border); background:#21262d; transition:all .4s; }
+.result-box.true { border-color:var(--green); color:var(--green); background:rgba(63,185,80,.1); box-shadow:0 0 20px rgba(63,185,80,.3); }
+.result-box.false { border-color:var(--red); color:var(--red); background:rgba(248,81,73,.1); box-shadow:0 0 20px rgba(248,81,73,.3); }
+
+.stats-bar{display:flex;gap:20px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_canJump.html" selected>P1 · Jump Game I</option>
+    <option value="problem2_jump.html">P2 · Jump Game II</option>
+  </select>
+  <div class="header-left">
+    <h1>Jump Game &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #55</span></h1>
+    <p>Greedy — Track Max Reach</p>
+  </div>
+  <div class="controls">
+    <select id="tc-sel" onchange="loadTC()" style="background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;">
+      <option value="sm">Small · [3,2,1,0,4] → False</option>
+      <option value="md" selected>Medium · [2,3,1,1,4] → True</option>
+      <option value="lg">Large · [2,0,1,0,1] → True</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">nums:</span> <span id="in-nums" style="font-family:monospace"></span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">Current i</div><div class="var-val" id="v-i" style="color:var(--yellow)">-</div></div>
+        <div class="var-box"><div class="var-title">max_reach</div><div class="var-val" id="v-reach" style="color:var(--accent)">0</div></div>
+        <div class="var-box"><div class="var-title">Result</div><div class="var-val" id="v-result" style="color:var(--text)">-</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">canJump</span>(nums):</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    max_reach = <span class="k-num">0</span></div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">    <span class="k-kw">for</span> i <span class="k-kw">in</span> <span class="k-fn">range</span>(<span class="k-fn">len</span>(nums)):</div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">        <span class="k-kw">if</span> i > max_reach:</div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">            <span class="k-kw">return</span> <span class="k-num">False</span></div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">        max_reach = <span class="k-fn">max</span>(max_reach, i + nums[i])</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">        <span class="k-kw">if</span> max_reach >= <span class="k-fn">len</span>(nums) - <span class="k-num">1</span>:</div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">            <span class="k-kw">return</span> <span class="k-num">True</span></div></div>
+<div class="code-line" id="L9"><div class="ln">9</div><div class="lt">    <span class="k-kw">return</span> <span class="k-num">True</span></div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">Greedy Max-Reach Visualizer</div>
+      <div class="viz-area">
+        <div class="array-track" id="arr"></div>
+        <div class="reach-section">
+          <div class="reach-label">Max Reach Progress</div>
+          <div class="reach-track">
+            <div class="reach-fill" id="reach-fill" style="width:0%"></div>
+            <div class="reach-text" id="reach-text">0 / ?</div>
+          </div>
+        </div>
+        <div class="result-box" id="result-box">?</div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div> Current i</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--accent)"></div> Within max_reach</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div> Reachable End</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div> Stuck</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_sm=[{"phase": "init", "nums": [3, 2, 1, 0, 4], "i": -1, "max_reach": 0, "stuck": false, "done": false, "log": {"c": "", "t": "Init. max_reach = 0. Array: [3, 2, 1, 0, 4]"}}, {"phase": "update", "nums": [3, 2, 1, 0, 4], "i": 0, "max_reach": 3, "stuck": false, "done": false, "updated": true, "log": {"c": "log-success", "t": "i=0, nums[i]=3. Reach = 0+3=3. max_reach updated to 3."}}, {"phase": "update", "nums": [3, 2, 1, 0, 4], "i": 1, "max_reach": 3, "stuck": false, "done": false, "updated": false, "log": {"c": "log-hl", "t": "i=1, nums[i]=2. Reach = 1+2=3. max_reach stays 3."}}, {"phase": "update", "nums": [3, 2, 1, 0, 4], "i": 2, "max_reach": 3, "stuck": false, "done": false, "updated": false, "log": {"c": "log-hl", "t": "i=2, nums[i]=1. Reach = 2+1=3. max_reach stays 3."}}, {"phase": "update", "nums": [3, 2, 1, 0, 4], "i": 3, "max_reach": 3, "stuck": false, "done": false, "updated": false, "log": {"c": "log-hl", "t": "i=3, nums[i]=0. Reach = 3+0=3. max_reach stays 3."}}, {"phase": "stuck", "nums": [3, 2, 1, 0, 4], "i": 4, "max_reach": 3, "stuck": true, "done": false, "log": {"c": "log-danger", "t": "i=4 > max_reach=3. Cannot proceed! Return False."}}];
+const p1_md=[{"phase": "init", "nums": [2, 3, 1, 1, 4], "i": -1, "max_reach": 0, "stuck": false, "done": false, "log": {"c": "", "t": "Init. max_reach = 0. Array: [2, 3, 1, 1, 4]"}}, {"phase": "update", "nums": [2, 3, 1, 1, 4], "i": 0, "max_reach": 2, "stuck": false, "done": false, "updated": true, "log": {"c": "log-success", "t": "i=0, nums[i]=2. Reach = 0+2=2. max_reach updated to 2."}}, {"phase": "update", "nums": [2, 3, 1, 1, 4], "i": 1, "max_reach": 4, "stuck": false, "done": false, "updated": true, "log": {"c": "log-success", "t": "i=1, nums[i]=3. Reach = 1+3=4. max_reach updated to 4."}}, {"phase": "done", "nums": [2, 3, 1, 1, 4], "i": 1, "max_reach": 4, "stuck": false, "done": true, "log": {"c": "log-success", "t": "max_reach=4 >= last index=4. Return True!"}}];
+const p1_lg=[{"phase": "init", "nums": [2, 0, 1, 0, 1], "i": -1, "max_reach": 0, "stuck": false, "done": false, "log": {"c": "", "t": "Init. max_reach = 0. Array: [2, 0, 1, 0, 1]"}}, {"phase": "update", "nums": [2, 0, 1, 0, 1], "i": 0, "max_reach": 2, "stuck": false, "done": false, "updated": true, "log": {"c": "log-success", "t": "i=0, nums[i]=2. Reach = 0+2=2. max_reach updated to 2."}}, {"phase": "update", "nums": [2, 0, 1, 0, 1], "i": 1, "max_reach": 2, "stuck": false, "done": false, "updated": false, "log": {"c": "log-hl", "t": "i=1, nums[i]=0. Reach = 1+0=1. max_reach stays 2."}}, {"phase": "update", "nums": [2, 0, 1, 0, 1], "i": 2, "max_reach": 3, "stuck": false, "done": false, "updated": true, "log": {"c": "log-success", "t": "i=2, nums[i]=1. Reach = 2+1=3. max_reach updated to 3."}}, {"phase": "update", "nums": [2, 0, 1, 0, 1], "i": 3, "max_reach": 3, "stuck": false, "done": false, "updated": false, "log": {"c": "log-hl", "t": "i=3, nums[i]=0. Reach = 3+0=3. max_reach stays 3."}}, {"phase": "stuck", "nums": [2, 0, 1, 0, 1], "i": 4, "max_reach": 3, "stuck": true, "done": false, "log": {"c": "log-danger", "t": "i=4 > max_reach=3. Cannot proceed! Return False."}}];
+const p2_sm=[{"phase": "init", "nums": [2, 3, 1, 1, 4], "i": -1, "jumps": 0, "current_end": 0, "farthest": 0, "jumped": false, "log": {"c": "", "t": "Init. jumps=0, current_end=0, farthest=0. Array: [2, 3, 1, 1, 4]"}}, {"phase": "update_far", "nums": [2, 3, 1, 1, 4], "i": 0, "jumps": 0, "current_end": 0, "farthest": 2, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=0, nums[i]=2. farthest = max(0, 0+2=2) = 2."}}, {"phase": "jump", "nums": [2, 3, 1, 1, 4], "i": 0, "jumps": 1, "current_end": 2, "farthest": 2, "jumped": true, "log": {"c": "log-success", "t": "i=0 == current_end. JUMP! jumps=1, new current_end=2."}}, {"phase": "update_far", "nums": [2, 3, 1, 1, 4], "i": 1, "jumps": 1, "current_end": 2, "farthest": 4, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=1, nums[i]=3. farthest = max(0, 1+3=4) = 4."}}, {"phase": "update_far", "nums": [2, 3, 1, 1, 4], "i": 2, "jumps": 1, "current_end": 2, "farthest": 4, "jumped": false, "updated": false, "log": {"c": "", "t": "i=2, nums[i]=1. farthest = max(4, 2+1=3) = 4."}}, {"phase": "jump", "nums": [2, 3, 1, 1, 4], "i": 2, "jumps": 2, "current_end": 4, "farthest": 4, "jumped": true, "log": {"c": "log-success", "t": "i=2 == current_end. JUMP! jumps=2, new current_end=4."}}, {"phase": "done", "nums": [2, 3, 1, 1, 4], "i": 2, "jumps": 2, "current_end": 4, "farthest": 4, "jumped": false, "log": {"c": "log-success", "t": "current_end=4 >= last index=4. Break! Return 2 jumps."}}];
+const p2_md=[{"phase": "init", "nums": [2, 3, 0, 1, 4], "i": -1, "jumps": 0, "current_end": 0, "farthest": 0, "jumped": false, "log": {"c": "", "t": "Init. jumps=0, current_end=0, farthest=0. Array: [2, 3, 0, 1, 4]"}}, {"phase": "update_far", "nums": [2, 3, 0, 1, 4], "i": 0, "jumps": 0, "current_end": 0, "farthest": 2, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=0, nums[i]=2. farthest = max(0, 0+2=2) = 2."}}, {"phase": "jump", "nums": [2, 3, 0, 1, 4], "i": 0, "jumps": 1, "current_end": 2, "farthest": 2, "jumped": true, "log": {"c": "log-success", "t": "i=0 == current_end. JUMP! jumps=1, new current_end=2."}}, {"phase": "update_far", "nums": [2, 3, 0, 1, 4], "i": 1, "jumps": 1, "current_end": 2, "farthest": 4, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=1, nums[i]=3. farthest = max(0, 1+3=4) = 4."}}, {"phase": "update_far", "nums": [2, 3, 0, 1, 4], "i": 2, "jumps": 1, "current_end": 2, "farthest": 4, "jumped": false, "updated": false, "log": {"c": "", "t": "i=2, nums[i]=0. farthest = max(4, 2+0=2) = 4."}}, {"phase": "jump", "nums": [2, 3, 0, 1, 4], "i": 2, "jumps": 2, "current_end": 4, "farthest": 4, "jumped": true, "log": {"c": "log-success", "t": "i=2 == current_end. JUMP! jumps=2, new current_end=4."}}, {"phase": "done", "nums": [2, 3, 0, 1, 4], "i": 2, "jumps": 2, "current_end": 4, "farthest": 4, "jumped": false, "log": {"c": "log-success", "t": "current_end=4 >= last index=4. Break! Return 2 jumps."}}];
+const p2_lg=[{"phase": "init", "nums": [1, 1, 1, 1, 2, 1, 1], "i": -1, "jumps": 0, "current_end": 0, "farthest": 0, "jumped": false, "log": {"c": "", "t": "Init. jumps=0, current_end=0, farthest=0. Array: [1, 1, 1, 1, 2, 1, 1]"}}, {"phase": "update_far", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 0, "jumps": 0, "current_end": 0, "farthest": 1, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=0, nums[i]=1. farthest = max(0, 0+1=1) = 1."}}, {"phase": "jump", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 0, "jumps": 1, "current_end": 1, "farthest": 1, "jumped": true, "log": {"c": "log-success", "t": "i=0 == current_end. JUMP! jumps=1, new current_end=1."}}, {"phase": "update_far", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 1, "jumps": 1, "current_end": 1, "farthest": 2, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=1, nums[i]=1. farthest = max(0, 1+1=2) = 2."}}, {"phase": "jump", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 1, "jumps": 2, "current_end": 2, "farthest": 2, "jumped": true, "log": {"c": "log-success", "t": "i=1 == current_end. JUMP! jumps=2, new current_end=2."}}, {"phase": "update_far", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 2, "jumps": 2, "current_end": 2, "farthest": 3, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=2, nums[i]=1. farthest = max(0, 2+1=3) = 3."}}, {"phase": "jump", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 2, "jumps": 3, "current_end": 3, "farthest": 3, "jumped": true, "log": {"c": "log-success", "t": "i=2 == current_end. JUMP! jumps=3, new current_end=3."}}, {"phase": "update_far", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 3, "jumps": 3, "current_end": 3, "farthest": 4, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=3, nums[i]=1. farthest = max(0, 3+1=4) = 4."}}, {"phase": "jump", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 3, "jumps": 4, "current_end": 4, "farthest": 4, "jumped": true, "log": {"c": "log-success", "t": "i=3 == current_end. JUMP! jumps=4, new current_end=4."}}, {"phase": "update_far", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 4, "jumps": 4, "current_end": 4, "farthest": 6, "jumped": false, "updated": true, "log": {"c": "log-hl", "t": "i=4, nums[i]=2. farthest = max(0, 4+2=6) = 6."}}, {"phase": "jump", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 4, "jumps": 5, "current_end": 6, "farthest": 6, "jumped": true, "log": {"c": "log-success", "t": "i=4 == current_end. JUMP! jumps=5, new current_end=6."}}, {"phase": "done", "nums": [1, 1, 1, 1, 2, 1, 1], "i": 4, "jumps": 5, "current_end": 6, "farthest": 6, "jumped": false, "log": {"c": "log-success", "t": "current_end=6 >= last index=6. Break! Return 5 jumps."}}];
+
+let states, cur = -1, nums = [];
+
+function loadTC() {
+  const k = document.getElementById('tc-sel').value;
+  states = k === 'sm' ? p1_sm : k === 'md' ? p1_md : p1_lg;
+  nums = states[0].nums;
+  document.getElementById('in-nums').textContent = `[${nums.join(', ')}]`;
+  reset();
+}
+
+function buildArray(s) {
+  const arr = document.getElementById('arr');
+  const n = nums.length;
+  let html = '';
+  for (let idx = 0; idx < n; idx++) {
+    let cls = '';
+    if (s.phase === 'stuck' && idx === s.i) cls = 'stuck';
+    else if ((s.phase === 'done') && idx <= s.max_reach) cls = 'done';
+    else if (idx === s.i) cls = 'current';
+    else if (s.i >= 0 && idx > s.i && idx <= s.max_reach) cls = 'in-reach';
+    html += `<div class="cell-wrap"><div class="cell ${cls}">${nums[idx]}</div><div class="cell-idx">${idx}</div></div>`;
+  }
+  arr.innerHTML = html;
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  document.getElementById('v-i').textContent = s.i >= 0 ? s.i : '-';
+  document.getElementById('v-reach').textContent = s.max_reach;
+
+  const rb = document.getElementById('result-box');
+  if (s.done || s.stuck) {
+    const ok = s.done && !s.stuck;
+    rb.textContent = ok ? 'True ✅' : 'False ❌';
+    rb.className = 'result-box ' + (ok ? 'true' : 'false');
+    document.getElementById('v-result').textContent = ok ? 'True' : 'False';
+    document.getElementById('v-result').style.color = ok ? 'var(--green)' : 'var(--red)';
+  } else {
+    rb.textContent = '?';
+    rb.className = 'result-box';
+    document.getElementById('v-result').textContent = '-';
+    document.getElementById('v-result').style.color = 'var(--text)';
+  }
+
+  const pct = Math.min(100, (s.max_reach / (nums.length - 1)) * 100);
+  document.getElementById('reach-fill').style.width = pct + '%';
+  document.getElementById('reach-text').textContent = `max_reach: ${s.max_reach} / ${nums.length - 1}`;
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green', 'active-red'));
+  let lm = 'L2';
+  if (s.phase === 'update' && s.updated) lm = 'L6';
+  else if (s.phase === 'update') lm = 'L6';
+  else if (s.phase === 'stuck') lm = 'L5';
+  else if (s.phase === 'done') lm = s.stuck ? 'L5' : 'L8';
+  const el = document.getElementById(lm);
+  if (el) el.classList.add(s.phase === 'stuck' ? 'active-red' : s.phase === 'done' ? 'active-green' : 'active');
+
+  buildArray(s);
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  le.className = `log-entry ${s.log.c}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur + 1}]</span> ${s.log.t}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = -1; while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = -1;
+  document.getElementById('logs').innerHTML = '';
+  document.getElementById('v-i').textContent = '-';
+  document.getElementById('v-reach').textContent = '0';
+  document.getElementById('v-result').textContent = '-';
+  document.getElementById('v-result').style.color = 'var(--text)';
+  document.getElementById('result-box').textContent = '?';
+  document.getElementById('result-box').className = 'result-box';
+  document.getElementById('reach-fill').style.width = '0%';
+  document.getElementById('reach-text').textContent = `max_reach: 0 / ${nums.length - 1}`;
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green', 'active-red'));
+
+  const arr = document.getElementById('arr');
+  let html = '';
+  for (let i = 0; i < nums.length; i++)
+    html += `<div class="cell-wrap"><div class="cell">${nums[i]}</div><div class="cell-idx">${i}</div></div>`;
+  arr.innerHTML = html;
+
+  document.getElementById('btn-prev').disabled = true;
+  document.getElementById('btn-next').disabled = false;
+}
+
+document.getElementById('tc-sel').value = 'md';
+loadTC();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>
