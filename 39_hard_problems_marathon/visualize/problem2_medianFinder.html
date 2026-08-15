@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #295 Median from Data Stream</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:350px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-op{color:#d4d4d4;font-weight:bold;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:30px;gap:50px;}
+
+/* Heap Visuals */
+.heaps-container { display:flex; gap: 60px; align-items:flex-start; }
+
+.heap-col { display:flex; flex-direction:column; align-items:center; gap: 20px; }
+.heap-title { font-family:monospace; font-size:24px; font-weight:bold; padding:10px 20px; background:#161b22; border:2px solid var(--border); border-radius:12px; }
+
+.heap-nodes { display:flex; flex-direction:column; gap:8px; align-items:center; background:#161b22; padding:30px; border-radius:16px; border:1px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,0.5); min-width:200px; min-height: 150px; }
+
+.heap-node { width: 100px; height: 100px; display:flex; align-items:center; justify-content:center; border-radius: 50%; font-family:monospace; font-size:40px; font-weight:bold; background:#21262d; border: 4px solid var(--border); animation: popIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.heap-node-small { border-color:var(--red); color:var(--red); background:rgba(248,81,73,.1); box-shadow: 0 0 20px rgba(248,81,73,.3); }
+.heap-node-large { border-color:var(--accent); color:var(--accent); background:rgba(88,166,255,.1); box-shadow: 0 0 20px rgba(88,166,255,.3); }
+.heap-node-hidden { width: 60px; height: 60px; font-size: 24px; background: #010409; opacity: 0.6; } /* Smaller visual for non-root nodes */
+
+@keyframes popIn { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+
+.result-display { display:flex; align-items:center; gap: 20px; font-family:monospace; font-size:48px; font-weight:bold; padding:20px 50px; border-radius:16px; border:3px solid var(--border); background:#21262d; transition:all .4s; }
+.result-display.ready { border-color:var(--green); color:var(--green); background:rgba(63,185,80,.1); box-shadow:0 0 30px rgba(63,185,80,.4); }
+
+.stats-bar{display:flex;gap:16px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_trapRainWater.html">P1 · Trapping Rain Water</option>
+    <option value="problem2_medianFinder.html" selected>P2 · Median from Data Stream</option>
+  </select>
+  <div class="header-left">
+    <h1>Find Median from Data Stream &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #295</span></h1>
+    <p>Two Heaps</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">Stream:</span> <span style="font-family:monospace;font-weight:bold">[5,15,1,3,2,8,7,9,10,6,11,4]</span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">len(small)</div><div class="var-val" id="v-s" style="color:var(--red)">0</div></div>
+        <div class="var-box"><div class="var-title">len(large)</div><div class="var-val" id="v-l" style="color:var(--accent)">0</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">class</span> <span class="k-fn">MedianFinder</span>:</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">__init__</span>(<span class="k-kw">self</span>):</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">        <span class="k-kw">self</span>.small = []  <span class="k-op"># Max-Heap (inverted values)</span></div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">        <span class="k-kw">self</span>.large = []  <span class="k-op"># Min-Heap</span></div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt"></div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">addNum</span>(<span class="k-kw">self</span>, num: <span class="k-fn">int</span>) -&gt; <span class="k-kw">None</span>:</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">        heapq.heappush(<span class="k-kw">self</span>.small, -num)</div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">        </div></div>
+<div class="code-line" id="L9"><div class="ln">9</div><div class="lt">        <span class="k-kw">if</span> <span class="k-kw">self</span>.small <span class="k-kw">and</span> <span class="k-kw">self</span>.large <span class="k-kw">and</span> (-<span class="k-kw">self</span>.small[<span class="k-num">0</span>] &gt; <span class="k-kw">self</span>.large[<span class="k-num">0</span>]):</div></div>
+<div class="code-line" id="L10"><div class="ln">10</div><div class="lt">            val = -heapq.heappop(<span class="k-kw">self</span>.small)</div></div>
+<div class="code-line" id="L11"><div class="ln">11</div><div class="lt">            heapq.heappush(<span class="k-kw">self</span>.large, val)</div></div>
+<div class="code-line" id="L12"><div class="ln">12</div><div class="lt">            </div></div>
+<div class="code-line" id="L13"><div class="ln">13</div><div class="lt">        <span class="k-kw">if</span> <span class="k-fn">len</span>(<span class="k-kw">self</span>.small) &gt; <span class="k-fn">len</span>(<span class="k-kw">self</span>.large) + <span class="k-num">1</span>:</div></div>
+<div class="code-line" id="L14"><div class="ln">14</div><div class="lt">            val = -heapq.heappop(<span class="k-kw">self</span>.small)</div></div>
+<div class="code-line" id="L15"><div class="ln">15</div><div class="lt">            heapq.heappush(<span class="k-kw">self</span>.large, val)</div></div>
+<div class="code-line" id="L16"><div class="ln">16</div><div class="lt">        <span class="k-kw">if</span> <span class="k-fn">len</span>(<span class="k-kw">self</span>.large) &gt; <span class="k-fn">len</span>(<span class="k-kw">self</span>.small):</div></div>
+<div class="code-line" id="L17"><div class="ln">17</div><div class="lt">            val = heapq.heappop(<span class="k-kw">self</span>.large)</div></div>
+<div class="code-line" id="L18"><div class="ln">18</div><div class="lt">            heapq.heappush(<span class="k-kw">self</span>.small, -val)</div></div>
+<div class="code-line" id="L19"><div class="ln">19</div><div class="lt"></div></div>
+<div class="code-line" id="L20"><div class="ln">20</div><div class="lt">    <span class="k-kw">def</span> <span class="k-fn">findMedian</span>(<span class="k-kw">self</span>) -&gt; <span class="k-fn">float</span>:</div></div>
+<div class="code-line" id="L21"><div class="ln">21</div><div class="lt">        <span class="k-kw">if</span> <span class="k-fn">len</span>(<span class="k-kw">self</span>.small) &gt; <span class="k-fn">len</span>(<span class="k-kw">self</span>.large):</div></div>
+<div class="code-line" id="L22"><div class="ln">22</div><div class="lt">            <span class="k-kw">return</span> -<span class="k-kw">self</span>.small[<span class="k-num">0</span>]</div></div>
+<div class="code-line" id="L23"><div class="ln">23</div><div class="lt">        <span class="k-kw">return</span> (-<span class="k-kw">self</span>.small[<span class="k-num">0</span>] + <span class="k-kw">self</span>.large[<span class="k-num">0</span>]) / <span class="k-num">2.0</span></div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">Two Heaps Visualizer</div>
+      <div class="viz-area">
+        
+        <div class="heaps-container">
+            <div class="heap-col">
+                <div class="heap-title" style="color:var(--red)">Small (Max-Heap)</div>
+                <div class="heap-nodes" id="heap-small"></div>
+            </div>
+            <div class="heap-col">
+                <div class="heap-title" style="color:var(--accent)">Large (Min-Heap)</div>
+                <div class="heap-nodes" id="heap-large"></div>
+            </div>
+        </div>
+
+        <div class="result-display" id="result-display">
+            <span style="color:#8b949e">Median = </span> <span id="rd-val">-</span>
+        </div>
+
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div> `small` Max-Heap Root</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--accent)"></div> `large` Min-Heap Root</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_states = [{"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": -1, "r": -1, "lMax": 0, "rMax": 0, "res": 0, "msg": "Initial elevation map. Height: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": 0, "r": 11, "lMax": 0, "rMax": 1, "res": 0, "msg": "Initialize left=0, right=11. leftMax=0, rightMax=1."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": 1, "r": 11, "lMax": 1, "rMax": 1, "res": 0, "msg": "leftMax (1) < rightMax (1). Move left. New leftMax=1. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": 1, "r": 10, "lMax": 1, "rMax": 2, "res": 0, "msg": "leftMax (1) >= rightMax (2). Move right. New rightMax=2. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": 2, "r": 10, "lMax": 1, "rMax": 2, "res": 1, "msg": "leftMax (1) < rightMax (2). Move left. New leftMax=1. Trapped 1 water at index 2!"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0], "l": 3, "r": 10, "lMax": 2, "rMax": 2, "res": 1, "msg": "leftMax (2) < rightMax (2). Move left. New leftMax=2. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], "l": 3, "r": 9, "lMax": 2, "rMax": 2, "res": 2, "msg": "leftMax (2) >= rightMax (2). Move right. New rightMax=2. Trapped 1 water at index 9!"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], "l": 3, "r": 8, "lMax": 2, "rMax": 2, "res": 2, "msg": "leftMax (2) >= rightMax (2). Move right. New rightMax=2. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], "l": 3, "r": 7, "lMax": 2, "rMax": 3, "res": 2, "msg": "leftMax (2) >= rightMax (3). Move right. New rightMax=3. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0], "l": 4, "r": 7, "lMax": 2, "rMax": 3, "res": 3, "msg": "leftMax (2) < rightMax (3). Move left. New leftMax=2. Trapped 1 water at index 4!"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 1, 2, 0, 0, 0, 1, 0, 0], "l": 5, "r": 7, "lMax": 2, "rMax": 3, "res": 5, "msg": "leftMax (2) < rightMax (3). Move left. New leftMax=2. Trapped 2 water at index 5!"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 1, 2, 1, 0, 0, 1, 0, 0], "l": 6, "r": 7, "lMax": 2, "rMax": 3, "res": 6, "msg": "leftMax (2) < rightMax (3). Move left. New leftMax=2. Trapped 1 water at index 6!"}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 1, 2, 1, 0, 0, 1, 0, 0], "l": 7, "r": 7, "lMax": 3, "rMax": 3, "res": 6, "msg": "leftMax (3) < rightMax (3). Move left. New leftMax=3. No water trapped."}, {"height": [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1], "water": [0, 0, 1, 0, 1, 2, 1, 0, 0, 1, 0, 0], "l": -1, "r": -1, "lMax": 3, "rMax": 3, "res": 6, "msg": "Done! Total water trapped: 6."}];
+const p2_states = [{"small": [], "large": [], "median": "-", "msg": "Data stream initialized. Incoming numbers: [5, 15, 1, 3, 2, 8, 7, 9, 10, 6, 11, 4]"}, {"small": [], "large": [], "median": "-", "msg": "Adding 5 to the stream. Pushing to small (Max-Heap)."}, {"small": [5], "large": [], "median": 5, "msg": "Balanced! Current Median is 5."}, {"small": [5], "large": [], "median": "-", "msg": "Adding 15 to the stream. Pushing to small (Max-Heap)."}, {"small": [15, 5], "large": [], "median": "-", "msg": "Small heap is too big! Moving 15 to large heap."}, {"small": [5], "large": [15], "median": 10.0, "msg": "Balanced! Current Median is 10.0."}, {"small": [5], "large": [15], "median": "-", "msg": "Adding 1 to the stream. Pushing to small (Max-Heap)."}, {"small": [5, 1], "large": [15], "median": 5, "msg": "Balanced! Current Median is 5."}, {"small": [5, 1], "large": [15], "median": "-", "msg": "Adding 3 to the stream. Pushing to small (Max-Heap)."}, {"small": [5, 1, 3], "large": [15], "median": "-", "msg": "Small heap is too big! Moving 5 to large heap."}, {"small": [3, 1], "large": [5, 15], "median": 4.0, "msg": "Balanced! Current Median is 4.0."}, {"small": [3, 1], "large": [5, 15], "median": "-", "msg": "Adding 2 to the stream. Pushing to small (Max-Heap)."}, {"small": [3, 1, 2], "large": [5, 15], "median": 3, "msg": "Balanced! Current Median is 3."}, {"small": [3, 1, 2], "large": [5, 15], "median": "-", "msg": "Adding 8 to the stream. Pushing to small (Max-Heap)."}, {"small": [8, 3, 2, 1], "large": [5, 15], "median": "-", "msg": "Max of small (8) > Min of large (5). Violates order! Moving 8 to large."}, {"small": [3, 1, 2], "large": [5, 15, 8], "median": 4.0, "msg": "Balanced! Current Median is 4.0."}, {"small": [3, 1, 2], "large": [5, 15, 8], "median": "-", "msg": "Adding 7 to the stream. Pushing to small (Max-Heap)."}, {"small": [7, 3, 2, 1], "large": [5, 15, 8], "median": "-", "msg": "Max of small (7) > Min of large (5). Violates order! Moving 7 to large."}, {"small": [3, 1, 2], "large": [5, 7, 8, 15], "median": "-", "msg": "Large heap is bigger than small! Moving 5 to small heap."}, {"small": [5, 3, 2, 1], "large": [7, 15, 8], "median": 5, "msg": "Balanced! Current Median is 5."}, {"small": [5, 3, 2, 1], "large": [7, 15, 8], "median": "-", "msg": "Adding 9 to the stream. Pushing to small (Max-Heap)."}, {"small": [9, 5, 2, 1, 3], "large": [7, 15, 8], "median": "-", "msg": "Max of small (9) > Min of large (7). Violates order! Moving 9 to large."}, {"small": [5, 3, 2, 1], "large": [7, 9, 8, 15], "median": 6.0, "msg": "Balanced! Current Median is 6.0."}, {"small": [5, 3, 2, 1], "large": [7, 9, 8, 15], "median": "-", "msg": "Adding 10 to the stream. Pushing to small (Max-Heap)."}, {"small": [10, 5, 2, 1, 3], "large": [7, 9, 8, 15], "median": "-", "msg": "Max of small (10) > Min of large (7). Violates order! Moving 10 to large."}, {"small": [5, 3, 2, 1], "large": [7, 9, 8, 15, 10], "median": "-", "msg": "Large heap is bigger than small! Moving 7 to small heap."}, {"small": [7, 5, 2, 1, 3], "large": [8, 9, 10, 15], "median": 7, "msg": "Balanced! Current Median is 7."}, {"small": [7, 5, 2, 1, 3], "large": [8, 9, 10, 15], "median": "-", "msg": "Adding 6 to the stream. Pushing to small (Max-Heap)."}, {"small": [7, 5, 6, 1, 3, 2], "large": [8, 9, 10, 15], "median": "-", "msg": "Small heap is too big! Moving 7 to large heap."}, {"small": [6, 5, 2, 1, 3], "large": [7, 8, 10, 15, 9], "median": 6.5, "msg": "Balanced! Current Median is 6.5."}, {"small": [6, 5, 2, 1, 3], "large": [7, 8, 10, 15, 9], "median": "-", "msg": "Adding 11 to the stream. Pushing to small (Max-Heap)."}, {"small": [11, 5, 6, 1, 3, 2], "large": [7, 8, 10, 15, 9], "median": "-", "msg": "Max of small (11) > Min of large (7). Violates order! Moving 11 to large."}, {"small": [6, 5, 2, 1, 3], "large": [7, 8, 10, 15, 9, 11], "median": "-", "msg": "Large heap is bigger than small! Moving 7 to small heap."}, {"small": [7, 5, 6, 1, 3, 2], "large": [8, 9, 10, 15, 11], "median": 7, "msg": "Balanced! Current Median is 7."}, {"small": [7, 5, 6, 1, 3, 2], "large": [8, 9, 10, 15, 11], "median": "-", "msg": "Adding 4 to the stream. Pushing to small (Max-Heap)."}, {"small": [7, 5, 6, 1, 3, 2, 4], "large": [8, 9, 10, 15, 11], "median": "-", "msg": "Small heap is too big! Moving 7 to large heap."}, {"small": [6, 5, 4, 1, 3, 2], "large": [7, 9, 8, 15, 11, 10], "median": 6.5, "msg": "Balanced! Current Median is 6.5."}];
+
+let states = p2_states;
+let cur = 0;
+
+function buildHeaps(small, large) {
+  const containerS = document.getElementById('heap-small');
+  let htmlS = '';
+  if (small.length > 0) {
+      htmlS += `<div class="heap-node heap-node-small">${small[0]}</div>`;
+      for(let i=1; i<small.length; i++) {
+          htmlS += `<div class="heap-node heap-node-small heap-node-hidden">${small[i]}</div>`;
+      }
+  } else {
+      htmlS = `<div style="color:#8b949e;margin:auto">[Empty]</div>`;
+  }
+  containerS.innerHTML = htmlS;
+  
+  const containerL = document.getElementById('heap-large');
+  let htmlL = '';
+  if (large.length > 0) {
+      htmlL += `<div class="heap-node heap-node-large">${large[0]}</div>`;
+      for(let i=1; i<large.length; i++) {
+          htmlL += `<div class="heap-node heap-node-large heap-node-hidden">${large[i]}</div>`;
+      }
+  } else {
+      htmlL = `<div style="color:#8b949e;margin:auto">[Empty]</div>`;
+  }
+  containerL.innerHTML = htmlL;
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  document.getElementById('v-s').textContent = s.small.length;
+  document.getElementById('v-l').textContent = s.large.length;
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green'));
+  let lm = '';
+  if (s.msg.includes("Adding")) lm = 'L7';
+  else if (s.msg.includes("Violates")) lm = 'L10';
+  else if (s.msg.includes("Small heap is too big")) lm = 'L14';
+  else if (s.msg.includes("Large heap is bigger")) lm = 'L17';
+  else if (s.msg.includes("Balanced")) {
+      if (s.small.length > s.large.length) lm = 'L22';
+      else lm = 'L23';
+  }
+  
+  if (lm) {
+    if (s.msg.includes("Balanced")) document.getElementById(lm).classList.add('active-green');
+    else document.getElementById(lm).classList.add('active');
+  }
+
+  buildHeaps(s.small, s.large);
+
+  const rd = document.getElementById('result-display');
+  document.getElementById('rd-val').textContent = s.median;
+  if (s.median !== "-") rd.classList.add('ready');
+  else rd.classList.remove('ready');
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  
+  let lcCls = '';
+  if (s.msg.includes("Adding")) lcCls = 'log-hl';
+  else if (s.msg.includes("Violates") || s.msg.includes("too big") || s.msg.includes("bigger")) lcCls = 'log-danger';
+  else if (s.msg.includes("Balanced")) lcCls = 'log-success';
+  
+  le.className = `log-entry ${lcCls}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur}]</span> ${s.msg}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = 0; 
+    const initialS = states[0];
+    const lc = document.getElementById('logs');
+    lc.innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${initialS.msg}</div>`;
+    while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = 0;
+  document.getElementById('logs').innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${states[0].msg}</div>`;
+  updateUI();
+}
+
+reset();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>
