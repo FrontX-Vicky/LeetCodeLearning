@@ -1197,6 +1197,23 @@
 
 ---
 
+### Day 38: Mixed Problem Practice ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Number of Islands** (LeetCode #200)
+2. **3Sum** (LeetCode #15)
+
+**Topics Covered**:
+- Recognizing patterns without explicit hints
+- Graph Traversal (DFS/BFS) for connected components
+- Array Sorting + Two Pointers reduction
+
+**Key Concepts Learned**:
+- **Pattern Matching**: When you see a grid and need to find "groups", think Graph Traversal. When you need a target sum in an array, think Hash Maps (if unsorted) or Sorting + Two Pointers.
+- **3Sum Reduction**: A 3Sum problem is just a loop wrapped around a 2Sum problem. Pin the first element, then Two-Pointer the rest!
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1225,8 +1242,8 @@
 ### **Phase 8: System Design & Practice** (Days 37-40) 🔄 **IN PROGRESS**
 **Focus**: Integration and real-world applications
 - Day 37: Design Problems (LRU Cache, etc.) ✅
-- Day 38: Mixed Problem Practice 🎯 **NEXT**
-- Day 39: Hard Problems Marathon
+- Day 38: Mixed Problem Practice ✅
+- Day 39: Hard Problems Marathon 🎯 **NEXT**
 - Day 40: Review & Patterns Summary
 
 ---
@@ -1242,9 +1259,9 @@
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
 | Phase 7: Advanced Algorithms | 33-36 | ✅ Complete | 4/4 (100%) |
-| Phase 8: System Design | 37-40 | 🔄 In Progress | 1/4 (25.0%) |
+| Phase 8: System Design | 37-40 | 🔄 In Progress | 2/4 (50.0%) |
 
-**Overall Progress**: 37/40 days complete (92.5%)
+**Overall Progress**: 38/40 days complete (95.0%)
 
 ---
 
