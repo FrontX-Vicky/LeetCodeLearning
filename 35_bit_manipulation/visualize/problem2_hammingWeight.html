@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #191 Hamming Weight</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:330px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:10px;align-items:center;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-op{color:#d4d4d4;font-weight:bold;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:20px;gap:20px;}
+
+/* Bit display */
+.bit-section { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.bit-section-label { font-size:11px; color:#8b949e; font-weight:600; letter-spacing:1px; text-transform:uppercase; }
+.bits-row { display:flex; gap:5px; }
+.bit-cell {
+  width:34px; height:40px; border-radius:5px; border:2px solid var(--border);
+  background:#21262d; font-family:monospace; font-size:16px; font-weight:bold;
+  display:flex; align-items:center; justify-content:center; transition:all .3s; position:relative;
+}
+.bit-cell.one { color:var(--green); border-color:rgba(63,185,80,.5); background:rgba(63,185,80,.12); }
+.bit-cell.zero { color:#30363d; background:#0d1117; border-color:#21262d; }
+.bit-cell.dropped { color:var(--red); border-color:rgba(248,81,73,.6); background:rgba(248,81,73,.15); animation:pop-out .4s ease; }
+.bit-cell.n1-one { color:var(--yellow); border-color:rgba(210,153,34,.4); background:rgba(210,153,34,.08); }
+@keyframes pop-out{0%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+/* AND operation display */
+.and-section { display:flex; flex-direction:column; align-items:center; gap:4px; }
+.and-row { display:flex; gap:5px; align-items:center; }
+.and-label { width:80px; font-family:monospace; font-size:12px; color:#8b949e; text-align:right; padding-right:8px; flex-shrink:0; }
+.divider-line { width:100%; height:2px; background:var(--border); max-width:420px; }
+.and-op { font-size:20px; color:var(--yellow); }
+
+/* count display */
+.count-section { display:flex; align-items:center; gap:16px; }
+.count-label { font-size:14px; color:#8b949e; }
+.count-dots { display:flex; gap:8px; }
+.count-dot { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); background:#21262d; transition:all .3s; }
+.count-dot.lit { border-color:var(--green); background:var(--green); box-shadow:0 0 8px rgba(63,185,80,.5); }
+.result-display { font-family:monospace; font-size:20px; font-weight:bold; padding:10px 24px; border-radius:8px; border:2px solid var(--border); background:#21262d; transition:all .4s; }
+.result-display.done { border-color:var(--green); color:var(--green); background:rgba(63,185,80,.1); box-shadow:0 0 20px rgba(63,185,80,.3); }
+
+.stats-bar{display:flex;gap:16px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_singleNumber.html">P1 · Single Number</option>
+    <option value="problem2_hammingWeight.html" selected>P2 · Hamming Weight</option>
+  </select>
+  <div class="header-left">
+    <h1>Hamming Weight &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #191</span></h1>
+    <p>Brian Kernighan's Algorithm — n &amp; (n-1)</p>
+  </div>
+  <div class="controls">
+    <select id="tc-sel" onchange="loadTC()" style="background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:4px 8px;">
+      <option value="sm" selected>Small · n=11 (1011) → 3</option>
+      <option value="md">Medium · n=128 (10000000) → 1</option>
+      <option value="lg">Large · n=255 (11111111) → 8</option>
+    </select>
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">n:</span> <span id="in-n" style="font-family:monospace"></span></span>
+        <span><span style="color:var(--purple)">binary:</span> <span id="in-b" style="font-family:monospace;color:var(--accent)"></span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">n (current)</div><div class="var-val" id="v-n" style="color:var(--accent)">-</div></div>
+        <div class="var-box"><div class="var-title">n-1</div><div class="var-val" id="v-n1" style="color:var(--yellow)">-</div></div>
+        <div class="var-box"><div class="var-title">count</div><div class="var-val" id="v-count" style="color:var(--green)">0</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">hammingWeight</span>(n):</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    count = <span class="k-num">0</span></div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">    <span class="k-kw">while</span> n:</div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">        n <span class="k-op">&amp;=</span> n - <span class="k-num">1</span></div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">        count += <span class="k-num">1</span></div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">    <span class="k-kw">return</span> count</div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">n &amp; (n-1) — Lowest Set Bit Dropper</div>
+      <div class="viz-area">
+        <div class="and-section" id="and-section">
+          <div class="and-row">
+            <div class="and-label" id="lbl-n">n</div>
+            <div class="bits-row" id="bits-n"></div>
+          </div>
+          <div class="and-row">
+            <div class="and-label" id="lbl-n1">n-1</div>
+            <div class="bits-row" id="bits-n1"></div>
+          </div>
+          <div class="divider-line"></div>
+          <div class="and-row">
+            <div class="and-label" id="lbl-and" style="color:var(--green)">AND</div>
+            <div class="bits-row" id="bits-and"></div>
+          </div>
+        </div>
+        <div class="count-section">
+          <div class="count-label">Set bits found:</div>
+          <div class="count-dots" id="count-dots"></div>
+        </div>
+        <div class="result-display" id="result-display">count = 0</div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--green)"></div> 1-bit in n</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div> 1-bit in n-1</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--red)"></div> Bit being dropped</div>
+        <div class="stat-item"><div class="stat-dot" style="background:#30363d"></div> 0-bit</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_sm=[{"nums": [2, 2, 1], "i": -1, "cur_num": -1, "result": 0, "result_bits": [0, 0, 0, 0, 0, 0, 0, 0], "xor_bits": null, "log": {"c": "", "t": "Init. result = 0. Array: [2, 2, 1]"}}, {"nums": [2, 2, 1], "i": 0, "cur_num": 2, "result": 2, "result_bits": [0, 0, 0, 0, 0, 0, 1, 0], "old_result": 0, "old_bits": [0, 0, 0, 0, 0, 0, 0, 0], "num_bits": [0, 0, 0, 0, 0, 0, 1, 0], "xor_bits": [0, 0, 0, 0, 0, 0, 1, 0], "log": {"c": "log-hl", "t": "Step 1: result(0) ^ 2(10) = 2(10). result = 2"}}, {"nums": [2, 2, 1], "i": 1, "cur_num": 2, "result": 0, "result_bits": [0, 0, 0, 0, 0, 0, 0, 0], "old_result": 2, "old_bits": [0, 0, 0, 0, 0, 0, 1, 0], "num_bits": [0, 0, 0, 0, 0, 0, 1, 0], "xor_bits": [0, 0, 0, 0, 0, 0, 0, 0], "log": {"c": "log-hl", "t": "Step 2: result(10) ^ 2(10) = 0(0). Pair cancelled! \u2713"}}, {"nums": [2, 2, 1], "i": 2, "cur_num": 1, "result": 1, "result_bits": [0, 0, 0, 0, 0, 0, 0, 1], "old_result": 0, "old_bits": [0, 0, 0, 0, 0, 0, 0, 0], "num_bits": [0, 0, 0, 0, 0, 0, 0, 1], "xor_bits": [0, 0, 0, 0, 0, 0, 0, 1], "log": {"c": "log-hl", "t": "Step 3: result(0) ^ 1(1) = 1(1). result = 1"}}, {"nums": [2, 2, 1], "i": 3, "cur_num": -1, "result": 1, "result_bits": [0, 0, 0, 0, 0, 0, 0, 1], "xor_bits": null, "log": {"c": "log-success", "t": "Done! All pairs cancelled. Single number = 1."}}];
+const p1_md=[{"nums": [4, 1, 2, 1, 2], "i": -1, "cur_num": -1, "result": 0, "result_bits": [0, 0, 0, 0, 0, 0, 0, 0], "xor_bits": null, "log": {"c": "", "t": "Init. result = 0. Array: [4, 1, 2, 1, 2]"}}, {"nums": [4, 1, 2, 1, 2], "i": 0, "cur_num": 4, "result": 4, "result_bits": [0, 0, 0, 0, 0, 1, 0, 0], "old_result": 0, "old_bits": [0, 0, 0, 0, 0, 0, 0, 0], "num_bits": [0, 0, 0, 0, 0, 1, 0, 0], "xor_bits": [0, 0, 0, 0, 0, 1, 0, 0], "log": {"c": "log-hl", "t": "Step 1: result(0) ^ 4(100) = 4(100). result = 4"}}, {"nums": [4, 1, 2, 1, 2], "i": 1, "cur_num": 1, "result": 5, "result_bits": [0, 0, 0, 0, 0, 1, 0, 1], "old_result": 4, "old_bits": [0, 0, 0, 0, 0, 1, 0, 0], "num_bits": [0, 0, 0, 0, 0, 0, 0, 1], "xor_bits": [0, 0, 0, 0, 0, 1, 0, 1], "log": {"c": "log-hl", "t": "Step 2: result(100) ^ 1(1) = 5(101). result = 5"}}, {"nums": [4, 1, 2, 1, 2], "i": 2, "cur_num": 2, "result": 7, "result_bits": [0, 0, 0, 0, 0, 1, 1, 1], "old_result": 5, "old_bits": [0, 0, 0, 0, 0, 1, 0, 1], "num_bits": [0, 0, 0, 0, 0, 0, 1, 0], "xor_bits": [0, 0, 0, 0, 0, 1, 1, 1], "log": {"c": "log-hl", "t": "Step 3: result(101) ^ 2(10) = 7(111). result = 7"}}, {"nums": [4, 1, 2, 1, 2], "i": 3, "cur_num": 1, "result": 6, "result_bits": [0, 0, 0, 0, 0, 1, 1, 0], "old_result": 7, "old_bits": [0, 0, 0, 0, 0, 1, 1, 1], "num_bits": [0, 0, 0, 0, 0, 0, 0, 1], "xor_bits": [0, 0, 0, 0, 0, 1, 1, 0], "log": {"c": "log-hl", "t": "Step 4: result(111) ^ 1(1) = 6(110). result = 6"}}, {"nums": [4, 1, 2, 1, 2], "i": 4, "cur_num": 2, "result": 4, "result_bits": [0, 0, 0, 0, 0, 1, 0, 0], "old_result": 6, "old_bits": [0, 0, 0, 0, 0, 1, 1, 0], "num_bits": [0, 0, 0, 0, 0, 0, 1, 0], "xor_bits": [0, 0, 0, 0, 0, 1, 0, 0], "log": {"c": "log-hl", "t": "Step 5: result(110) ^ 2(10) = 4(100). result = 4"}}, {"nums": [4, 1, 2, 1, 2], "i": 5, "cur_num": -1, "result": 4, "result_bits": [0, 0, 0, 0, 0, 1, 0, 0], "xor_bits": null, "log": {"c": "log-success", "t": "Done! All pairs cancelled. Single number = 4."}}];
+const p1_lg=[{"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": -1, "cur_num": -1, "result": 0, "result_bits": [0, 0, 0, 0, 0, 0, 0, 0], "xor_bits": null, "log": {"c": "", "t": "Init. result = 0. Array: [7, 3, 5, 3, 7, 9, 5, 11, 9]"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 0, "cur_num": 7, "result": 7, "result_bits": [0, 0, 0, 0, 0, 1, 1, 1], "old_result": 0, "old_bits": [0, 0, 0, 0, 0, 0, 0, 0], "num_bits": [0, 0, 0, 0, 0, 1, 1, 1], "xor_bits": [0, 0, 0, 0, 0, 1, 1, 1], "log": {"c": "log-hl", "t": "Step 1: result(0) ^ 7(111) = 7(111). result = 7"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 1, "cur_num": 3, "result": 4, "result_bits": [0, 0, 0, 0, 0, 1, 0, 0], "old_result": 7, "old_bits": [0, 0, 0, 0, 0, 1, 1, 1], "num_bits": [0, 0, 0, 0, 0, 0, 1, 1], "xor_bits": [0, 0, 0, 0, 0, 1, 0, 0], "log": {"c": "log-hl", "t": "Step 2: result(111) ^ 3(11) = 4(100). result = 4"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 2, "cur_num": 5, "result": 1, "result_bits": [0, 0, 0, 0, 0, 0, 0, 1], "old_result": 4, "old_bits": [0, 0, 0, 0, 0, 1, 0, 0], "num_bits": [0, 0, 0, 0, 0, 1, 0, 1], "xor_bits": [0, 0, 0, 0, 0, 0, 0, 1], "log": {"c": "log-hl", "t": "Step 3: result(100) ^ 5(101) = 1(1). result = 1"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 3, "cur_num": 3, "result": 2, "result_bits": [0, 0, 0, 0, 0, 0, 1, 0], "old_result": 1, "old_bits": [0, 0, 0, 0, 0, 0, 0, 1], "num_bits": [0, 0, 0, 0, 0, 0, 1, 1], "xor_bits": [0, 0, 0, 0, 0, 0, 1, 0], "log": {"c": "log-hl", "t": "Step 4: result(1) ^ 3(11) = 2(10). result = 2"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 4, "cur_num": 7, "result": 5, "result_bits": [0, 0, 0, 0, 0, 1, 0, 1], "old_result": 2, "old_bits": [0, 0, 0, 0, 0, 0, 1, 0], "num_bits": [0, 0, 0, 0, 0, 1, 1, 1], "xor_bits": [0, 0, 0, 0, 0, 1, 0, 1], "log": {"c": "log-hl", "t": "Step 5: result(10) ^ 7(111) = 5(101). result = 5"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 5, "cur_num": 9, "result": 12, "result_bits": [0, 0, 0, 0, 1, 1, 0, 0], "old_result": 5, "old_bits": [0, 0, 0, 0, 0, 1, 0, 1], "num_bits": [0, 0, 0, 0, 1, 0, 0, 1], "xor_bits": [0, 0, 0, 0, 1, 1, 0, 0], "log": {"c": "log-hl", "t": "Step 6: result(101) ^ 9(1001) = 12(1100). result = 12"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 6, "cur_num": 5, "result": 9, "result_bits": [0, 0, 0, 0, 1, 0, 0, 1], "old_result": 12, "old_bits": [0, 0, 0, 0, 1, 1, 0, 0], "num_bits": [0, 0, 0, 0, 0, 1, 0, 1], "xor_bits": [0, 0, 0, 0, 1, 0, 0, 1], "log": {"c": "log-hl", "t": "Step 7: result(1100) ^ 5(101) = 9(1001). result = 9"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 7, "cur_num": 11, "result": 2, "result_bits": [0, 0, 0, 0, 0, 0, 1, 0], "old_result": 9, "old_bits": [0, 0, 0, 0, 1, 0, 0, 1], "num_bits": [0, 0, 0, 0, 1, 0, 1, 1], "xor_bits": [0, 0, 0, 0, 0, 0, 1, 0], "log": {"c": "log-hl", "t": "Step 8: result(1001) ^ 11(1011) = 2(10). result = 2"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 8, "cur_num": 9, "result": 11, "result_bits": [0, 0, 0, 0, 1, 0, 1, 1], "old_result": 2, "old_bits": [0, 0, 0, 0, 0, 0, 1, 0], "num_bits": [0, 0, 0, 0, 1, 0, 0, 1], "xor_bits": [0, 0, 0, 0, 1, 0, 1, 1], "log": {"c": "log-hl", "t": "Step 9: result(10) ^ 9(1001) = 11(1011). result = 11"}}, {"nums": [7, 3, 5, 3, 7, 9, 5, 11, 9], "i": 9, "cur_num": -1, "result": 11, "result_bits": [0, 0, 0, 0, 1, 0, 1, 1], "xor_bits": null, "log": {"c": "log-success", "t": "Done! All pairs cancelled. Single number = 11."}}];
+const p2_sm=[{"n_orig": 11, "n": 11, "count": 0, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": false, "log": {"c": "", "t": "Init. n = 11 (binary: 1011). Count set bits."}}, {"n_orig": 11, "n": 10, "count": 1, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1], "n1_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0], "and_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0], "dropped_pos": 8, "done": false, "log": {"c": "log-success", "t": "Step 1: 1010 & (1001) \u2192 1010. Dropped bit at pos 8. count=1."}}, {"n_orig": 11, "n": 8, "count": 2, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0], "n1_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1], "and_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], "dropped_pos": 8, "done": false, "log": {"c": "log-success", "t": "Step 2: 1000 & (111) \u2192 1000. Dropped bit at pos 8. count=2."}}, {"n_orig": 11, "n": 0, "count": 3, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1], "and_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "dropped_pos": 8, "done": false, "log": {"c": "log-success", "t": "Step 3: 1000 & (111) \u2192 0. Dropped bit at pos 8. count=3."}}, {"n_orig": 11, "n": 0, "count": 3, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": true, "log": {"c": "log-success", "t": "n = 0. Loop ends. Hamming weight of 11 = 3."}}];
+const p2_md=[{"n_orig": 128, "n": 128, "count": 0, "n_bits": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": false, "log": {"c": "", "t": "Init. n = 128 (binary: 10000000). Count set bits."}}, {"n_orig": 128, "n": 0, "count": 1, "n_bits": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], "and_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 1: 10000000 & (1111111) \u2192 0. Dropped bit at pos 4. count=1."}}, {"n_orig": 128, "n": 0, "count": 1, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": true, "log": {"c": "log-success", "t": "n = 0. Loop ends. Hamming weight of 128 = 1."}}];
+const p2_lg=[{"n_orig": 255, "n": 255, "count": 0, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": false, "log": {"c": "", "t": "Init. n = 255 (binary: 11111111). Count set bits."}}, {"n_orig": 255, "n": 254, "count": 1, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1], "n1_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0], "and_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 1: 11111110 & (11111101) \u2192 11111110. Dropped bit at pos 4. count=1."}}, {"n_orig": 255, "n": 252, "count": 2, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0], "n1_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1], "and_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 2: 11111100 & (11111011) \u2192 11111100. Dropped bit at pos 4. count=2."}}, {"n_orig": 255, "n": 248, "count": 3, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0], "n1_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1], "and_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 3: 11111000 & (11110111) \u2192 11111000. Dropped bit at pos 4. count=3."}}, {"n_orig": 255, "n": 240, "count": 4, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1], "and_bits": [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 4: 11110000 & (11101111) \u2192 11110000. Dropped bit at pos 4. count=4."}}, {"n_orig": 255, "n": 224, "count": 5, "n_bits": [0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1], "and_bits": [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 5: 11100000 & (11011111) \u2192 11100000. Dropped bit at pos 4. count=5."}}, {"n_orig": 255, "n": 192, "count": 6, "n_bits": [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1], "and_bits": [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 6: 11000000 & (10111111) \u2192 11000000. Dropped bit at pos 4. count=6."}}, {"n_orig": 255, "n": 128, "count": 7, "n_bits": [0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1], "and_bits": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 7: 10000000 & (1111111) \u2192 10000000. Dropped bit at pos 4. count=7."}}, {"n_orig": 255, "n": 0, "count": 8, "n_bits": [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0], "n1_bits": [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1], "and_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "dropped_pos": 4, "done": false, "log": {"c": "log-success", "t": "Step 8: 10000000 & (1111111) \u2192 0. Dropped bit at pos 4. count=8."}}, {"n_orig": 255, "n": 0, "count": 8, "n_bits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "n1_bits": null, "and_bits": null, "dropped_pos": -1, "done": true, "log": {"c": "log-success", "t": "n = 0. Loop ends. Hamming weight of 255 = 8."}}];
+
+let states, cur = -1, n_orig = 0, BITS = 12;
+
+function loadTC() {
+  const k = document.getElementById('tc-sel').value;
+  states = k === 'sm' ? p2_sm : k === 'md' ? p2_md : p2_lg;
+  n_orig = states[0].n_orig;
+  document.getElementById('in-n').textContent = n_orig;
+  document.getElementById('in-b').textContent = n_orig.toString(2);
+  reset();
+}
+
+function makeBitsRow(bits, cellClassFn) {
+  return bits.map((b, i) => {
+    const cls = cellClassFn(b, i);
+    return `<div class="bit-cell ${cls}">${b}</div>`;
+  }).join('');
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  document.getElementById('v-n').textContent = s.n;
+  document.getElementById('v-n1').textContent = s.n1_bits ? s.n1_bits.reduce((a,b,i)=>a+(b<<(BITS-1-i)),0) : '-';
+  document.getElementById('v-count').textContent = s.count;
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green'));
+  let lm = 'L3';
+  if (s.n1_bits) lm = 'L4';
+  if (s.done) lm = 'L6';
+  const el = document.getElementById(lm);
+  if (el) el.classList.add(s.done ? 'active-green' : 'active');
+
+  // Build bit rows
+  const bnEl = document.getElementById('bits-n');
+  const bn1El = document.getElementById('bits-n1');
+  const bandEl = document.getElementById('bits-and');
+
+  if (s.n1_bits && s.and_bits) {
+    // Show the n BEFORE the operation (reconstruct from and_bits + dropped bit)
+    // n_bits shown is the n at the START of this step (before AND)
+    bnEl.innerHTML = makeBitsRow(s.n_bits, (b, i) => {
+      if (i === s.dropped_pos) return b === 1 ? 'dropped' : 'zero';
+      return b === 1 ? 'one' : 'zero';
+    });
+    bn1El.innerHTML = makeBitsRow(s.n1_bits, (b, i) => b === 1 ? 'n1-one' : 'zero');
+    bandEl.innerHTML = makeBitsRow(s.and_bits, (b, i) => b === 1 ? 'one' : 'zero');
+    document.getElementById('lbl-n').textContent = `n (${s.n_bits.reduce((a,b,i)=>a+(b<<(BITS-1-i)),0)})`;
+    document.getElementById('lbl-n1').textContent = `n-1`;
+    document.getElementById('lbl-and').textContent = `= ${s.n}`;
+  } else {
+    // Initial or done state — just show current n
+    bnEl.innerHTML = makeBitsRow(s.n_bits, b => b === 1 ? 'one' : 'zero');
+    bn1El.innerHTML = '';
+    bandEl.innerHTML = '';
+    document.getElementById('lbl-n').textContent = `n (${s.n})`;
+    document.getElementById('lbl-n1').textContent = '';
+    document.getElementById('lbl-and').textContent = '';
+  }
+
+  // Count dots
+  const dots = document.getElementById('count-dots');
+  let dhtml = '';
+  for (let i = 0; i < s.count; i++) dhtml += `<div class="count-dot lit"></div>`;
+  dots.innerHTML = dhtml;
+
+  const rd = document.getElementById('result-display');
+  if (s.done) {
+    rd.textContent = `Hamming Weight = ${s.count} ✅`;
+    rd.className = 'result-display done';
+  } else {
+    rd.textContent = `count = ${s.count}`;
+    rd.className = 'result-display';
+  }
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  le.className = `log-entry ${s.log.c}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur + 1}]</span> ${s.log.t}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = -1; while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = -1;
+  document.getElementById('logs').innerHTML = '';
+  document.getElementById('v-n').textContent = n_orig;
+  document.getElementById('v-n1').textContent = '-';
+  document.getElementById('v-count').textContent = '0';
+  document.getElementById('count-dots').innerHTML = '';
+  document.getElementById('result-display').textContent = 'count = 0';
+  document.getElementById('result-display').className = 'result-display';
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green'));
+  document.getElementById('bits-n').innerHTML = '';
+  document.getElementById('bits-n1').innerHTML = '';
+  document.getElementById('bits-and').innerHTML = '';
+  document.getElementById('btn-prev').disabled = true;
+  document.getElementById('btn-next').disabled = false;
+}
+
+document.getElementById('tc-sel').value = 'sm';
+loadTC();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>
