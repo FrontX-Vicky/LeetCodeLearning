@@ -1150,6 +1150,19 @@
 
 ---
 
+### Day 35: Bit Manipulation 🎯 **IN PROGRESS**
+
+**Problems Solving**:
+1. **Single Number** (LeetCode #136)
+2. **Number of 1 Bits / Hamming Weight** (LeetCode #191)
+
+**Topics Covered**:
+- XOR Properties (`x ^ x = 0`, `x ^ 0 = x`)
+- Brian Kernighan's Algorithm (`n & (n-1)` drops lowest set bit)
+- Bitwise operator fundamentals
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
