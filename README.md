@@ -1163,6 +1163,23 @@
 
 ---
 
+### Day 36: Math & Number Theory ✅ **COMPLETED**
+
+**Problems Solved**:
+1. **Count Primes** (LeetCode #204)
+2. **Sqrt(x)** (LeetCode #69)
+
+**Topics Covered**:
+- Sieve of Eratosthenes
+- Binary Search on answer range
+- Optimization techniques (looping to $\sqrt{N}$)
+
+**Key Concepts Learned**:
+- **Sieve of Eratosthenes**: Instead of checking primality per number, start with an array of `True` and systematically cross out multiples of every prime you find.
+- **Binary Search**: Not just for arrays! You can binary search the space of possible integer answers (like guessing a square root).
+
+---
+
 ## 🗺️ Complete Learning Journey Roadmap
 
 ### **Phase 1: Fundamentals** (Days 1-8) ✅ **COMPLETE**
@@ -1181,16 +1198,16 @@
 - Day 31: DP - String Problems ✅
 - Day 32: DP - Advanced Patterns ✅
 
-### **Phase 7: Advanced Algorithms** (Days 33-36) 🔄 **IN PROGRESS**
+### **Phase 7: Advanced Algorithms** (Days 33-36) ✅ **COMPLETE**
 **Focus**: Complex algorithmic techniques
 - Day 33: Backtracking (Combinations/Permutations) ✅
 - Day 34: Greedy Algorithms Advanced ✅
 - Day 35: Bit Manipulation ✅
-- Day 36: Math & Number Theory 🎯 **NEXT**
+- Day 36: Math & Number Theory ✅
 
-### **Phase 8: System Design & Practice** (Days 37-40) 📋 **PLANNED**
+### **Phase 8: System Design & Practice** (Days 37-40) 🔄 **IN PROGRESS**
 **Focus**: Integration and real-world applications
-- Day 37: Design Problems (LRU Cache, etc.)
+- Day 37: Design Problems (LRU Cache, etc.) 🎯 **NEXT**
 - Day 38: Mixed Problem Practice
 - Day 39: Hard Problems Marathon
 - Day 40: Review & Patterns Summary
@@ -1207,10 +1224,10 @@
 | Phase 4: Advanced Data Structures | 17-20 | ✅ Complete | 4/4 (100%) |
 | Phase 5: Graph Algorithms | 21-24 | ✅ Complete | 4/4 (100%) |
 | Phase 6: Dynamic Programming | 25-32 | ✅ Complete | 8/8 (100%) |
-| Phase 7: Advanced Algorithms | 33-36 | 🔄 In Progress | 3/4 (75.0%) |
-| Phase 8: System Design | 37-40 | 📋 Planned | 0/4 (0%) |
+| Phase 7: Advanced Algorithms | 33-36 | ✅ Complete | 4/4 (100%) |
+| Phase 8: System Design | 37-40 | 🔄 In Progress | 0/4 (0%) |
 
-**Overall Progress**: 35/40 days complete (87.5%)
+**Overall Progress**: 36/40 days complete (90.0%)
 
 ---
 
