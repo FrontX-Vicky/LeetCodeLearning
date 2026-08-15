@@ -4,14 +4,21 @@ def singleNumber(nums: list[int]) -> int:
     Find that single one.
     You must implement a solution with O(n) runtime complexity and use O(1) extra space.
     """
-    pass
+    result = 0
+    for n in nums:
+        result ^= n 
+    return result
 
 def hammingWeight(n: int) -> int:
     """
     Given a positive integer n, write a function that returns the number of set bits
     in its binary representation (also known as the Hamming weight or popcount).
     """
-    pass
+    count = 0
+    while n:
+        n &= n - 1
+        count += 1
+    return count
 
 def main():
     print("Welcome to Day 35: Bit Manipulation!")
