@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LC #76 Min Window Substring</title>
+<style>
+:root{--bg:#0d1117;--text:#c9d1d9;--accent:#58a6ff;--green:#3fb950;--red:#f85149;--yellow:#d29922;--card:#161b22;--border:#30363d;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:16px}
+.header-left h1{font-size:15px;font-weight:600;color:#f0f6fc}
+.header-left p{font-size:11px;color:#8b949e;margin-top:3px}
+select.nav{background:#21262d;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;outline:none;}
+.controls{display:flex;gap:8px;align-items:center;}
+.btn{padding:6px 14px;border-radius:6px;border:1px solid var(--border);background:#21262d;color:var(--text);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{background:#238636;border-color:#2ea043;color:#fff;}
+.btn.primary:hover:not(:disabled){background:#2ea043;}
+.main-wrapper{display:flex;flex-direction:column;flex:1;padding:10px;gap:4px;overflow:hidden;}
+.top-panels{display:flex;flex:3;min-height:0;gap:4px;}
+.bottom-panel{flex:1;min-height:90px;background:#010409;border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.left-panel{flex:none;width:380px;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8b949e;padding:10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.inputs-bar{background:#0d1117;border-bottom:1px solid var(--border);padding:6px 10px;font-family:monospace;font-size:12px;flex-shrink:0;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.vars-row{display:flex;gap:8px;padding:8px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.var-box{background:#21262d;border:1px solid var(--border);padding:7px;border-radius:6px;text-align:center;flex:1;}
+.var-title{font-size:10px;color:#8b949e;text-transform:uppercase;margin-bottom:3px;}
+.var-val{font-size:13px;font-weight:bold;font-family:monospace;}
+.code-block{flex:1;overflow-y:auto;font-family:'Consolas',monospace;font-size:12px;line-height:1.65;background:#1e1e1e;}
+.code-line{display:flex;padding:0 10px 0 0;border-left:3px solid transparent;transition:all .2s;}
+.code-line.active{background:rgba(88,166,255,.15);border-left-color:var(--accent);}
+.code-line.active-green{background:rgba(63,185,80,.12);border-left-color:var(--green);}
+.code-line.active-red{background:rgba(248,81,73,.15);border-left-color:var(--red);}
+.ln{width:30px;text-align:right;color:#858585;padding-right:10px;user-select:none;flex-shrink:0;}
+.lt{white-space:pre;color:#d4d4d4;}
+.k-kw{color:#569cd6;}.k-fn{color:#dcdcaa;}.k-num{color:#b5cea8;}.k-op{color:#d4d4d4;font-weight:bold;}
+.center-panel{flex:1;background:var(--card);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden;}
+.viz-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;overflow:auto;padding:30px;gap:50px;}
+
+/* Array Visualizer */
+.array-container { display:flex; gap:8px; position:relative; margin-top: 50px; margin-bottom: 50px; }
+.array-cell { width:60px; height:60px; display:flex; align-items:center; justify-content:center; font-family:monospace; font-size:32px; font-weight:bold; background:#161b22; border:2px solid var(--border); border-radius:8px; position:relative; transition:all .3s ease; }
+.idx-label { position:absolute; bottom:-25px; font-size:12px; color:#8b949e; }
+
+.ptr { position:absolute; top:-50px; background:var(--card); padding:6px 10px; border-radius:4px; font-size:14px; font-weight:bold; border:2px solid var(--border); white-space:nowrap; animation:bounce .5s; z-index: 10; }
+.ptr.ptr-l { background:rgba(210,153,34,.2); color:var(--yellow); border-color:var(--yellow); }
+.ptr.ptr-r { background:rgba(188,140,255,.2); color:var(--purple); border-color:var(--purple); top: 75px; bottom:auto; }
+
+.cell-in-window { background:rgba(88,166,255,.15); border-color:var(--accent); }
+.cell-target { border-bottom: 4px solid var(--green); }
+
+@keyframes bounce { 0%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+
+/* Hash Map Visuals */
+.maps-container { display:flex; gap: 40px; align-items:flex-start; }
+.map-box { display:flex; flex-direction:column; background:#161b22; border:1px solid var(--border); border-radius:12px; overflow:hidden; min-width: 150px;}
+.map-header { background:var(--card); padding:10px; text-align:center; font-weight:bold; font-family:monospace; border-bottom:1px solid var(--border); }
+.map-row { display:flex; border-bottom:1px solid var(--border); }
+.map-row:last-child { border-bottom:none; }
+.map-key { padding:10px; flex:1; text-align:center; font-family:monospace; font-weight:bold; font-size:24px; border-right:1px solid var(--border); }
+.map-val { padding:10px; flex:1; text-align:center; font-family:monospace; font-size:24px; color:var(--accent); }
+.map-val.fulfilled { color:var(--green); background:rgba(63,185,80,.1); }
+.map-val.overfilled { color:var(--yellow); background:rgba(210,153,34,.1); }
+
+.result-display { display:flex; align-items:center; gap: 20px; font-family:monospace; font-size:32px; font-weight:bold; padding:20px 50px; border-radius:16px; border:3px solid var(--border); background:#21262d; transition:all .4s; }
+.result-display.ready { border-color:var(--green); color:var(--green); background:rgba(63,185,80,.1); box-shadow:0 0 30px rgba(63,185,80,.4); }
+
+.stats-bar{display:flex;gap:16px;font-size:12px;color:#8b949e;border-top:1px solid var(--border);padding:8px 20px;background:#161b22;flex-shrink:0;justify-content:center;flex-wrap:wrap;}
+.stat-item{display:flex;gap:6px;align-items:center;}
+.stat-dot{width:10px;height:10px;border-radius:50%;}
+.log-container{flex:1;padding:10px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.5;}
+.log-entry{margin-bottom:5px;padding:5px 10px;border-left:3px solid var(--border);background:#0d1117;border-radius:0 4px 4px 0;animation:fadeLeft .3s ease;}
+.log-hl{color:var(--accent);font-weight:bold;border-left-color:var(--accent);background:rgba(88,166,255,.05);}
+.log-success{color:var(--green);font-weight:bold;border-left-color:var(--green);background:rgba(63,185,80,.05);}
+.log-danger{color:var(--red);font-weight:bold;border-left-color:var(--red);background:rgba(248,81,73,.05);}
+@keyframes fadeLeft{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.resizer-v{width:6px;cursor:col-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-v:hover,.resizer-v.dragging{background:var(--accent);}
+.resizer-h{height:6px;cursor:row-resize;background:transparent;transition:background .2s;z-index:10;}
+.resizer-h:hover,.resizer-h.dragging{background:var(--accent);}
+</style>
+</head>
+<body>
+<div class="header">
+  <select class="nav" onchange="window.location.href=this.value">
+    <option value="problem1_minWindow.html" selected>P1 · Minimum Window Substring</option>
+    <option value="problem2_wordLadder.html">P2 · Word Ladder</option>
+  </select>
+  <div class="header-left">
+    <h1>Minimum Window Substring &nbsp;<span style="color:#8b949e;font-weight:400;font-size:12px">LC #76</span></h1>
+    <p>Sliding Window + Hash Map</p>
+  </div>
+  <div class="controls">
+    <button class="btn" id="btn-prev" onclick="step(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="step(1)">Next ▶</button>
+    <button class="btn" onclick="reset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="top-panels" id="top-panels">
+    <div class="left-panel" id="left-panel">
+      <div class="inputs-bar">
+        <span><span style="color:var(--purple)">s:</span> <span style="font-family:monospace;font-weight:bold">ADOBECODEBANC</span></span>
+        <span><span style="color:var(--purple)">t:</span> <span style="font-family:monospace;font-weight:bold">ABC</span></span>
+      </div>
+      <div class="panel-title">Code & State</div>
+      <div class="vars-row">
+        <div class="var-box"><div class="var-title">L Pointer</div><div class="var-val" id="v-l" style="color:var(--yellow)">-</div></div>
+        <div class="var-box"><div class="var-title">R Pointer</div><div class="var-val" id="v-r" style="color:var(--purple)">-</div></div>
+        <div class="var-box"><div class="var-title">Formed</div><div class="var-val" id="v-formed" style="color:var(--green)">-</div></div>
+      </div>
+      <div class="code-block">
+<div class="code-line" id="L1"><div class="ln">1</div><div class="lt"><span class="k-kw">def</span> <span class="k-fn">minWindow</span>(s, t):</div></div>
+<div class="code-line" id="L2"><div class="ln">2</div><div class="lt">    dict_t = Counter(t)</div></div>
+<div class="code-line" id="L3"><div class="ln">3</div><div class="lt">    required = <span class="k-fn">len</span>(dict_t)</div></div>
+<div class="code-line" id="L4"><div class="ln">4</div><div class="lt">    l, r = <span class="k-num">0</span>, <span class="k-num">0</span></div></div>
+<div class="code-line" id="L5"><div class="ln">5</div><div class="lt">    formed = <span class="k-num">0</span></div></div>
+<div class="code-line" id="L6"><div class="ln">6</div><div class="lt">    window_counts = defaultdict(<span class="k-fn">int</span>)</div></div>
+<div class="code-line" id="L7"><div class="ln">7</div><div class="lt">    ans = <span class="k-fn">float</span>(<span class="k-str">"inf"</span>), <span class="k-kw">None</span>, <span class="k-kw">None</span></div></div>
+<div class="code-line" id="L8"><div class="ln">8</div><div class="lt">    <span class="k-kw">while</span> r &lt; <span class="k-fn">len</span>(s):</div></div>
+<div class="code-line" id="L9"><div class="ln">9</div><div class="lt">        char = s[r]</div></div>
+<div class="code-line" id="L10"><div class="ln">10</div><div class="lt">        window_counts[char] += <span class="k-num">1</span></div></div>
+<div class="code-line" id="L11"><div class="ln">11</div><div class="lt">        <span class="k-kw">if</span> window_counts[char] == dict_t[char]:</div></div>
+<div class="code-line" id="L12"><div class="ln">12</div><div class="lt">            formed += <span class="k-num">1</span></div></div>
+<div class="code-line" id="L13"><div class="ln">13</div><div class="lt">        <span class="k-kw">while</span> l &lt;= r <span class="k-kw">and</span> formed == required:</div></div>
+<div class="code-line" id="L14"><div class="ln">14</div><div class="lt">            char = s[l]</div></div>
+<div class="code-line" id="L15"><div class="ln">15</div><div class="lt">            <span class="k-kw">if</span> r - l + <span class="k-num">1</span> &lt; ans[<span class="k-num">0</span>]:</div></div>
+<div class="code-line" id="L16"><div class="ln">16</div><div class="lt">                ans = (r - l + <span class="k-num">1</span>, l, r)</div></div>
+<div class="code-line" id="L17"><div class="ln">17</div><div class="lt">            window_counts[char] -= <span class="k-num">1</span></div></div>
+<div class="code-line" id="L18"><div class="ln">18</div><div class="lt">            <span class="k-kw">if</span> window_counts[char] &lt; dict_t[char]:</div></div>
+<div class="code-line" id="L19"><div class="ln">19</div><div class="lt">                formed -= <span class="k-num">1</span></div></div>
+<div class="code-line" id="L20"><div class="ln">20</div><div class="lt">            l += <span class="k-num">1</span></div></div>
+<div class="code-line" id="L21"><div class="ln">21</div><div class="lt">        r += <span class="k-num">1</span></div></div>
+<div class="code-line" id="L22"><div class="ln">22</div><div class="lt">    <span class="k-kw">return</span> <span class="k-str">""</span> <span class="k-kw">if</span> ans[<span class="k-num">0</span>]==<span class="k-fn">float</span>(<span class="k-str">"inf"</span>) <span class="k-kw">else</span> s[ans[<span class="k-num">1</span>]:ans[<span class="k-num">2</span>]+<span class="k-num">1</span>]</div></div>
+      </div>
+    </div>
+    <div class="resizer-v" id="rv"></div>
+    <div class="center-panel">
+      <div class="panel-title">Sliding Window Visualizer</div>
+      <div class="viz-area">
+        
+        <div class="array-container" id="arr-container"></div>
+        
+        <div class="maps-container">
+            <div class="map-box">
+                <div class="map-header">Target `t`</div>
+                <div id="map-t"></div>
+            </div>
+            <div class="map-box">
+                <div class="map-header" style="color:var(--accent)">Current Window</div>
+                <div id="map-w"></div>
+            </div>
+        </div>
+
+        <div class="result-display" id="result-display">
+            <span style="color:#8b949e">Current Best Window:</span> <span id="rd-val">"None"</span>
+        </div>
+
+      </div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-dot" style="background:var(--yellow)"></div> `L` Pointer</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--purple)"></div> `R` Pointer</div>
+        <div class="stat-item"><div class="stat-dot" style="background:var(--accent)"></div> Inside Window</div>
+      </div>
+    </div>
+  </div>
+  <div class="resizer-h" id="rh"></div>
+  <div class="bottom-panel">
+    <div class="panel-title">Execution Logs</div>
+    <div class="log-container" id="logs"></div>
+  </div>
+</div>
+
+<script>
+const p1_states = [{"s": "ADOBECODEBANC", "t": "ABC", "l": -1, "r": -1, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {}, "formed": 0, "required": 3, "ans": "None", "msg": "Initialize required characters: {'A': 1, 'B': 1, 'C': 1}. We need 3 unique characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 0, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {}, "formed": 0, "required": 3, "ans": "None", "msg": "Start expanding the sliding window by moving Right pointer (R)."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 0, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "R=0 ('A'). Added to window counts. We now have enough 'A's! Formed = 1/3."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 1, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 1, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "R=1 ('D'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 2, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 2, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "R=2 ('O'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 3, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1}, "formed": 1, "required": 3, "ans": "None", "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 3, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1}, "formed": 2, "required": 3, "ans": "None", "msg": "R=3 ('B'). Added to window counts. We now have enough 'B's! Formed = 2/3."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 4, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1}, "formed": 2, "required": 3, "ans": "None", "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 4, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1}, "formed": 2, "required": 3, "ans": "None", "msg": "R=4 ('E'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 5, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1}, "formed": 2, "required": 3, "ans": "None", "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 5, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 3, "required": 3, "ans": "None", "msg": "R=5 ('C'). Added to window counts. We now have enough 'C's! Formed = 3/3."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 0, "r": 5, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window found: 'ADOBEC'. It's the new minimum!"}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 5, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=0, 'A'). Removed from counts. Window is now invalid! Lost required 'A'."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 6, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 6, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 1, "O": 2, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "R=6 ('O'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 7, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 1, "O": 2, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 7, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "R=7 ('D'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 8, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 1, "E": 1, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 8, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 1, "E": 2, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "R=8 ('E'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 9, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 1, "E": 2, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 9, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "R=9 ('B'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 0, "D": 2, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 2, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "R=10 ('A'). Added to window counts. We now have enough 'A's! Formed = 3/3."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 1, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 2, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'DOBECODEBA'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 2, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=1, 'D'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 2, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 2, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'OBECODEBA'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 3, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=2, 'O'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 3, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 2, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'BECODEBA'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 4, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=3, 'B'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 4, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 2, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'ECODEBA'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 5, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=4, 'E'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 5, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'CODEBA'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 10, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 0}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=5, 'C'). Removed from counts. Window is now invalid! Lost required 'C'."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 11, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 0}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 11, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 0, "N": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "R=11 ('N'). Added to window counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 0, "N": 1}, "formed": 2, "required": 3, "ans": [6, 0, 5], "msg": "Window invalid. Moving Right pointer (R) to find more characters."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "R=12 ('C'). Added to window counts. We now have enough 'C's! Formed = 3/3."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 6, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 1, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'ODEBANC'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 7, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 0, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=6, 'O'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 7, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 1, "O": 0, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Valid Window: 'DEBANC'. But not smaller than current min."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 8, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [6, 0, 5], "msg": "Shrinking from Left (L=7, 'D'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 8, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 1, "E": 1, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [5, 8, 12], "msg": "Valid Window found: 'EBANC'. It's the new minimum!"}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 9, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 1, "E": 0, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [5, 8, 12], "msg": "Shrinking from Left (L=8, 'E'). Removed from counts."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 9, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 1, "E": 0, "C": 1, "N": 1}, "formed": 3, "required": 3, "ans": [4, 9, 12], "msg": "Valid Window found: 'BANC'. It's the new minimum!"}, {"s": "ADOBECODEBANC", "t": "ABC", "l": 10, "r": 12, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 0, "E": 0, "C": 1, "N": 1}, "formed": 2, "required": 3, "ans": [4, 9, 12], "msg": "Shrinking from Left (L=9, 'B'). Removed from counts. Window is now invalid! Lost required 'B'."}, {"s": "ADOBECODEBANC", "t": "ABC", "l": -1, "r": -1, "dict_t": {"A": 1, "B": 1, "C": 1}, "window_counts": {"A": 1, "D": 0, "O": 0, "B": 0, "E": 0, "C": 1, "N": 1}, "formed": 2, "required": 3, "ans": [4, 9, 12], "final_res": "BANC", "msg": "Done! The minimum window substring is 'BANC'."}];
+const p2_states = [{"queue": [["hit", 1]], "visited": ["hit"], "curr": "-", "level": "-", "neighbors": [], "msg": "Start BFS. Begin word is 'hit', target is 'cog'."}, {"queue": [], "visited": ["hit"], "curr": "hit", "level": 1, "neighbors": [], "msg": "Popped 'hit' (Level 1) from Queue."}, {"queue": [], "visited": ["hit"], "curr": "hit", "level": 1, "neighbors": ["hot"], "msg": "Wildcard 'h*t' matches words: ['hot']."}, {"queue": [["hot", 2]], "visited": ["hit", "hot"], "curr": "hit", "level": 1, "neighbors": ["hot"], "msg": "'hot' is unvisited. Marking as visited and pushing to Queue with Level 2."}, {"queue": [], "visited": ["hit", "hot"], "curr": "hot", "level": 2, "neighbors": [], "msg": "Popped 'hot' (Level 2) from Queue."}, {"queue": [], "visited": ["hit", "hot"], "curr": "hot", "level": 2, "neighbors": ["hot", "dot", "lot"], "msg": "Wildcard '*ot' matches words: ['hot', 'dot', 'lot']."}, {"queue": [], "visited": ["hit", "hot"], "curr": "hot", "level": 2, "neighbors": ["hot"], "msg": "'hot' is already visited. Skipping."}, {"queue": [["dot", 3]], "visited": ["hit", "hot", "dot"], "curr": "hot", "level": 2, "neighbors": ["dot"], "msg": "'dot' is unvisited. Marking as visited and pushing to Queue with Level 3."}, {"queue": [["dot", 3], ["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "hot", "level": 2, "neighbors": ["lot"], "msg": "'lot' is unvisited. Marking as visited and pushing to Queue with Level 3."}, {"queue": [["dot", 3], ["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "hot", "level": 2, "neighbors": ["hot"], "msg": "Wildcard 'ho*' matches words: ['hot']."}, {"queue": [["dot", 3], ["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "hot", "level": 2, "neighbors": ["hot"], "msg": "'hot' is already visited. Skipping."}, {"queue": [["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "dot", "level": 3, "neighbors": [], "msg": "Popped 'dot' (Level 3) from Queue."}, {"queue": [["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "dot", "level": 3, "neighbors": ["dot"], "msg": "Wildcard 'd*t' matches words: ['dot']."}, {"queue": [["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "dot", "level": 3, "neighbors": ["dot"], "msg": "'dot' is already visited. Skipping."}, {"queue": [["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "dot", "level": 3, "neighbors": ["dot", "dog"], "msg": "Wildcard 'do*' matches words: ['dot', 'dog']."}, {"queue": [["lot", 3]], "visited": ["hit", "hot", "dot", "lot"], "curr": "dot", "level": 3, "neighbors": ["dot"], "msg": "'dot' is already visited. Skipping."}, {"queue": [["lot", 3], ["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "dot", "level": 3, "neighbors": ["dog"], "msg": "'dog' is unvisited. Marking as visited and pushing to Queue with Level 4."}, {"queue": [["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "lot", "level": 3, "neighbors": [], "msg": "Popped 'lot' (Level 3) from Queue."}, {"queue": [["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "lot", "level": 3, "neighbors": ["lot"], "msg": "Wildcard 'l*t' matches words: ['lot']."}, {"queue": [["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "lot", "level": 3, "neighbors": ["lot"], "msg": "'lot' is already visited. Skipping."}, {"queue": [["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "lot", "level": 3, "neighbors": ["lot", "log"], "msg": "Wildcard 'lo*' matches words: ['lot', 'log']."}, {"queue": [["dog", 4]], "visited": ["hit", "hot", "dot", "lot", "dog"], "curr": "lot", "level": 3, "neighbors": ["lot"], "msg": "'lot' is already visited. Skipping."}, {"queue": [["dog", 4], ["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "lot", "level": 3, "neighbors": ["log"], "msg": "'log' is unvisited. Marking as visited and pushing to Queue with Level 4."}, {"queue": [["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "dog", "level": 4, "neighbors": [], "msg": "Popped 'dog' (Level 4) from Queue."}, {"queue": [["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "dog", "level": 4, "neighbors": ["dog", "log", "cog"], "msg": "Wildcard '*og' matches words: ['dog', 'log', 'cog']."}, {"queue": [["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "dog", "level": 4, "neighbors": ["dog"], "msg": "'dog' is already visited. Skipping."}, {"queue": [["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "dog", "level": 4, "neighbors": ["log"], "msg": "'log' is already visited. Skipping."}, {"queue": [["log", 4]], "visited": ["hit", "hot", "dot", "lot", "dog", "log"], "curr": "dog", "level": 4, "neighbors": ["cog"], "msg": "Found target word 'cog'! Shortest path length is 5."}];
+
+let states = p1_states;
+let cur = 0;
+
+function buildArray(s, t, l_idx, r_idx) {
+  const container = document.getElementById('arr-container');
+  let html = '';
+  
+  const targetChars = new Set(t.split(''));
+  
+  s.split('').forEach((char, idx) => {
+    let cls = 'array-cell';
+    let ptr = '';
+    
+    if (l_idx >= 0 && r_idx >= 0 && idx >= l_idx && idx <= r_idx) {
+        cls += ' cell-in-window';
+    }
+    
+    if (targetChars.has(char)) {
+        cls += ' cell-target';
+    }
+    
+    if (idx === l_idx) { ptr += `<div class="ptr ptr-l">L</div>`; }
+    if (idx === r_idx) { ptr += `<div class="ptr ptr-r">R</div>`; }
+    
+    html += `<div class="${cls}">${char}${ptr}<div class="idx-label">${idx}</div></div>`;
+  });
+  container.innerHTML = html;
+}
+
+function buildMaps(dict_t, window_counts) {
+    const mapT = document.getElementById('map-t');
+    const mapW = document.getElementById('map-w');
+    
+    let htmlT = '';
+    let htmlW = '';
+    
+    for (const [char, reqCount] of Object.entries(dict_t)) {
+        htmlT += `<div class="map-row"><div class="map-key">${char}</div><div class="map-val">${reqCount}</div></div>`;
+        
+        const wCount = window_counts[char] || 0;
+        let vCls = 'map-val';
+        if (wCount === reqCount) vCls += ' fulfilled';
+        else if (wCount > reqCount) vCls += ' overfilled';
+        
+        htmlW += `<div class="map-row"><div class="map-key">${char}</div><div class="${vCls}">${wCount}</div></div>`;
+    }
+    
+    mapT.innerHTML = htmlT;
+    mapW.innerHTML = htmlW;
+}
+
+function updateUI() {
+  const s = states[cur]; if (!s) return;
+
+  document.getElementById('v-l').textContent = s.l >= 0 ? s.l : '-';
+  document.getElementById('v-r').textContent = s.r >= 0 ? s.r : '-';
+  document.getElementById('v-formed').textContent = `${s.formed} / ${s.required}`;
+
+  document.querySelectorAll('.code-line').forEach(e => e.classList.remove('active', 'active-green'));
+  let lm = '';
+  if (s.msg.includes("Done")) lm = 'L22';
+  else if (s.msg.includes("Initialize") || s.msg.includes("Start")) lm = 'L4';
+  else if (s.msg.includes("Shrinking")) {
+      if (s.msg.includes("invalid")) lm = 'L19';
+      else lm = 'L17';
+  }
+  else if (s.msg.includes("Valid Window found")) lm = 'L16';
+  else if (s.msg.includes("Valid Window")) lm = 'L13';
+  else if (s.msg.includes("Added to window")) {
+      if (s.msg.includes("enough")) lm = 'L12';
+      else lm = 'L10';
+  }
+  else if (s.msg.includes("Window invalid")) lm = 'L21';
+  
+  if (lm) {
+    if (s.msg.includes("Done")) document.getElementById(lm).classList.add('active-green');
+    else document.getElementById(lm).classList.add('active');
+  }
+
+  buildArray(s.s, s.t, s.l, s.r);
+  buildMaps(s.dict_t, s.window_counts);
+
+  const rd = document.getElementById('result-display');
+  let rdText = "None";
+  if (s.ans !== "None") {
+      const bestS = s.s.substring(s.ans[1], s.ans[2] + 1);
+      rdText = `"${bestS}" (Len: ${s.ans[0]})`;
+  }
+  document.getElementById('rd-val').textContent = rdText;
+  if (s.msg.includes("Done")) rd.classList.add('ready');
+  else rd.classList.remove('ready');
+
+  const lc = document.getElementById('logs');
+  const le = document.createElement('div');
+  
+  let lcCls = '';
+  if (s.msg.includes("new minimum") || s.msg.includes("enough")) lcCls = 'log-success';
+  else if (s.msg.includes("Shrinking") || s.msg.includes("invalid")) lcCls = 'log-danger';
+  else if (s.msg.includes("Moving Right")) lcCls = 'log-hl';
+  
+  le.className = `log-entry ${lcCls}`;
+  le.innerHTML = `<span style="color:#8b949e">[${cur}]</span> ${s.msg}`;
+  lc.appendChild(le); lc.scrollTop = lc.scrollHeight;
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === states.length - 1;
+}
+
+function step(d) {
+  if (d === 1 && cur < states.length - 1) { cur++; updateUI(); }
+  else if (d === -1 && cur > 0) {
+    const t = cur - 1; document.getElementById('logs').innerHTML = '';
+    cur = 0; 
+    const initialS = states[0];
+    const lc = document.getElementById('logs');
+    lc.innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${initialS.msg}</div>`;
+    while (cur < t) { cur++; updateUI(); }
+  }
+}
+
+function reset() {
+  cur = 0;
+  document.getElementById('logs').innerHTML = `<div class="log-entry"><span style="color:#8b949e">[0]</span> ${states[0].msg}</div>`;
+  updateUI();
+}
+
+reset();
+
+const rv = document.getElementById('rv'), lp = document.getElementById('left-panel');
+const rh = document.getElementById('rh'), tp = document.getElementById('top-panels');
+let dV = false, dH = false, sx, sy, sw, sh;
+rv.addEventListener('mousedown', e => { dV = true; sx = e.clientX; sw = lp.offsetWidth; document.body.style.cursor = 'col-resize'; rv.classList.add('dragging'); });
+rh.addEventListener('mousedown', e => { dH = true; sy = e.clientY; sh = tp.offsetHeight; document.body.style.cursor = 'row-resize'; rh.classList.add('dragging'); });
+document.addEventListener('mousemove', e => {
+  if (dV) { lp.style.flex = 'none'; lp.style.width = Math.max(200, sw + (e.clientX - sx)) + 'px'; }
+  if (dH) { tp.style.flex = 'none'; tp.style.height = Math.max(100, sh + (e.clientY - sy)) + 'px'; }
+});
+document.addEventListener('mouseup', () => {
+  if (dV) { dV = false; document.body.style.cursor = ''; rv.classList.remove('dragging'); }
+  if (dH) { dH = false; document.body.style.cursor = ''; rh.classList.remove('dragging'); }
+});
+</script>
+</body></html>
